@@ -1,1 +1,175 @@
 @import "tailwindcss";
+
+@theme {
+  --font-display: "Grenze Gotisch", serif;
+  --font-term: "VT323", monospace;
+  --color-void: #0b0614;
+  --color-panel: #160b26;
+  --color-panel2: #1e1033;
+  --color-edge: #3a2160;
+  --color-blood: #ff2e5f;
+  --color-toxic: #4dffa6;
+  --color-gold: #ffc94d;
+  --color-bone: #efe6d8;
+  --color-dim: #9b8bb8;
+}
+
+html,
+body {
+  font-family: var(--font-term);
+  color: var(--color-bone);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ---------- CRT / atmosphere overlays ---------- */
+.scanlines {
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.22) 3px,
+    rgba(0, 0, 0, 0) 4px
+  );
+  mix-blend-mode: multiply;
+}
+.vignette {
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse at 50% 42%,
+    rgba(0, 0, 0, 0) 42%,
+    rgba(5, 2, 10, 0.55) 78%,
+    rgba(3, 1, 8, 0.92) 100%
+  );
+}
+.crt-flicker {
+  animation: crtFlicker 4s infinite steps(1);
+}
+@keyframes crtFlicker {
+  0%, 100% { opacity: 0.9; }
+  7% { opacity: 1; }
+  8% { opacity: 0.78; }
+  9% { opacity: 1; }
+  54% { opacity: 0.94; }
+  55% { opacity: 1; }
+}
+
+/* ---------- flashes ---------- */
+@keyframes flashRed {
+  0% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+.flash-red {
+  background: radial-gradient(ellipse at center, rgba(255, 46, 95, 0.28) 0%, rgba(255, 46, 95, 0.75) 100%);
+  animation: flashRed 0.5s ease-out forwards;
+}
+@keyframes flashGold {
+  0% { opacity: 0.7; }
+  100% { opacity: 0; }
+}
+.flash-gold {
+  background: radial-gradient(ellipse at center, rgba(255, 201, 77, 0.16) 0%, rgba(255, 201, 77, 0.55) 100%);
+  animation: flashGold 0.6s ease-out forwards;
+}
+
+@keyframes hudShake {
+  0%, 100% { transform: translate(0, 0); }
+  15% { transform: translate(-7px, 3px); }
+  30% { transform: translate(6px, -4px); }
+  45% { transform: translate(-5px, -2px); }
+  60% { transform: translate(4px, 3px); }
+  75% { transform: translate(-3px, 1px); }
+  90% { transform: translate(2px, -1px); }
+}
+.hud-shake {
+  animation: hudShake 0.45s ease-out;
+}
+
+/* ---------- pops & floaters ---------- */
+@keyframes popIn {
+  0% { transform: scale(0.4) rotate(-10deg); opacity: 0; }
+  60% { transform: scale(1.12) rotate(2deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+.pop-in { animation: popIn 0.38s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+
+@keyframes cardIn {
+  0% { transform: scale(0.3) rotate(-14deg); opacity: 0; }
+  55% { transform: scale(1.08) rotate(3deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-2deg); opacity: 1; }
+}
+.card-in { animation: cardIn 0.45s cubic-bezier(0.2, 1.5, 0.4, 1) both; }
+
+@keyframes floatUp {
+  0% { transform: translateY(0) scale(0.8); opacity: 0; }
+  15% { transform: translateY(-8px) scale(1.15); opacity: 1; }
+  100% { transform: translateY(-64px) scale(1); opacity: 0; }
+}
+.float-up { animation: floatUp 0.95s ease-out forwards; }
+
+@keyframes chipPop {
+  0% { transform: scale(0.4); }
+  60% { transform: scale(1.45); }
+  100% { transform: scale(1); }
+}
+.chip-pop { animation: chipPop 0.3s cubic-bezier(0.2, 1.6, 0.4, 1) both; }
+
+@keyframes blinkCursor {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+.blink { animation: blinkCursor 0.9s steps(1) infinite; }
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 1; text-shadow: 0 0 18px rgba(255, 46, 95, 0.9), 0 0 46px rgba(255, 46, 95, 0.5); }
+  50% { opacity: 0.72; text-shadow: 0 0 8px rgba(255, 46, 95, 0.6), 0 0 20px rgba(255, 46, 95, 0.3); }
+}
+.pulse-glow { animation: pulseGlow 1.6s ease-in-out infinite; }
+
+@keyframes titleFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.title-float { animation: titleFloat 4.5s ease-in-out infinite; }
+
+@keyframes stampIn {
+  0% { transform: scale(2.4) rotate(-24deg); opacity: 0; }
+  70% { transform: scale(0.92) rotate(-12deg); opacity: 1; }
+  100% { transform: scale(1) rotate(-12deg); opacity: 1; }
+}
+.stamp-in { animation: stampIn 0.35s 0.25s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
+
+@keyframes lowTimer {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+.low-timer { animation: lowTimer 0.5s steps(1) infinite; }
+
+/* ---------- chunky game buttons ---------- */
+.btn-hard {
+  box-shadow: 0 5px 0 #05020a, 0 8px 18px rgba(0, 0, 0, 0.55);
+  transition: transform 0.09s ease, box-shadow 0.09s ease, border-color 0.12s ease, background-color 0.12s ease;
+}
+.btn-hard:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 0 #05020a, 0 14px 26px rgba(0, 0, 0, 0.6);
+}
+.btn-hard:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #05020a, 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+.btn-hard:disabled {
+  opacity: 0.38;
+  filter: grayscale(0.7);
+  cursor: not-allowed;
+}
+
+.text-outline {
+  -webkit-text-stroke: 2px #2a1450;
+  paint-order: stroke fill;
+}
