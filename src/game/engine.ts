@@ -180,6 +180,8 @@ export class MoreniEngine {
   private starRing: THREE.Mesh | null = null;
   private circleTarget = new THREE.Color(0x4dffa6);
   private circleModeT = 0;
+  private bossMode = false;
+  private bossLight: THREE.PointLight | null = null;
 
   private flames: THREE.Mesh[] = [];
   private flickerLights: THREE.PointLight[] = [];
@@ -231,6 +233,10 @@ export class MoreniEngine {
     const rim = new THREE.PointLight(0x4dffa6, 26, 22, 1.7);
     rim.position.set(0, 3.4, -4.5);
     this.scene.add(rim);
+    const bossLight = new THREE.PointLight(0xff2e5f, 0, 26, 1.7);
+    bossLight.position.set(0, 4.2, 3.2);
+    this.scene.add(bossLight);
+    this.bossLight = bossLight;
   }
 
   private buildRoom() {
@@ -575,7 +581,7 @@ export class MoreniEngine {
 
     // morenini richiesti fluttuanti
     const demandGroup = new THREE.Group();
-    demandGroup.position.set(0, bodyCenterY + r * 1.75, 0);
+    demandGroup.position.set(0, bodyCenterY + r * 0.95 + 0.3, 0);
     const demandCookies: THREE.Mesh[] = [];
     const demandMats: THREE.MeshStandardMaterial[] = [];
     const cookieGeo = new THREE.TorusGeometry(0.15, 0.06, 10, 18);
@@ -980,8 +986,13 @@ export class MoreniEngine {
 
     // cerchio
     this.circleModeT -= dt;
-    if (this.circleModeT <= 0 && this.circleTarget.getHex() !== 0x4dffa6) {
+    if (!this.bossMode && this.circleModeT <= 0 && this.circleTarget.getHex() !== 0x4dffa6) {
       this.circleTarget.setHex(0x4dffa6);
+    }
+    if (this.bossLight) {
+      const bl = this.bossMode ? 34 : 0;
+      this.bossLight.intensity += (bl - this.bossLight.intensity) * (1 - Math.exp(-4 * dt));
+      if (this.bossMode) this.bossLight.intensity += Math.sin(t * 9) * 1.4;
     }
     for (const m of this.circleMats) {
       m.color.lerp(this.circleTarget, 1 - Math.exp(-5 * dt));
@@ -1033,7 +1044,7 @@ export class MoreniEngine {
         if (cyc < 0.02) tear.position.y = d.radius * 1.32 + d.radius * 0.02;
       }
       // morenini richiesti: dondolano
-      d.demandGroup.position.y = d.radius * 1.32 + d.radius * 1.75 + Math.sin(t * 3 + d.phase) * 0.06;
+      d.demandGroup.position.y = d.radius * 1.32 + d.radius * 0.95 + 0.3 + Math.sin(t * 3 + d.phase) * 0.06;
       for (let i = 0; i < d.demandCookies.length; i++) {
         d.demandCookies[i].rotation.y += dt * 1.4;
       }
@@ -1095,6 +1106,17 @@ export class MoreniEngine {
   }
 
   /* ---------------------------------------------------------- pubblico */
+  setBossMode(on: boolean) {
+    this.bossMode = on;
+    if (on) {
+      this.circleTarget.setHex(0xff2e5f);
+      this.circleModeT = 1e9;
+    } else {
+      this.circleModeT = 0;
+      this.circleTarget.setHex(0x4dffa6);
+    }
+  }
+
   attractMode(on: boolean) {
     if (this.attract === on) return;
     this.attract = on;
