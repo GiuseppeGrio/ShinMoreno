@@ -234,3 +234,282 @@ export function buildDemandText(round: number, flavor: FlavorId, qty: number): s
   const tpl = pick(DEMAND_TEMPLATES);
   return tpl.replace("{n}", n).replace("{I}", plur).replace("{F}", FLAVORS[flavor].name);
 }
+
+/* ============================================================= STORIA RPG */
+
+export interface DialogueLine {
+  spk: string; // "TU" | "NARRATORE" | id specie | id boss
+  text: string;
+}
+
+export const PROLOGUE: DialogueLine[] = [
+  { spk: "NARRATORE", text: "Morenopoli. La città sacra della Croccantezza Eterna." },
+  { spk: "NARRATORE", text: "Per mille anni i morenini — biscotti sacri — hanno nutrito uomini e Moreni in perfetta armonia." },
+  { spk: "NARRATORE", text: "Finché una notte... il cielo divenne FRADICIO." },
+  { spk: "morenivoth", text: "MWAHAHA! IO SONO MORENIVOTH IL FRADICIO! HO RUBATO LA CROCCANTEZZA DI TUTTI I MORENINI DEL MONDO!" },
+  { spk: "NARRATORE", text: "I morenini divennero molli. I Moreni divennero irritabili. Le nonne smisero di sfornare per protesta." },
+  { spk: "TU", text: "...Io sono solo un evocatore con un COMP v6.66 crackato e una confezione famiglia di morenini." },
+  { spk: "NARRATORE", text: "La profezia parla chiaro: il salvatore sarà un mediocre con la confezione famiglia. Recluta gli Otto Croccanti. Affronta il Fradicio. Ridai il crunch al mondo." },
+  { spk: "TU", text: "Va bene. Ma la confezione famiglia la metto in nota spese." },
+];
+
+export const BOSSES: Record<string, SpeciesDef> = {
+  jr: {
+    id: "jr",
+    name: "MORENIVOTH JUNIOR",
+    title: "APPRENDISTA FRADICIO",
+    radius: 1.15,
+    bodyColor: 0x6b4a33,
+    bellyColor: 0x8a6a52,
+    accentColor: 0x9b8bb8,
+    parts: { horns: true, tears: true },
+    favorite: "cioccolato",
+    big: true,
+    recruitLines: ["NOOO... IL CAPO MI AMMOSCIERÀ A MEEE..."],
+    angryLines: ["GRRR! IL FRADICIO È PIÙ FORTE DI TE!", "TI AMMOSCIO PURE LE IDEE!"],
+    timeoutLines: ["TROPPO LENTO! ORA SEI FRADICIO ANCHE TU!"],
+  },
+  morenivoth: {
+    id: "morenivoth",
+    name: "MORENIVOTH IL FRADICIO",
+    title: "LADRO DELLA CROCCANTEZZA",
+    radius: 1.5,
+    bodyColor: 0x4a2c1a,
+    bellyColor: 0x6b4a33,
+    accentColor: 0xa55eea,
+    parts: { horns: true, crown: true, tears: true, chain: true },
+    favorite: "cioccolato",
+    big: true,
+    recruitLines: ["IMPOSSIBILE... IL CRUNCH..."],
+    angryLines: ["LA TUA CROCCANTEZZA FINISCE QUI!", "TI RIDUCO A POLTIGLIA UMIDA!"],
+    timeoutLines: ["IL TEMPO È FRADICIO! COME TE!"],
+  },
+};
+
+export interface ChapterDef {
+  speciesId: string;
+  roman: string;
+  title: string;
+  qty: number;
+  flavor: FlavorId;
+  timerMs: number;
+  turns: number;
+  boss?: boolean;
+  intro: DialogueLine[];
+  outro: DialogueLine[];
+}
+
+export const CHAPTERS: ChapterDef[] = [
+  {
+    speciesId: "morenozzo",
+    roman: "I",
+    title: "IL BASIC DELL'OLTRETOMBA",
+    qty: 2,
+    flavor: "liscio",
+    timerMs: 9000,
+    turns: 3,
+    intro: [
+      { spk: "NARRATORE", text: "CAPITOLO I — Dal cerchio emerge un Moreno perfettamente normale. Sospettosamente normale." },
+      { spk: "morenozzo", text: "Ehi. Sono Morenozzo. Nessun tratto particolare, nessun passato tragico. Hai dei morenini lisci?" },
+      { spk: "TU", text: "La profezia inizia... in modo molto basic." },
+      { spk: "morenozzo", text: "Due. Lisci. Se mi offri qualcosa di aromatizzato ti denuncio per plagio esistenziale." },
+    ],
+    outro: [
+      { spk: "morenozzo", text: "Affare fatto. Mi unisco al party: qualcuno dovrà pure essere normale." },
+      { spk: "NARRATORE", text: "MORENOZZO si è unito al party! Perk sbloccato: BASIC MA UTILE (+2s al timer di ogni capitolo)" },
+    ],
+  },
+  {
+    speciesId: "morenello",
+    roman: "II",
+    title: "DUE CORNA, ZERO PAZIENZA",
+    qty: 2,
+    flavor: "cioccolato",
+    timerMs: 9500,
+    turns: 3,
+    intro: [
+      { spk: "NARRATORE", text: "CAPITOLO II — Il cerchio fischia. Un Moreno cornuto entra a passo di carica e incorna subito un pilastro." },
+      { spk: "morenello", text: "CHI HA EVOCATO MORENELLO CORNUTO?! Spero sia per morenini al cioccolato, se no mi arrabbio!" },
+      { spk: "TU", text: "È per la profezia. E... sì, cioccolato." },
+      { spk: "morenello", text: "DUE! E se sbagli gusto ti rigiro la macchina con le corna. Anche se non hai la macchina." },
+    ],
+    outro: [
+      { spk: "morenello", text: "Le corna brillano di gioia! Sono dei vostri!" },
+      { spk: "NARRATORE", text: "MORENELLO CORNUTO si è unito al party! Perk sbloccato: CORNA PARAFULMINE (il primo errore di gusto per capitolo è perdonato)" },
+    ],
+  },
+  {
+    speciesId: "morenilla",
+    roman: "III",
+    title: "PIANGE ANCHE QUANDO VINCE",
+    qty: 3,
+    flavor: "fragola",
+    timerMs: 10000,
+    turns: 3,
+    intro: [
+      { spk: "NARRATORE", text: "CAPITOLO III — Prima di apparire, il Moreno piange per una quarantina di secondi di riscaldamento." },
+      { spk: "morenilla", text: "*SNIFF* ...mi hai evocata... nessuno mi evoca mai... *SNIFF* a meno che tu non abbia morenini alla fragola." },
+      { spk: "TU", text: "Tre alla fragola. Senza piangere, per favore." },
+      { spk: "morenilla", text: "*PIANTO DRAMMATICO* STO GIÀ PIANGENDO! TRE, HO DETTO TREEE!" },
+    ],
+    outro: [
+      { spk: "morenilla", text: "*SNIFF* Sono così felice che piango più di prima. Verrò con voi." },
+      { spk: "NARRATORE", text: "MORENILLA DRAMMATICA si è unita al party! Perk sbloccato: PIANTO DIETETICO (25% di probabilità: 1 offerta vale 2)" },
+    ],
+  },
+  {
+    speciesId: "tamarro",
+    roman: "IV",
+    title: "OCCHIALI DA SOLE ANCHE AL BUIO",
+    qty: 3,
+    flavor: "pistacchio",
+    timerMs: 10500,
+    turns: 3,
+    intro: [
+      { spk: "NARRATORE", text: "CAPITOLO IV — Il cerchio si illumina come una discoteca da spiaggia. Arriva il MORENO TAMARRO in sella a una moto infernale." },
+      { spk: "tamarro", text: "Fra. Morenini al pistacchio. Tre. Se il crunch è giusto ti presento i miei demoni." },
+      { spk: "TU", text: "I tuoi demoni hanno il casco?" },
+      { spk: "tamarro", text: "Fra, i miei demoni hanno il FLOW. Tre al pistacchio, sbrigati che ho il motore acceso." },
+    ],
+    outro: [
+      { spk: "tamarro", text: "Il catenaccio approva. Guiderò io. Tu reggi la confezione famiglia." },
+      { spk: "NARRATORE", text: "MORENO TAMARRO si è unito al party! Perk sbloccato: CATENACCIO PORTAFORTUNA (+75 punti a ogni reclutamento)" },
+    ],
+  },
+  {
+    speciesId: "jr",
+    roman: "V",
+    title: "L'APPRENDISTA FRADICIO",
+    qty: 4,
+    flavor: "cioccolato",
+    timerMs: 13000,
+    turns: 4,
+    boss: true,
+    intro: [
+      { spk: "NARRATORE", text: "CAPITOLO V — Il cielo gocciola fango. Un Moreno gonfio di umidità blocca il vicolo: MORENIVOTH JUNIOR." },
+      { spk: "jr", text: "FERMO LÌ! Il capo dice che sei... fastidioso. Dammi 4 morenini al cioccolato e ti lascio passare!" },
+      { spk: "TU", text: "Il capo ti ha dato pure un soprannome più minaccioso del tuo?" },
+      { spk: "jr", text: "GRRR! IO SONO FRADICIO AL 60%! QUATTRO MORENINI O TI AMMOSCIO PURE LE SCARPE!" },
+    ],
+    outro: [
+      { spk: "jr", text: "Nooo... il capo mi ammoscerà a meee... dite alla mamma che la mia spugna era croccante almeno una volta..." },
+      { spk: "NARRATORE", text: "Junior si scioglie in una pozzanghera dignitosa. Il Fradicio ora sa dove sei." },
+    ],
+  },
+  {
+    speciesId: "morenito",
+    roman: "VI",
+    title: "ANTENNA 5G E GAMBE A MOLLA",
+    qty: 3,
+    flavor: "liscio",
+    timerMs: 11000,
+    turns: 3,
+    intro: [
+      { spk: "NARRATORE", text: "CAPITOLO VI — Il COMP aggancia un segnale 5G. MORENITO SPRINT rimbalza nel cerchio a velocità luce." },
+      { spk: "morenito", text: "BIP-BOP! Evocatore veloce! Tre morenini lisci in meno di dieci secondi! VIA VIA VIA!" },
+      { spk: "TU", text: "Guarda che il tempo ce l'hai tutto—" },
+      { spk: "morenito", text: "IL TEMPO È UN COSTRUTTO SOCIALE! TRE LISCI! LA MIA ANTENNA SI STA GIÀ AGGIORNANDO!" },
+    ],
+    outro: [
+      { spk: "morenito", text: "CONNESSIONE STABILITA! Sono nel tuo album, nel tuo cloud, nel tuo cuore a 144 hertz!" },
+      { spk: "NARRATORE", text: "MORENITO SPRINT si è unito al party! Perk sbloccato: 5G SPIRITUALE (la penalità per errore è di soli 2,5s)" },
+    ],
+  },
+  {
+    speciesId: "baron",
+    roman: "VII",
+    title: "CUCITO A MANO NEL 1818",
+    qty: 4,
+    flavor: "pistacchio",
+    timerMs: 12000,
+    turns: 3,
+    intro: [
+      { spk: "NARRATORE", text: "CAPITOLO VII — Odore di fulmini e di 1818. BARON MORENSTEIN si alza dal cerchio, punto per punto." },
+      { spk: "baron", text: "GRRR... IL BARONE È RISORTO. PISTACCHIO. QUATTRO. IL CERVELLO DI SCORTA DEL BARONE ESIGE POLIFENOLI." },
+      { spk: "TU", text: "Non è che conosce il punto debole del Fradicio, per caso?" },
+      { spk: "baron", text: "GRRR... IL BARONE SA MOLTE COSE. PRIMA I MORENINI. POI LA FILOSOFIA." },
+    ],
+    outro: [
+      { spk: "baron", text: "IL BARONE SI ACCONTENTA. ANCHE IL CERVELLO DI SCORTA. SEGUIREMO TE, EVOCATORE." },
+      { spk: "NARRATORE", text: "BARON MORENSTEIN si è unito al party! Perk sbloccato: CERVELLO DI SCORTA (30% di probabilità di un Press Turn extra)" },
+    ],
+  },
+  {
+    speciesId: "morenilde",
+    roman: "VIII",
+    title: "SFERRUZZA MAGLIONI MALEDETTI",
+    qty: 4,
+    flavor: "fragola",
+    timerMs: 12500,
+    turns: 3,
+    intro: [
+      { spk: "NARRATORE", text: "CAPITOLO VIII — Profumo di lana e biscotti. MORENILDE NONNA esce dal cerchio sferruzzando una riga alla volta." },
+      { spk: "morenilde", text: "Oh, tesoro, come sei magro. Troppi demoni, poca merenda. Quattro morenini alla fragola, o ti sferruzzo un maglione maledetto." },
+      { spk: "TU", text: "Cosa fa il maglione maledetto?" },
+      { spk: "morenilde", text: "PUNGE, TESORO. PER L'ETERNITÀ. Quattro alla fragola. Subito." },
+    ],
+    outro: [
+      { spk: "morenilde", text: "Bravo tesoro. Verrò a stare da voi. Sferruzzo per tutto il party." },
+      { spk: "NARRATORE", text: "MORENILDE NONNA si è unita al party! Perk sbloccato: MAGLIONE MALEDETTO (+15% punti reclutamento)" },
+    ],
+  },
+  {
+    speciesId: "reMorenone",
+    roman: "IX",
+    title: "IL SOVRANO DEGLI OTTO CROCCANTI",
+    qty: 5,
+    flavor: "cioccolato",
+    timerMs: 13500,
+    turns: 3,
+    intro: [
+      { spk: "NARRATORE", text: "CAPITOLO IX — Le trombe steccano. RE MORENONE III scende nel cerchio col trono sospetto di chi l'ha affittato." },
+      { spk: "reMorenone", text: "IN GINOCCHIO, SUDDITO! L'ultimo degli Otto Croccanti è il sottoscritto! Morenini al cioccolato, cinque, degni di un re!" },
+      { spk: "TU", text: "Maestà, il mondo è fradicio. Facciamo in fretta." },
+      { spk: "reMorenone", text: "APPROVO LA FRETTA! CINQUE MORENINI E L'ESERCITO REALE — CIOÈ IO — È TUO!" },
+    ],
+    outro: [
+      { spk: "reMorenone", text: "LA CORONA APPROVA! SEI IL MIO NUOVO PASTICCERE DI CORTE... E IL MIO GENERALE!" },
+      { spk: "NARRATORE", text: "RE MORENONE III si è unito al party! Perk sbloccato: DECRETO REALE (+150 punti per ogni capitolo senza errori). GLI OTTO CROCCANTI SONO AL COMPLETO." },
+    ],
+  },
+  {
+    speciesId: "morenivoth",
+    roman: "FINALE",
+    title: "MORENIVOTH IL FRADICIO",
+    qty: 8,
+    flavor: "cioccolato",
+    timerMs: 15000,
+    turns: 3,
+    boss: true,
+    intro: [
+      { spk: "NARRATORE", text: "FINALE — Il cielo si apre come un pacchetto di patatine andato a male. LUI scende, grondante fango." },
+      { spk: "morenivoth", text: "QUINDI SARESTI TU, L'EVOCATORE DEI MORENINI CROCCANTI? E QUESTI SAREBBERO... I MIEI OTTO CROCCANTI TRADITORI?" },
+      { spk: "TU", text: "Otto su otto, Morenivoth. È finita." },
+      { spk: "morenivoth", text: "FINITA?! FINITA?! IO HO RUBATO LA CROCCANTEZZA DELL'UNIVERSO! PROVA A OFFRIRMI 8 MORENINI AL CIOCCOLATO SENZA TREMARE!" },
+      { spk: "TU", text: "Affare fatto. Ma il crunch... te lo faccio sentire da vicino." },
+    ],
+    outro: [
+      { spk: "NARRATORE", text: "L'ultimo morenino si spezza. Il suono è ASSORDANTE." },
+      { spk: "morenivoth", text: "NOOOO! IL CRUNCH! IL GLORIOSO CRUUUNCH! MI STO... ASCIUGANDO?!" },
+      { spk: "NARRATORE", text: "Morenivoth il Fradicio evapora in una nuvola di pangrattato. Su Morenopoli torna a splendere un sole croccante." },
+      { spk: "TU", text: "Missione compiuta. E la confezione famiglia è ancora mezza piena." },
+      { spk: "NARRATORE", text: "La profezia aveva ragione: bastavano un evocatore mediocre, otto Moreni e un biscotto al momento giusto." },
+    ],
+  },
+];
+
+export interface PerkDef {
+  name: string;
+  desc: string;
+}
+
+export const PERKS: Record<string, PerkDef> = {
+  morenozzo: { name: "BASIC MA UTILE", desc: "+2s al timer di ogni capitolo" },
+  morenello: { name: "CORNA PARAFULMINE", desc: "Il primo errore di gusto per capitolo è perdonato" },
+  morenilla: { name: "PIANTO DIETETICO", desc: "25% di probabilità: un'offerta vale doppio" },
+  tamarro: { name: "CATENACCIO PORTAFORTUNA", desc: "+75 punti a ogni reclutamento" },
+  morenito: { name: "5G SPIRITUALE", desc: "Penalità per errore: 2,5s invece di 5s" },
+  baron: { name: "CERVELLO DI SCORTA", desc: "30% di probabilità di un Press Turn extra" },
+  morenilde: { name: "MAGLIONE MALEDETTO", desc: "+15% punti reclutamento" },
+  reMorenone: { name: "DECRETO REALE", desc: "+150 punti per ogni capitolo senza errori" },
+};

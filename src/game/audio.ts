@@ -133,6 +133,33 @@ class Sfx {
     this.tone(600, 0.08, "square", 0.12);
     this.tone(400, 0.1, "square", 0.12, 0.08);
   }
+
+  /* alias usati dal flusso RPG */
+  ui() {
+    this.click();
+  }
+  ok() {
+    this.correct();
+  }
+  error() {
+    this.wrong();
+  }
+  spawn() {
+    this.appear();
+  }
+  boss() {
+    this.appear();
+    this.tone(82, 0.9, "sawtooth", 0.2, 0.1, 41);
+    this.noise(0.5, 0.2, 0.2, 250, 1.5);
+  }
+  power() {
+    this.start();
+  }
+  win() {
+    this.victory();
+  }
 }
 
 export const sfx = new Sfx();
+
+export const initAudio = () => sfx.unlock();
