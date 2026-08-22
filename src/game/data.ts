@@ -232,7 +232,7 @@ export const SPECIES: SpeciesDef[] = [
     bodyColor: 0x170d26, bellyColor: 0x2e1b47, accentColor: 0xff2e5f, parts: { hood: true, tears: true }, favorite: "liscio",
     big: true,
     baseHp: 135, baseAtk: 15,
-    recruitLines: [],
+    recruitLines: ["...MI OFFRO VOLONTARIO. LETTERALMENTE.", "VA BENE. MA NEL CASSETTO CI STO COMODO, EH."],
     angryLines: ["IO SONO TUTTO CIÒ CHE AVANZA. ANCHE TU AVANZERAI.", "IL MALE NON SI OFFRE. IL MALE SI PRENDE."],
     hurtLines: ["...STO SOLO FACENDO FINTA.", "IL DOLORE È IL MIO HABITAT."],
   }),

@@ -1212,6 +1212,17 @@ export class MoreniEngine {
       return;
     }
     c.awake = true;
+    if (c.sword) {
+      c.group.remove(c.sword);
+      c.sword.traverse((o) => {
+        const mm = o as THREE.Mesh;
+        if (mm.isMesh) {
+          mm.geometry.dispose();
+          (mm.material as THREE.Material).dispose();
+        }
+      });
+      c.sword = null;
+    }
     if (this.clompSleepSprite) {
       this.worldGroup.remove(this.clompSleepSprite);
       (this.clompSleepSprite.material as THREE.SpriteMaterial).map?.dispose();
