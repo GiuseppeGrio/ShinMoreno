@@ -19,6 +19,7 @@ body {
   font-family: var(--font-term);
   color: var(--color-bone);
   -webkit-font-smoothing: antialiased;
+  overflow: hidden;
 }
 
 * {
@@ -98,13 +99,6 @@ body {
 }
 .pop-in { animation: popIn 0.38s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
 
-@keyframes cardIn {
-  0% { transform: scale(0.3) rotate(-14deg); opacity: 0; }
-  55% { transform: scale(1.08) rotate(3deg); opacity: 1; }
-  100% { transform: scale(1) rotate(-2deg); opacity: 1; }
-}
-.card-in { animation: cardIn 0.45s cubic-bezier(0.2, 1.5, 0.4, 1) both; }
-
 @keyframes floatUp {
   0% { transform: translateY(0) scale(0.8); opacity: 0; }
   15% { transform: translateY(-8px) scale(1.15); opacity: 1; }
@@ -143,12 +137,6 @@ body {
   100% { transform: scale(1) rotate(-12deg); opacity: 1; }
 }
 .stamp-in { animation: stampIn 0.35s 0.25s cubic-bezier(0.3, 1.6, 0.5, 1) both; }
-
-@keyframes lowTimer {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.45; }
-}
-.low-timer { animation: lowTimer 0.5s steps(1) infinite; }
 
 /* ---------- chunky game buttons ---------- */
 .btn-hard {
@@ -241,8 +229,31 @@ body {
   text-align: right;
   letter-spacing: 0.08em;
 }
+.dlg-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.4rem;
+}
+.dlg-choice {
+  text-align: left;
+  font-family: var(--font-term);
+  font-size: 1.15rem;
+  color: var(--color-bone);
+  background: #1e1033;
+  border: 2px solid #3a2160;
+  padding: 0.3rem 0.8rem;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+.dlg-choice:hover {
+  border-color: var(--acc, #4dffa6);
+  background: #2a1b45;
+  transform: translateX(4px);
+  color: #fff;
+}
 
-/* ================================================= RPG: banner capitolo */
+/* ================================================= RPG: banner zona/capitolo */
 .banner-root {
   position: absolute;
   inset: 0;
@@ -287,7 +298,7 @@ body {
   background: linear-gradient(90deg, transparent, var(--color-gold), transparent);
 }
 
-/* ================================================= RPG: party & toast */
+/* ================================================= RPG: party, toast, barra abbraccio */
 .party-slot {
   width: 42px;
   height: 42px;
@@ -356,3 +367,17 @@ body {
   transition: transform 0.12s ease;
 }
 .roster-card:hover { transform: translateY(-4px) rotate(-1deg); }
+
+.hug-heart {
+  animation: hugBeat 0.5s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes hugBeat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.18); }
+}
+.hug-meter-fill {
+  background: linear-gradient(90deg, #ff4f9a, #ff2e5f, #ffc94d);
+  transition: width 0.08s linear;
+  box-shadow: 0 0 14px rgba(255, 79, 154, 0.8);
+}

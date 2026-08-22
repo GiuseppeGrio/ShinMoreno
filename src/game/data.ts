@@ -61,85 +61,34 @@ const sp = (o: SpeciesDef) => o;
 /* ------------------------------------------ PERSONAGGI (ritratti + NPC) */
 export const CHARACTERS: Record<string, SpeciesDef> = {
   donmoreno: sp({
-    id: "donmoreno",
-    name: "DON MORENO",
-    title: "IL CAPO DEI MORENI",
-    radius: 1.3,
-    bodyColor: 0x7a3ff2,
-    bellyColor: 0xc9a6ff,
-    accentColor: 0xffd700,
-    parts: { crown: true, chain: true, mustache: true },
-    favorite: "cioccolato",
-    big: true,
-    baseHp: 999,
-    baseAtk: 99,
-    recruitLines: [],
-    angryLines: [],
-    hurtLines: [],
+    id: "donmoreno", name: "DON MORENO", title: "IL CAPO DEI MORENI", radius: 1.3,
+    bodyColor: 0x7a3ff2, bellyColor: 0xc9a6ff, accentColor: 0xffd700,
+    parts: { crown: true, chain: true, mustache: true }, favorite: "cioccolato", big: true,
+    baseHp: 999, baseAtk: 99, recruitLines: [], angryLines: [], hurtLines: [],
   }),
   miconosca: sp({
-    id: "miconosca",
-    name: "MICO NOSCA",
-    title: "CAPO DELLA RIVOLTA SOCIALE",
-    radius: 1.0,
-    bodyColor: 0xe8503a,
-    bellyColor: 0xffc9b3,
-    accentColor: 0xffe066,
-    parts: { beret: true, antenna: true },
-    favorite: "fragola",
-    baseHp: 120,
-    baseAtk: 12,
-    recruitLines: [],
-    angryLines: [],
-    hurtLines: [],
+    id: "miconosca", name: "MICO NOSCA", title: "CAPO DELLA RIVOLTA SOCIALE", radius: 1.0,
+    bodyColor: 0xe8503a, bellyColor: 0xffc9b3, accentColor: 0xffe066,
+    parts: { beret: true, antenna: true }, favorite: "fragola",
+    baseHp: 120, baseAtk: 12, recruitLines: [], angryLines: [], hurtLines: [],
   }),
   coizio: sp({
-    id: "coizio",
-    name: "COIZIO",
-    title: "APOSTOLO DEL CONTATTO FISICO",
-    radius: 1.05,
-    bodyColor: 0xff7fb2,
-    bellyColor: 0xffd9e8,
-    accentColor: 0xff4f9a,
-    parts: { heart: true },
-    favorite: "fragola",
-    baseHp: 130,
-    baseAtk: 11,
-    recruitLines: [],
-    angryLines: [],
-    hurtLines: [],
+    id: "coizio", name: "COIZIO", title: "APOSTOLO DEL CONTATTO FISICO", radius: 1.05,
+    bodyColor: 0xff7fb2, bellyColor: 0xffd9e8, accentColor: 0xff4f9a,
+    parts: { heart: true }, favorite: "fragola",
+    baseHp: 130, baseAtk: 11, recruitLines: [], angryLines: [], hurtLines: [],
   }),
   ginosatri: sp({
-    id: "ginosatri",
-    name: "GINO SATRI",
-    title: "FILOSOFO DEL MALE OMEOPATICO",
-    radius: 1.0,
-    bodyColor: 0x2e2440,
-    bellyColor: 0x55486e,
-    accentColor: 0x9b59ff,
-    parts: { hood: true, tears: true },
-    favorite: "liscio",
-    baseHp: 110,
-    baseAtk: 13,
-    recruitLines: [],
-    angryLines: [],
-    hurtLines: [],
+    id: "ginosatri", name: "GINO SATRI", title: "FILOSOFO DEL MALE OMEOPATICO", radius: 1.0,
+    bodyColor: 0x2e2440, bellyColor: 0x55486e, accentColor: 0x9b59ff,
+    parts: { hood: true, tears: true }, favorite: "liscio",
+    baseHp: 110, baseAtk: 13, recruitLines: [], angryLines: [], hurtLines: [],
   }),
   clomp: sp({
-    id: "clomp",
-    name: "CLOMP",
-    title: "IL RAGAZZINO DAI LUNGHI CAPELLI BLU",
-    radius: 0.9,
-    bodyColor: 0x3f6df0,
-    bellyColor: 0xf2c9a0,
-    accentColor: 0x7fd0ff,
-    parts: {},
-    favorite: "liscio",
-    baseHp: 150,
-    baseAtk: 20,
-    recruitLines: [],
-    angryLines: [],
-    hurtLines: [],
+    id: "clomp", name: "CLOMP", title: "IL RAGAZZINO DAI LUNGHI CAPELLI BLU", radius: 0.9,
+    bodyColor: 0x3f6df0, bellyColor: 0xf2c9a0, accentColor: 0x7fd0ff,
+    parts: {}, favorite: "liscio",
+    baseHp: 150, baseAtk: 20, recruitLines: [], angryLines: [], hurtLines: [],
   }),
 };
 
@@ -204,8 +153,7 @@ export const SPECIES: SpeciesDef[] = [
   sp({
     id: "reMorenone", name: "RE MORENONE III", title: "SOVRANO DEL REGNO DEI MORENI", radius: 1.25,
     bodyColor: 0xa55eea, bellyColor: 0xd3a6ff, accentColor: 0xffd700, parts: { crown: true, chain: true }, favorite: "cioccolato",
-    big: true,
-    baseHp: 62, baseAtk: 13,
+    big: true, baseHp: 62, baseAtk: 13,
     recruitLines: ["HAI VINTO CON ONORE, SUDDITO. IL REGNO TI ACCOGLIE.", "LA CORONA APPROVA. SEI IL MIO NUOVO PASTICCERE DI CORTE."],
     angryLines: ["LESA MAESTÀ! QUESTO È UN REGICIDIO GASTRONOMICO!", "TI CONDANNO ALLA FILA ETERNA ALLA MENSA INFERNALE!"],
     hurtLines: ["UN RE NON SENTE IL DOLORE. AHI.", "LA CORONA MI TRATTIENE DAL CADERE."],
@@ -221,8 +169,7 @@ export const SPECIES: SpeciesDef[] = [
   sp({
     id: "cinghiaale", name: "CINGHIA ALE", title: "CAPO TRIBÙ DEI MORENOFACOCERI", radius: 1.15,
     bodyColor: 0x8f5a2b, bellyColor: 0xd6b183, accentColor: 0xffd700, parts: { snout: true, tusks: true, chain: true, horns: true }, favorite: "cioccolato",
-    big: true,
-    baseHp: 105, baseAtk: 14,
+    big: true, baseHp: 105, baseAtk: 14,
     recruitLines: ["GRUF. SEI FORTE. LA TRIBÙ TI RICONOSCE... E IO PURE.", "UN CAPO CHE PERDE CON ONORE È DOPPIO CAPO. SONO TUO."],
     angryLines: ["GRUUUF! NESSUNO OFFENDE CINGHIA ALE!", "TI CARICO FINO AL CONFINE DEL MONDO!"],
     hurtLines: ["LE ZANNE! LE ZANNE SONO SACRE!", "GRUF... COLPO DA CAPO."],
@@ -230,8 +177,7 @@ export const SPECIES: SpeciesDef[] = [
   sp({
     id: "maledelmondo", name: "MALE DEL MONDO", title: "L'ESSENZA DEL MALE DEL MONDO", radius: 1.1,
     bodyColor: 0x170d26, bellyColor: 0x2e1b47, accentColor: 0xff2e5f, parts: { hood: true, tears: true }, favorite: "liscio",
-    big: true,
-    baseHp: 135, baseAtk: 15,
+    big: true, baseHp: 135, baseAtk: 15,
     recruitLines: ["...MI OFFRO VOLONTARIO. LETTERALMENTE.", "VA BENE. MA NEL CASSETTO CI STO COMODO, EH."],
     angryLines: ["IO SONO TUTTO CIÒ CHE AVANZA. ANCHE TU AVANZERAI.", "IL MALE NON SI OFFRE. IL MALE SI PRENDE."],
     hurtLines: ["...STO SOLO FACENDO FINTA.", "IL DOLORE È IL MIO HABITAT."],
@@ -239,8 +185,7 @@ export const SPECIES: SpeciesDef[] = [
   sp({
     id: "maialedelmondo", name: "MAIALE DEL MONDO", title: "IL FACOCEMORENO FINALE", radius: 1.55,
     bodyColor: 0x6e4a6e, bellyColor: 0xa97fb0, accentColor: 0xff2e5f, parts: { snout: true, tusks: true, chain: true }, favorite: "cioccolato",
-    big: true,
-    baseHp: 230, baseAtk: 18,
+    big: true, baseHp: 230, baseAtk: 18,
     recruitLines: [],
     angryLines: ["GRUUUUUF! IL MONDO È MIO E LO MANGIO A MORSI!", "NESSUNA SPADA, NESSUN AMORE. SOLO GRUGNO."],
     hurtLines: ["UN GRUGNO COSÌ NON SI TOCCA!", "IL MONDO TREMA... O SONO IO?"],
@@ -248,20 +193,14 @@ export const SPECIES: SpeciesDef[] = [
   sp({
     id: "nonnopurificato", name: "NONNO MORENO (PURIFICATO)", title: "IL FONDATORE, TORNATO LINDO", radius: 1.2,
     bodyColor: 0xfff3d6, bellyColor: 0xffffff, accentColor: 0xffd700, parts: { snout: true, tusks: true, crown: true }, favorite: "cioccolato",
-    big: true,
-    baseHp: 75, baseAtk: 15,
+    big: true, baseHp: 75, baseAtk: 15,
     recruitLines: ["GRUF... GRAZIE, GIOVANI. CHE PULIZIA PROFONDA.", "LA SPADA DELL'AMORE PROFUMA DI AMMORBIDENTE."],
-    angryLines: [],
-    hurtLines: [],
+    angryLines: [], hurtLines: [],
   }),
 ];
 
 export function speciesById(id: string): SpeciesDef {
-  return (
-    SPECIES.find((s) => s.id === id) ??
-    CHARACTERS[id] ??
-    SPECIES[0]
-  );
+  return SPECIES.find((s) => s.id === id) ?? CHARACTERS[id] ?? SPECIES[0];
 }
 
 /* ------------------------------------------ MONDO */
@@ -273,7 +212,7 @@ export interface ZoneDef {
   z: number;
   r: number;
   color: number;
-  diff: number; // 0 = sicura
+  diff: number;
   wilds?: { id: string; w: number }[];
 }
 
@@ -307,7 +246,7 @@ export const NPCS: NpcDef[] = [
   { id: "gino", name: "GINO SATRI", speciesId: "ginosatri", x: -23, z: 16 },
 ];
 
-/* ------------------------------------------ OGGETTI / PERK */
+/* ------------------------------------------ OGGETTI */
 export const ITEMS: Record<string, { name: string; desc: string }> = {
   spilla: { name: "SPILLA DELLA RIVOLTA", desc: "ATK del party +25% (la solidarietà è un moltiplicatore)" },
   abbraccio: { name: "ABBRACCIO ETERNO DI COIZIO", desc: "Tasso di cattura +20% (il contatto convince)" },
@@ -316,7 +255,7 @@ export const ITEMS: Record<string, { name: string; desc: string }> = {
 
 /* ------------------------------------------ DIALOGHI */
 export interface DialogueLine {
-  spk: string; // 'NARRATORE' | 'TU' | id specie/personaggio
+  spk: string;
   text: string;
   choices?: string[];
 }
@@ -334,18 +273,18 @@ export const SCRIPTS: Record<string, DialogueLine[]> = {
   ],
 
   don1: [
-    { spk: "donmoreno", text: "LA PROFEZIA È CHIARA, RAGAZZO: raduna gli Otto Croccanti, placa le tre ideologie e poi ne riparliamo. Su, su. I morenini non si offrono da soli." },
+    { spk: "donmoreno", text: "LA PROFEZIA È CHIARA, RAGAZZO: placa la Tribù dei Facoceri, poi Rivolta, Terme e Abisso. Su, su. I morenini non si offrono da soli." },
   ],
 
   cinghia_pre: [
     { spk: "cinghiaale", text: "ALTOLÀ, GAMBE LISCE. SEI NELLA VALLE DEI MORENOFACOCERI. IO SONO CINGHIA ALE, CAPO TRIBÙ, E TU PESTI IL NOSTRO FANGO SACRO." },
     { spk: "TU", text: "Don Moreno mi manda. Il Maiale del Mondo ha—" },
     { spk: "cinghiaale", text: "IL MAIALE! GRUF! HA MANGIATO ANCHE I NOSTRI CAMPI DI MORENINI. DA ALLORA GRUFOLIAMO A VUOTO. VUOI PARLARE CON ME? VINCI CON ME." },
-    { spk: "cinghiaale", text: "REGOLA DELLA TRIBÙ: CHI MI CONVINCE IN BATTAGLIA E POI MI OFFRE IL MORENINO GIUSTO... GUIDA LA TRIBÙ. O QUASI. IN BOCCA AL LUPO. AL CINGHIALE." },
+    { spk: "cinghiaale", text: "REGOLA DELLA TRIBÙ: CHI MI CONVINCE IN BATTAGLIA — CON LE BOTTE O COL MORENINO GIUSTO — GUIDA LA TRIBÙ. O QUASI. IN BOCCA AL CINGHIALE." },
   ],
   cinghia_post: [
-    { spk: "cinghiaale", text: "GRUF... QUEL MORENINO AL CIOCCOLATO ERA PERFETTO. CROCCANTE FUORI, MORBIDO DENTRO. COME UN CAPO DEVE ESSERE." },
-    { spk: "cinghiaale", text: "LA TRIBÙ È TUA ALLEATA, EVOCATORE. E TI DICO UNA COSA: il male che ha sporcato il Maiale... puzza di MORENINI ABBANDONATI. VAI DAGLI ALTRI. RIVOLTA E TERME. POI L'ABISSO." },
+    { spk: "cinghiaale", text: "GRUF... HAI VINTO. LA TRIBÙ È TUA ALLEATA, EVOCATORE. E TI DICO UNA COSA: il male che ha sporcato il Maiale puzza di MORENINI ABBANDONATI." },
+    { spk: "cinghiaale", text: "VAI DAGLI ALTRI. RIVOLTA E TERME. POI L'ABISSO. E QUANDO TROVI IL MAIALE... DIGLI CHE CINGHIA ALE NON HA PAURA. GRUF." },
   ],
 
   mico1: [
@@ -394,13 +333,13 @@ export const SCRIPTS: Record<string, DialogueLine[]> = {
     { spk: "ginosatri", text: "SCUSA. SCUSA. SCUSA. È DIVENTATO... TANTO. FERMALO TU, EVOCATORE. IO INTANTO RIVEDO LA MIA TESI." },
   ],
   gino_post: [
-    { spk: "ginosatri", text: "...dunque l'Essenza è svanita. e io, per la prima volta in anni, ho lo stomaco LEGGERO." },
+    { spk: "ginosatri", text: "...dunque l'Essenza è stata sconfitta. e io, per la prima volta in anni, ho lo stomaco LEGGERO." },
     { spk: "ginosatri", text: "ho capito l'errore, evocatore. il male non si cura col male. il male del mondo... è fatto di MORENINI LASCIATI DIVENTARE MOLLI NEL CASSETTO. è abbandono. si cura offrendo. tu lo fai ogni battaglia. per questo vinci." },
-    { spk: "ginosatri", text: "tieni questa FIALA. omeopatia VERA, stavolta: una goccia di male, usata BENE, raddoppia la forza dei tuoi colpi. e adesso... torna da Don Moreno. digli che il filosofo si scusa. e che aveva ragione lui. non dirlo in giro." },
+    { spk: "ginosatri", text: "tieni questa FIALA. omeopatia VERA, stavolta: una goccia di male, usata BENE, raddoppia la forza dei tuoi colpi. e adesso... torna da Don Moreno. digli che il filosofo si scusa." },
   ],
 
   don2: [
-    { spk: "donmoreno", text: "DUNQUE: la Tribù è con te, la Rivolta ti spillla, le Terme ti abbracciano e il Filosofo si è ravveduto. IMPRESSIONANTE, PER UNO CHE CERCAVA IL BAGNO." },
+    { spk: "donmoreno", text: "DUNQUE: la Tribù è con te, la Rivolta ti spilla, le Terme ti abbracciano e il Filosofo si è ravveduto. IMPRESSIONANTE, PER UNO CHE CERCAVA IL BAGNO." },
     { spk: "donmoreno", text: "ora la verità che non ti ho detto. colpo di scena, reggiti: il MAIALE DEL MONDO non è un mostro qualsiasi. è MIO NONNO." },
     { spk: "TU", text: "...come, scusi?" },
     { spk: "donmoreno", text: "NONNO MORENO, il fondatore di Morenopoli. voleva assorbire il male del mondo per proteggerci. ci è riuscito. poi il male lo ha reso un MAIALE. letteralmente." },
@@ -449,11 +388,11 @@ export const SCRIPTS: Record<string, DialogueLine[]> = {
 };
 
 export const TRIAL_QUIZ = {
-  answers: [1, 1, 0], // indice risposta corretta per q1, q2, q3
+  answers: [1, 1, 0],
   scripts: ["mico_q1", "mico_q2", "mico_q3"],
 };
 
-export const SWORD_REQ = 8; // Moreni da aver reclutato per estrarre la spada
+export const SWORD_REQ = 8;
 
 export const CAST: { name: string; role: string }[] = [
   { name: "DON MORENO", role: "Il Capo dei Moreni. Piange solo quando non guarda nessuno." },
@@ -483,6 +422,6 @@ export function rollWild(zone: ZoneDef): string {
 
 export function enemyStats(id: string, diff: number): { hp: number; atk: number } {
   const s = speciesById(id);
-  if (s.baseHp > 90) return { hp: s.baseHp, atk: s.baseAtk }; // boss
+  if (s.baseHp > 90) return { hp: s.baseHp, atk: s.baseAtk };
   return { hp: s.baseHp + diff * 10, atk: s.baseAtk + diff * 2 };
 }

@@ -148,7 +148,7 @@ function makeFloorTexture(): THREE.CanvasTexture {
   g.fillRect(0, 0, 512, 512);
   g.translate(256, 256);
   for (let r = 30; r < 360; r += 26) {
-    g.strokeStyle = `rgba(160,140,220,${0.05 - r * 0.00008})`;
+    g.strokeStyle = `rgba(160,140,220,${Math.max(0.008, 0.05 - r * 0.00008)})`;
     g.lineWidth = 2;
     g.beginPath();
     g.arc(0, 0, r, 0, TAU);
@@ -180,7 +180,6 @@ function makeWorldTexture(): THREE.CanvasTexture {
   const pz = (z: number) => S / 2 + z * K;
   g.fillStyle = "#150e24";
   g.fillRect(0, 0, S, S);
-  // strade
   g.strokeStyle = "#251a3d";
   g.lineWidth = 20;
   g.lineCap = "round";
@@ -191,7 +190,6 @@ function makeWorldTexture(): THREE.CanvasTexture {
     g.lineTo(px(z.x * 0.92), pz(z.z * 0.92 + 2 * 0.08));
     g.stroke();
   }
-  // distretti
   for (const z of ZONES) {
     const col = "#" + z.color.toString(16).padStart(6, "0");
     g.fillStyle = col;
@@ -206,13 +204,11 @@ function makeWorldTexture(): THREE.CanvasTexture {
     g.arc(px(z.x), pz(z.z), (z.r + 0.5) * K, 0, TAU);
     g.stroke();
   }
-  // bordo mondo
   g.strokeStyle = "#3a2b66";
   g.lineWidth = 10;
   g.beginPath();
   g.arc(S / 2, S / 2, 40 * K, 0, TAU);
   g.stroke();
-  // chiazze
   for (let i = 0; i < 500; i++) {
     const a = Math.random() * TAU;
     const r = Math.random() * 40 * K;
@@ -256,14 +252,13 @@ export class MoreniEngine {
 
   private time = 0;
   paused = false;
-  private attract = true;
   private mode: "attract" | "world" | "battle" = "attract";
   private camLerp: { from: THREE.Vector3; k: number } | null = null;
 
   private battleGroup = new THREE.Group();
   private worldGroup = new THREE.Group();
 
-  // battle
+  // battle chamber
   private circleMats: THREE.MeshBasicMaterial[] = [];
   private circleInner: THREE.MeshBasicMaterial | null = null;
   private starRing: THREE.Mesh | null = null;
@@ -280,10 +275,8 @@ export class MoreniEngine {
   private playerPos = new THREE.Vector3(0, 0, 9);
   private playerHeading = 0;
   private input = { x: 0, z: 0 };
-  private walking = false;
   private npcs: NpcRef[] = [];
   private wanderers: Wanderer[] = [];
-  private monument: THREE.Group | null = null;
   private swordMesh: THREE.Group | null = null;
   private questRing: THREE.Mesh | null = null;
   private portalRing: THREE.Mesh | null = null;
@@ -292,7 +285,7 @@ export class MoreniEngine {
   private portalUsed = false;
   private steam: THREE.Mesh[] = [];
   private shards: THREE.Mesh[] = [];
-  private clompRefs: { group: THREE.Group; hair: THREE.Mesh; sword: THREE.Group | null; awake: boolean } | null = null;
+  private clompRefs: { group: THREE.Group; sword: THREE.Group | null; awake: boolean } | null = null;
   private clompFollow = false;
   private clompSleepSprite: THREE.Sprite | null = null;
   private nearId: string | null = null;
@@ -335,7 +328,6 @@ export class MoreniEngine {
     this.camera.position.set(0, 2.7, 8);
     this.camera.lookAt(0, 1.35, 0);
 
-    // luci condivise
     this.scene.add(new THREE.AmbientLight(0x6a5a9a, 0.6));
     this.scene.add(new THREE.HemisphereLight(0x4a3a7a, 0x1a0f2e, 0.55));
     const dir = new THREE.DirectionalLight(0xb9a6ff, 0.6);
@@ -352,7 +344,7 @@ export class MoreniEngine {
     this.ro.observe(mount);
   }
 
-  /* ================================================= COSTRUZIONE BATTLE */
+  /* ================================================= BATTLE CHAMBER */
   private buildBattleChamber() {
     const G = this.battleGroup;
     const floor = new THREE.Mesh(
@@ -426,13 +418,7 @@ export class MoreniEngine {
       this.flames.push(flame);
       const glow = new THREE.Mesh(
         glowGeo,
-        new THREE.MeshBasicMaterial({
-          color: 0xff9a3d,
-          transparent: true,
-          opacity: 0.22,
-          blending: THREE.AdditiveBlending,
-          depthWrite: false,
-        })
+        new THREE.MeshBasicMaterial({ color: 0xff9a3d, transparent: true, opacity: 0.22, blending: THREE.AdditiveBlending, depthWrite: false })
       );
       glow.position.set(x, 0.68, z);
       G.add(glow);
@@ -469,14 +455,7 @@ export class MoreniEngine {
       }
       const geo = new THREE.BufferGeometry();
       geo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-      const mat = new THREE.PointsMaterial({
-        color,
-        size,
-        transparent: true,
-        opacity,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      });
+      const mat = new THREE.PointsMaterial({ color, size, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false });
       G.add(new THREE.Points(geo, mat));
       this.emberGeos.push({ geo, speeds });
     };
@@ -500,7 +479,7 @@ export class MoreniEngine {
     );
   }
 
-  /* ================================================= COSTRUZIONE MONDO */
+  /* ================================================= WORLD */
   private buildWorld() {
     const G = this.worldGroup;
 
@@ -511,7 +490,7 @@ export class MoreniEngine {
     ground.rotation.x = -Math.PI / 2;
     G.add(ground);
 
-    // alberi della valle
+    // valle: alberi
     const trunkGeo = new THREE.CylinderGeometry(0.18, 0.26, 1.4, 7);
     const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a2f1a, roughness: 1 });
     const leavesGeo = new THREE.ConeGeometry(1.1, 2.4, 8);
@@ -530,7 +509,7 @@ export class MoreniEngine {
       G.add(l);
     }
 
-    // tende della rivolta
+    // rivolta: tende + bandiera
     const tentGeo = new THREE.ConeGeometry(1.7, 2.3, 6);
     const tentCols = [0xc0392b, 0xe67e22, 0x8e44ad];
     const riv = ZONES[2];
@@ -543,7 +522,10 @@ export class MoreniEngine {
     const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 4, 6), trunkMat);
     pole.position.set(riv.x - 1.2, 2, riv.z - 1.2);
     G.add(pole);
-    const flag = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1), new THREE.MeshStandardMaterial({ color: 0xff2e5f, side: THREE.DoubleSide, emissive: 0x8a1030, emissiveIntensity: 0.4 }));
+    const flag = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.5, 1),
+      new THREE.MeshStandardMaterial({ color: 0xff2e5f, side: THREE.DoubleSide, emissive: 0x8a1030, emissiveIntensity: 0.4 })
+    );
     flag.position.set(riv.x - 0.4, 3.3, riv.z - 1.2);
     G.add(flag);
 
@@ -617,7 +599,7 @@ export class MoreniEngine {
     portalLabel.position.set(ant.x, 5.4, ant.z);
     G.add(portalLabel);
 
-    // morenopoli: case + monumento + etichette
+    // morenopoli: case + monumento + spada
     const mor = ZONES[0];
     const houseGeo = new THREE.BoxGeometry(2.2, 1.7, 2.2);
     const roofGeo = new THREE.ConeGeometry(1.9, 1.3, 4);
@@ -635,7 +617,6 @@ export class MoreniEngine {
       G.add(r);
     }
 
-    // monumento: piedistallo + Grande Morenino + spada
     const mon = new THREE.Group();
     mon.position.set(0, 0, 0.5);
     const ped = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.6, 2.2), new THREE.MeshStandardMaterial({ color: 0x3a2b66, roughness: 0.9 }));
@@ -662,10 +643,16 @@ export class MoreniEngine {
     );
     blade.position.y = 1.1;
     sword.add(blade);
-    const guard = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.1, 0.14), new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3, metalness: 0.8 }));
+    const guard = new THREE.Mesh(
+      new THREE.BoxGeometry(0.55, 0.1, 0.14),
+      new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3, metalness: 0.8 })
+    );
     guard.position.y = 0.25;
     sword.add(guard);
-    const hilt = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.45, 8), new THREE.MeshStandardMaterial({ color: 0x8a4b2a, roughness: 0.8 }));
+    const hilt = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.06, 0.06, 0.45, 8),
+      new THREE.MeshStandardMaterial({ color: 0x8a4b2a, roughness: 0.8 })
+    );
     sword.add(hilt);
     sword.position.y = 2.35;
     sword.rotation.z = 0.12;
@@ -675,7 +662,6 @@ export class MoreniEngine {
     monLight.position.y = 3;
     mon.add(monLight);
     G.add(mon);
-    this.monument = mon;
 
     // etichette zone
     for (const z of ZONES) {
@@ -716,7 +702,10 @@ export class MoreniEngine {
     const head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 14, 12), new THREE.MeshStandardMaterial({ color: 0xf2c9a0, roughness: 0.7 }));
     head.position.y = 1.55;
     p.add(head);
-    const hood = new THREE.Mesh(new THREE.SphereGeometry(0.34, 12, 10, 0, TAU, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x3a2160, roughness: 0.9 }));
+    const hood = new THREE.Mesh(
+      new THREE.SphereGeometry(0.34, 12, 10, 0, TAU, 0, Math.PI / 2),
+      new THREE.MeshStandardMaterial({ color: 0x3a2160, roughness: 0.9 })
+    );
     hood.position.y = 1.6;
     p.add(hood);
     const visor = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.06, 0.05), new THREE.MeshBasicMaterial({ color: 0x4dffa6 }));
@@ -726,7 +715,10 @@ export class MoreniEngine {
     staff.position.set(0.55, 0.85, 0);
     staff.rotation.z = -0.15;
     p.add(staff);
-    const gem = new THREE.Mesh(new THREE.OctahedronGeometry(0.12, 0), new THREE.MeshStandardMaterial({ color: 0x4dffa6, emissive: 0x4dffa6, emissiveIntensity: 1.2, roughness: 0.2 }));
+    const gem = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.12, 0),
+      new THREE.MeshStandardMaterial({ color: 0x4dffa6, emissive: 0x4dffa6, emissiveIntensity: 1.2, roughness: 0.2 })
+    );
     gem.position.set(0.66, 1.75, 0);
     p.add(gem);
     p.position.copy(this.playerPos);
@@ -734,34 +726,35 @@ export class MoreniEngine {
     this.player = p;
   }
 
+  private charSp(id: string): SpeciesDef {
+    return CHARACTERS[id] ?? SPECIES.find((s) => s.id === id) ?? SPECIES[0];
+  }
+
   private buildNpcs() {
     const defs = [
-      { id: "don", sp: this.charSp("donmoreno"), x: -3.6, z: 5.4, label: "DON MORENO", labelCol: "#ffd700" },
-      { id: "clomp", sp: this.charSp("clomp"), x: 2.6, z: 0.6, label: "CLOMP (DORME?)", labelCol: "#7fd0ff" },
-      { id: "cinghia", sp: this.charSp("cinghiaale"), x: -21, z: -12, label: "CINGHIA ALE", labelCol: "#ffd700" },
-      { id: "mico", sp: this.charSp("miconosca"), x: 21, z: -12, label: "MICO NOSCA", labelCol: "#ffe066" },
-      { id: "coizio", sp: this.charSp("coizio"), x: 23, z: 16, label: "COIZIO", labelCol: "#ff7fb2" },
-      { id: "gino", sp: this.charSp("ginosatri"), x: -23, z: 16, label: "GINO SATRI", labelCol: "#9b59ff" },
+      { id: "don", spId: "donmoreno", x: -3.6, z: 5.4, label: "DON MORENO", labelCol: "#ffd700" },
+      { id: "clomp", spId: "clomp", x: 2.6, z: 0.6, label: "CLOMP (DORME?)", labelCol: "#7fd0ff" },
+      { id: "cinghia", spId: "cinghiaale", x: -21, z: -12, label: "CINGHIA ALE", labelCol: "#ffd700" },
+      { id: "mico", spId: "miconosca", x: 21, z: -12, label: "MICO NOSCA", labelCol: "#ffe066" },
+      { id: "coizio", spId: "coizio", x: 23, z: 16, label: "COIZIO", labelCol: "#ff7fb2" },
+      { id: "gino", spId: "ginosatri", x: -23, z: 16, label: "GINO SATRI", labelCol: "#9b59ff" },
     ];
     for (const d of defs) {
       if (d.id === "clomp") {
         this.buildClomp(d.x, d.z);
         continue;
       }
-      const refs = this.buildMoreno(d.sp, { scale: 0.85, demandQty: 0, shadow: true });
+      const spDef = this.charSp(d.spId);
+      const refs = this.buildMoreno(spDef, { scale: 0.85, demandQty: 0, shadow: true });
       refs.group.position.set(d.x, 0, d.z);
       refs.group.rotation.y = Math.atan2(-d.x, -d.z) * 0.4;
       this.worldGroup.add(refs.group);
       if (refs.shadow) this.worldGroup.add(refs.shadow);
       const lab = makeLabel(d.label, d.labelCol);
-      lab.position.set(d.x, d.sp.radius * 0.85 * 2.6 + 1.4, d.z);
+      lab.position.set(d.x, spDef.radius * 0.85 * 2.6 + 1.4, d.z);
       this.worldGroup.add(lab);
       this.npcs.push({ id: d.id, refs, x: d.x, z: d.z });
     }
-  }
-
-  private charSp(id: string): SpeciesDef {
-    return CHARACTERS[id];
   }
 
   private buildClomp(x: number, z: number) {
@@ -796,7 +789,7 @@ export class MoreniEngine {
     zz.position.set(x, 2.4, z);
     this.worldGroup.add(zz);
     this.clompSleepSprite = zz;
-    this.clompRefs = { group: g, hair, sword: null, awake: false };
+    this.clompRefs = { group: g, sword: null, awake: false };
   }
 
   private spawnWanderers() {
@@ -819,17 +812,7 @@ export class MoreniEngine {
     const hz = z.z + Math.sin(a) * r;
     refs.group.position.set(hx, 0, hz);
     this.worldGroup.add(refs.group);
-    this.wanderers.push({
-      refs,
-      sp: spDef,
-      diff: z.diff,
-      hx,
-      hz,
-      t: Math.random() * 10,
-      phase: Math.random() * TAU,
-      dead: false,
-      respawnAt: 0,
-    });
+    this.wanderers.push({ refs, sp: spDef, diff: z.diff, hx, hz, t: Math.random() * 10, phase: Math.random() * TAU, dead: false, respawnAt: 0 });
   }
 
   /* ================================================= MORENO BUILDER */
@@ -840,12 +823,7 @@ export class MoreniEngine {
     const bodyCenterY = r * 1.32;
 
     const bodyMat = new THREE.MeshStandardMaterial({ color: sp.bodyColor, roughness: 0.55, metalness: 0.05 });
-    const accentMat = new THREE.MeshStandardMaterial({
-      color: sp.accentColor,
-      roughness: 0.4,
-      emissive: sp.accentColor,
-      emissiveIntensity: 0.25,
-    });
+    const accentMat = new THREE.MeshStandardMaterial({ color: sp.accentColor, roughness: 0.4, emissive: sp.accentColor, emissiveIntensity: 0.25 });
     const bellyMat = new THREE.MeshStandardMaterial({ color: sp.bellyColor, roughness: 0.75 });
 
     const body = new THREE.Mesh(new THREE.SphereGeometry(r, 26, 22), bodyMat);
@@ -1006,7 +984,10 @@ export class MoreniEngine {
       g.add(tailTip);
     }
     if (p.snout) {
-      const snout = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.2, r * 0.24, r * 0.16, 12), new THREE.MeshStandardMaterial({ color: sp.bellyColor, roughness: 0.7 }));
+      const snout = new THREE.Mesh(
+        new THREE.CylinderGeometry(r * 0.2, r * 0.24, r * 0.16, 12),
+        new THREE.MeshStandardMaterial({ color: sp.bellyColor, roughness: 0.7 })
+      );
       snout.rotation.x = Math.PI / 2;
       snout.position.set(0, bodyCenterY - r * 0.12, r * 0.96);
       g.add(snout);
@@ -1039,7 +1020,10 @@ export class MoreniEngine {
       }
     }
     if (p.beret) {
-      const beret = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.52, r * 0.58, r * 0.14, 14), new THREE.MeshStandardMaterial({ color: 0xc0392b, roughness: 0.8 }));
+      const beret = new THREE.Mesh(
+        new THREE.CylinderGeometry(r * 0.52, r * 0.58, r * 0.14, 14),
+        new THREE.MeshStandardMaterial({ color: 0xc0392b, roughness: 0.8 })
+      );
       beret.position.set(r * 0.08, top + r * 0.05, 0);
       beret.rotation.z = -0.18;
       g.add(beret);
@@ -1061,10 +1045,7 @@ export class MoreniEngine {
       g.add(heart);
     }
     if (p.hood) {
-      const hood = new THREE.Mesh(
-        new THREE.ConeGeometry(r * 0.75, r * 0.9, 10),
-        new THREE.MeshStandardMaterial({ color: 0x12081f, roughness: 1 })
-      );
+      const hood = new THREE.Mesh(new THREE.ConeGeometry(r * 0.75, r * 0.9, 10), new THREE.MeshStandardMaterial({ color: 0x12081f, roughness: 1 }));
       hood.position.set(0, bodyCenterY + r * 0.75, -r * 0.1);
       hood.rotation.x = 0.25;
       g.add(hood);
@@ -1144,7 +1125,6 @@ export class MoreniEngine {
   /* ================================================= API MONDO */
   enterWorld(spawnX: number, spawnZ: number) {
     this.mode = "world";
-    this.attract = false;
     this.worldGroup.visible = true;
     this.battleGroup.visible = false;
     this.playerPos.set(spawnX, 0, spawnZ);
@@ -1170,10 +1150,7 @@ export class MoreniEngine {
     }
     let x = 0;
     let z = 0.5;
-    if (id === "monument") {
-      x = 0;
-      z = 0.5;
-    } else {
+    if (id !== "monument") {
       const npc = this.npcs.find((n) => n.id === id);
       if (npc) {
         x = npc.x;
@@ -1202,7 +1179,7 @@ export class MoreniEngine {
     this.shakeAmp = Math.max(this.shakeAmp, 0.5);
     this.spawnBurst(new THREE.Vector3(0, 2.2, 0.5), [0xffc94d, 0xffffff, 0x9fd8ff], 34, 4, 4);
     this.pulseRingAt(new THREE.Vector3(0, 0.1, 0.5), 0xffc94d);
-    this.animAtE(0.9, 0.05, () => {}, cb);
+    this.animAt(0.9, 0.05, () => {}, cb);
   }
 
   awakenClompFx(cb: () => void) {
@@ -1212,24 +1189,23 @@ export class MoreniEngine {
       return;
     }
     c.awake = true;
-    if (c.sword) {
-      c.group.remove(c.sword);
-      c.sword.traverse((o) => {
-        const mm = o as THREE.Mesh;
-        if (mm.isMesh) {
-          mm.geometry.dispose();
-          (mm.material as THREE.Material).dispose();
-        }
-      });
-      c.sword = null;
-    }
     if (this.clompSleepSprite) {
       this.worldGroup.remove(this.clompSleepSprite);
       (this.clompSleepSprite.material as THREE.SpriteMaterial).map?.dispose();
       (this.clompSleepSprite.material as THREE.Material).dispose();
       this.clompSleepSprite = null;
     }
-    // spada in mano
+    if (c.sword) {
+      c.group.remove(c.sword);
+      c.sword.traverse((o) => {
+        const m = o as THREE.Mesh;
+        if (m.isMesh) {
+          m.geometry.dispose();
+          (m.material as THREE.Material).dispose();
+        }
+      });
+      c.sword = null;
+    }
     const sword = new THREE.Group();
     const blade = new THREE.Mesh(
       new THREE.BoxGeometry(0.12, 1.4, 0.04),
@@ -1237,7 +1213,10 @@ export class MoreniEngine {
     );
     blade.position.y = 0.9;
     sword.add(blade);
-    const guard = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.08, 0.12), new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3, metalness: 0.8 }));
+    const guard = new THREE.Mesh(
+      new THREE.BoxGeometry(0.42, 0.08, 0.12),
+      new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3, metalness: 0.8 })
+    );
     guard.position.y = 0.22;
     sword.add(guard);
     sword.position.set(0.5, 0.9, 0.2);
@@ -1251,7 +1230,7 @@ export class MoreniEngine {
     });
     this.spawnBurst(g.position.clone().add(new THREE.Vector3(0, 1.2, 0)), [0x7fd0ff, 0xffc94d, 0xffffff], 26, 3.4, 3.4);
     this.pulseRingAt(g.position.clone(), 0x7fd0ff);
-    this.animAtE(1.15, 0.05, () => {
+    this.animAt(1.15, 0.05, () => {
       g.rotation.y = 0;
       g.position.y = 0;
     }, cb);
@@ -1260,7 +1239,6 @@ export class MoreniEngine {
   /* ================================================= API BATTLE */
   startBattle(playerSp: SpeciesDef, enemySp: SpeciesDef, boss: boolean) {
     this.mode = "battle";
-    this.attract = false;
     this.worldGroup.visible = false;
     this.battleGroup.visible = true;
     this.clearBattle();
@@ -1359,7 +1337,7 @@ export class MoreniEngine {
     const dirSign = side === "player" ? 1 : -1;
     const baseX = g.position.x;
     let hit = false;
-    this.anim(0.42, (k) => {
+    this.anim(0.4, (k) => {
       const lunge = k < 0.45 ? easeInCubic(k / 0.45) : 1 - easeOutCubic((k - 0.45) / 0.55);
       g.position.x = baseX + dirSign * 1.35 * lunge;
       if (k >= 0.4 && !hit) {
@@ -1367,10 +1345,7 @@ export class MoreniEngine {
         this.hitFx(tgt);
       }
     });
-    this.animAtE(0.47, 0.05, () => {}, () => {
-      g.position.x = baseX;
-      onDone();
-    });
+    this.animAt(0.45, 0.05, () => {}, onDone);
   }
 
   private hitFx(tgt: MorenoRefs) {
@@ -1378,8 +1353,9 @@ export class MoreniEngine {
     this.anim(0.3, (k) => {
       tgt.bodyMat.emissiveIntensity = (1 - k) * 0.8;
     });
+    const baseX = tgt.group.position.x;
     this.anim(0.4, (k) => {
-      tgt.group.position.x += Math.sin(k * 50) * 0.06 * (1 - k);
+      tgt.group.position.x = baseX + Math.sin(k * 50) * 0.06 * (1 - k);
     });
     const wp = new THREE.Vector3();
     tgt.body.getWorldPosition(wp);
@@ -1394,12 +1370,13 @@ export class MoreniEngine {
       return;
     }
     const g = d.group;
-    this.animE(0.8, easeInCubic, (k) => {
-      g.position.y = -2.0 * k;
-      g.scale.setScalar(Math.max(0.2, 1 - k * 0.6));
+    this.anim(0.8, (k) => {
+      const e = easeInCubic(k);
+      g.position.y = -2.0 * e;
+      g.scale.setScalar(Math.max(0.2, 1 - e * 0.6));
       if (d.shadow) (d.shadow.material as THREE.MeshBasicMaterial).opacity = 0.4 * (1 - k);
     });
-    this.animAtE(0.85, 0.05, () => {}, cb);
+    this.animAt(0.85, 0.05, () => {}, cb);
   }
 
   battleCaptureTry(success: boolean, cb: () => void) {
@@ -1437,7 +1414,6 @@ export class MoreniEngine {
       t: 0,
       dur: 0.4,
       onArrive: () => {
-        // morso
         const m = ed.mouth;
         const base = ed.mouthBase;
         this.anim(0.25, (k) => {
@@ -1462,9 +1438,9 @@ export class MoreniEngine {
             g.rotation.y = -Math.PI / 2 + k * TAU;
           });
           this.animAt(0.65, 0.75, (k) => {
-            const e2 = easeInCubic(k);
-            g.position.y = e2 * 4.2;
-            g.scale.setScalar(Math.max(0.1, 1 - k * 0.85));
+            const e = easeInCubic(k);
+            g.position.y = e * 4.2;
+            g.scale.setScalar(Math.max(0.1, 1 - e * 0.85));
             g.rotation.y = -Math.PI / 2 + TAU + k * TAU * 2;
           });
           this.animAt(0.9, 0.06, () => {
@@ -1473,22 +1449,22 @@ export class MoreniEngine {
             wp2.y += 1;
             this.spawnBurst(wp2, [0xffc94d, 0xffffff], 18, 3, 2.4);
           });
-          this.animAtE(1.4, 0.06, () => {}, () => {
+          this.animAt(1.4, 0.06, () => {
             if (this.enemyDemon === ed) {
               this.removeRefs(ed);
               this.enemyDemon = null;
             }
-            cb();
-          });
+          }, cb);
         } else {
           ed.mood = "angry";
           ed.pupilMat.color.setHex(0xff2e5f);
           this.spawnBurst(wp, [0xff2e5f, 0x8a1030], 14, 3, 2.6);
           this.shakeAmp = Math.max(this.shakeAmp, 0.4);
+          const baseX = ed.group.position.x;
           this.animAt(0.3, 0.5, (k) => {
-            ed.group.position.x += Math.sin(k * 45) * 0.05 * (1 - k);
+            ed.group.position.x = baseX + Math.sin(k * 45) * 0.05 * (1 - k);
           });
-          this.animAtE(1.0, 0.06, () => {
+          this.animAt(1.0, 0.06, () => {
             ed.mood = ed.demandMats[0] ? "sad" : "idle";
             ed.pupilMat.color.setHex(0x12060c);
           }, cb);
@@ -1506,17 +1482,24 @@ export class MoreniEngine {
     const pos = ed.group.position.clone();
     this.removeRefs(ed);
     this.enemyDemon = null;
-    const beamMat = new THREE.MeshBasicMaterial({ color: 0xffd9e8, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+    const beamMat = new THREE.MeshBasicMaterial({
+      color: 0xffd9e8,
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    });
     const beam = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.5, 8, 20, 1, true), beamMat);
     beam.position.set(pos.x, 4, pos.z);
     this.battleGroup.add(beam);
     this.animAt(0.05, 0.25, (k) => {
       beamMat.opacity = k * 0.6;
     });
-    this.animAtE(1.4, 0.3, (k) => {
+    this.animAt(1.4, 0.3, (k) => {
       beamMat.opacity = 0.6 * (1 - k);
     });
-    this.animAtE(1.7, 0.05, () => {}, () => {
+    this.animAt(1.7, 0.05, () => {
       this.battleGroup.remove(beam);
       beam.geometry.dispose();
       beamMat.dispose();
@@ -1524,7 +1507,7 @@ export class MoreniEngine {
     this.spawnBurst(pos.clone().setY(1.4), [0xffffff, 0xffd9e8, 0xffc94d], 36, 4, 4);
     this.pulseRingAt(pos.clone().setY(0.05), 0xffd9e8);
     this.shakeAmp = Math.max(this.shakeAmp, 0.45);
-    this.animAtE(0.55, 0.05, () => {}, () => {
+    this.animAt(0.55, 0.05, () => {
       const nd = this.buildMoreno(newSp, { scale: 0.95, demandQty: 0, shadow: true });
       nd.group.position.copy(pos);
       nd.group.rotation.y = -Math.PI / 2;
@@ -1534,8 +1517,7 @@ export class MoreniEngine {
       this.anim(0.8, (k) => nd.group.scale.setScalar(Math.max(0.01, easeOutElastic(k))));
       nd.mood = "happy";
       this.enemyDemon = nd;
-      cb();
-    });
+    }, cb);
   }
 
   shake(amp: number) {
@@ -1546,14 +1528,8 @@ export class MoreniEngine {
   private anim(dur: number, fn: (k: number) => void, done?: () => void) {
     this.anims.push({ t0: this.time, dur, fn, done });
   }
-  private animE(dur: number, ease: (k: number) => number, fn: (k: number) => void, done?: () => void) {
-    this.anims.push({ t0: this.time, dur, fn: (k) => fn(ease(k)), done });
-  }
   private animAt(delay: number, dur: number, fn: (k: number) => void, done?: () => void) {
     this.anims.push({ t0: this.time + delay, dur, fn, done });
-  }
-  private animAtE(delay: number, dur: number, fn: (k: number) => void, done?: () => void) {
-    this.anims.push({ t0: this.time + delay, dur, fn: (k) => fn(easeOutCubic(k)), done });
   }
 
   private setCircleMode(mode: "idle" | "recruit") {
@@ -1567,11 +1543,12 @@ export class MoreniEngine {
     ring.rotation.x = -Math.PI / 2;
     ring.position.copy(pos);
     this.scene.add(ring);
-    this.animE(0.7, easeOutCubic, (k) => {
-      ring.scale.setScalar(0.4 + k * 3.4);
+    this.anim(0.7, (k) => {
+      const e = easeOutCubic(k);
+      ring.scale.setScalar(0.4 + e * 3.4);
       mat.opacity = 0.9 * (1 - k);
     });
-    this.animAtE(0.72, 0.05, () => {}, () => {
+    this.animAt(0.72, 0.05, () => {
       this.scene.remove(ring);
       ring.geometry.dispose();
       mat.dispose();
@@ -1588,7 +1565,16 @@ export class MoreniEngine {
       const a = Math.random() * TAU;
       const r = Math.random() * speed;
       const vel = new THREE.Vector3(Math.cos(a) * r, Math.random() * up, Math.sin(a) * r);
-      this.particles.push({ mesh, mat, geo, vel, spin: new THREE.Vector3(Math.random() * 8 - 4, Math.random() * 8 - 4, Math.random() * 8 - 4), grav: 6, life: 0.5 + Math.random() * 0.4, maxLife: 0.9 });
+      this.particles.push({
+        mesh,
+        mat,
+        geo,
+        vel,
+        spin: new THREE.Vector3(Math.random() * 8 - 4, Math.random() * 8 - 4, Math.random() * 8 - 4),
+        grav: 6,
+        life: 0.5 + Math.random() * 0.4,
+        maxLife: 0.9,
+      });
       this.scene.add(mesh);
     }
   }
@@ -1625,7 +1611,6 @@ export class MoreniEngine {
       }
     }
 
-    // camera
     let pos: THREE.Vector3;
     let look: THREE.Vector3;
     if (this.mode === "world") {
@@ -1656,7 +1641,6 @@ export class MoreniEngine {
     this.camera.position.copy(pos);
     this.camera.lookAt(look);
 
-    // braci & candele (visibili solo in battle, ma aggiornarli costa poco)
     for (let i = 0; i < this.flames.length; i++) {
       const f = this.flames[i];
       f.scale.set(1 + Math.sin(t * 15 + i * 2.1) * 0.12, 1 + Math.sin(t * 13 + i * 3.7) * 0.25 + Math.random() * 0.08, 1);
@@ -1673,10 +1657,10 @@ export class MoreniEngine {
       }
       attr.needsUpdate = true;
     }
+    this.circleModeT -= dt;
     if (!this.bossMode && this.circleModeT <= 0 && this.circleTarget.getHex() !== 0x4dffa6) {
       this.circleTarget.setHex(0x4dffa6);
     }
-    this.circleModeT -= dt;
     for (const m of this.circleMats) {
       m.color.lerp(this.circleTarget, 1 - Math.exp(-5 * dt));
       m.opacity = 0.6 + Math.sin(t * 2.3) * 0.22;
@@ -1744,7 +1728,6 @@ export class MoreniEngine {
   private updateWorld(dt: number, t: number) {
     const speed = 7.6;
     const moving = Math.hypot(this.input.x, this.input.z) > 0.05;
-    this.walking = moving;
     if (moving) {
       this.playerPos.x += this.input.x * speed * dt;
       this.playerPos.z += this.input.z * speed * dt;
@@ -1753,7 +1736,6 @@ export class MoreniEngine {
         this.playerPos.x *= 39 / d;
         this.playerPos.z *= 39 / d;
       }
-      // collisioni semplici
       const push = (cx: number, cz: number, r: number) => {
         const dx = this.playerPos.x - cx;
         const dz = this.playerPos.z - cz;
@@ -1763,7 +1745,7 @@ export class MoreniEngine {
           this.playerPos.z = cz + (dz / dd) * r;
         }
       };
-      push(0, 0.5, 2.6); // monumento
+      push(0, 0.5, 2.6);
       for (const n of this.npcs) push(n.x, n.z, 1.3);
       if (this.clompRefs && !this.clompFollow) push(this.clompRefs.group.position.x, this.clompRefs.group.position.z, 1.1);
       const targetH = Math.atan2(this.input.x, this.input.z);
@@ -1777,13 +1759,11 @@ export class MoreniEngine {
       this.player.rotation.y = this.playerHeading;
     }
 
-    // NPC idle
     for (const n of this.npcs) {
       n.refs.group.position.y = Math.sin(t * 2 + n.refs.phase) * 0.06;
       n.refs.group.rotation.y += Math.sin(t * 0.7 + n.refs.phase) * 0.002;
     }
 
-    // Clomp segue o dorme
     const c = this.clompRefs;
     if (c) {
       if (this.clompFollow) {
@@ -1800,15 +1780,12 @@ export class MoreniEngine {
       if (c.sword) c.sword.rotation.z = -0.35 + Math.sin(t * 3) * 0.06;
     }
 
-    // vagabondi
-    for (let i = this.wanderers.length - 1; i >= 0; i--) {
-      const w = this.wanderers[i];
+    for (const w of this.wanderers) {
       if (w.dead) {
         if (t >= w.respawnAt) {
           const a = Math.random() * TAU;
-          const r = 1.5 + Math.random() * 5;
-          w.hx += Math.cos(a) * r * 0.3;
-          w.hz += Math.sin(a) * r * 0.3;
+          w.hx += Math.cos(a) * 0.8;
+          w.hz += Math.sin(a) * 0.8;
           w.refs.group.position.set(w.hx, 0, w.hz);
           w.refs.group.visible = true;
           w.dead = false;
@@ -1831,7 +1808,6 @@ export class MoreniEngine {
       }
     }
 
-    // vapore & schegge & portale & anello
     for (let i = 0; i < this.steam.length; i++) {
       const st = this.steam[i];
       const cyc = (t * 0.25 + i * 0.25) % 1;
@@ -1861,7 +1837,6 @@ export class MoreniEngine {
       (this.questRing.material as THREE.MeshBasicMaterial).opacity = 0.55 + Math.sin(t * 4) * 0.3;
     }
 
-    // vicino a cosa sono?
     let near: string | null = null;
     let best = 2.5;
     for (const n of this.npcs) {
@@ -1878,7 +1853,6 @@ export class MoreniEngine {
       this.onNear?.(near);
     }
 
-    // zona corrente
     this.zoneCheckT -= dt;
     if (this.zoneCheckT <= 0) {
       this.zoneCheckT = 0.25;
@@ -1949,7 +1923,6 @@ export class MoreniEngine {
       this.battleGroup.visible = true;
       this.camLerp = { from: this.camera.position.clone(), k: 0 };
     }
-    this.attract = on;
   }
 
   setPaused(p: boolean) {

@@ -7,7 +7,6 @@ import {
   FLAVORS,
   ITEMS,
   SCRIPTS,
-  SPECIES,
   SWORD_REQ,
   TRIAL_QUIZ,
   ZONES,
@@ -21,7 +20,7 @@ import {
   type ZoneDef,
 } from "./game/data";
 
-type Phase = "title" | "dialogue" | "world" | "battle" | "quiz" | "hug" | "victory" | "gameover";
+type Phase = "title" | "dialogue" | "starter" | "world" | "battle" | "quiz" | "hug" | "victory" | "gameover";
 
 const hexCss = (n: number) => "#" + n.toString(16).padStart(6, "0");
 
@@ -57,8 +56,7 @@ function MorenoFace({ sp, size = 72 }: { sp: SpeciesDef; size?: number }) {
   const belly = hexCss(sp.bellyColor);
   const acc = hexCss(sp.accentColor);
   const p = sp.parts;
-  const isMaiale = sp.id === "maialedelmondo" || sp.id === "nonnopurificato" || sp.id === "cinghiaale" || sp.id === "facocero";
-  const dark = sp.id === "maledelmondo";
+  const isBoss = sp.id === "maialedelmondo" || sp.id === "maledelmondo";
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden>
       {p.horns && (
@@ -80,8 +78,8 @@ function MorenoFace({ sp, size = 72 }: { sp: SpeciesDef; size?: number }) {
         </>
       )}
       {p.bun && <circle cx="50" cy="15" r="11" fill="#d7dde2" />}
-      {p.beret && <ellipse cx="54" cy="20" rx="22" ry="9" fill="#c0392b" />}
-      {p.hood && <path d="M14 60 C14 22 30 6 50 6 C70 6 86 22 86 60 L74 60 C74 32 64 18 50 18 C36 18 26 32 26 60 Z" fill="#12081f" />}
+      {p.beret && <ellipse cx="54" cy="20" rx="22" ry="8" fill="#c0392b" />}
+      {p.hood && <path d="M20 55 C20 18 80 18 80 55 L80 40 C80 8 20 8 20 40 Z" fill="#12081f" />}
       <circle cx="50" cy="55" r="35" fill={body} />
       <ellipse cx="50" cy="68" rx="22" ry="15" fill={belly} />
       {p.crown && (
@@ -96,18 +94,18 @@ function MorenoFace({ sp, size = 72 }: { sp: SpeciesDef; size?: number }) {
         <>
           <circle cx="37" cy="48" r="9" fill="#ffffff" />
           <circle cx="63" cy="48" r="9" fill="#ffffff" />
-          <circle cx="37" cy="49" r="4" fill={dark || sp.id === "maialedelmondo" ? "#ff2e5f" : "#12060c"} />
-          <circle cx="63" cy="49" r="4" fill={dark || sp.id === "maialedelmondo" ? "#ff2e5f" : "#12060c"} />
-          {sp.id === "maialedelmondo" && (
+          <circle cx="37" cy="49" r="4" fill={isBoss ? "#ff2e5f" : "#12060c"} />
+          <circle cx="63" cy="49" r="4" fill={isBoss ? "#ff2e5f" : "#12060c"} />
+          {isBoss && (
             <>
-              <rect x="26" y="33" width="20" height="5" fill="#2a1208" transform="rotate(16 36 35)" />
-              <rect x="54" y="33" width="20" height="5" fill="#2a1208" transform="rotate(-16 64 35)" />
+              <rect x="26" y="34" width="20" height="5" fill="#2a1208" transform="rotate(18 36 36)" />
+              <rect x="54" y="34" width="20" height="5" fill="#2a1208" transform="rotate(-18 64 36)" />
             </>
           )}
           {p.tears && (
             <>
-              <ellipse cx="31" cy="62" rx="3.6" ry="6" fill="#6fd7ff" />
-              <ellipse cx="69" cy="62" rx="3.6" ry="6" fill="#6fd7ff" />
+              <ellipse cx="32" cy="62" rx="3.6" ry="6" fill="#6fd7ff" />
+              <ellipse cx="68" cy="62" rx="3.6" ry="6" fill="#6fd7ff" />
             </>
           )}
         </>
@@ -127,28 +125,34 @@ function MorenoFace({ sp, size = 72 }: { sp: SpeciesDef; size?: number }) {
       )}
       {p.mustache && (
         <>
-          <rect x="30" y="62" width="16" height="5" rx="2.5" fill="#2d2438" transform="rotate(-12 38 64)" />
-          <rect x="54" y="62" width="16" height="5" rx="2.5" fill="#2d2438" transform="rotate(12 62 64)" />
+          <rect x="32" y="66" width="16" height="4" fill="#2d2438" transform="rotate(-14 40 68)" />
+          <rect x="52" y="66" width="16" height="4" fill="#2d2438" transform="rotate(14 60 68)" />
         </>
       )}
-      {p.snout && (
+      {p.snout ? (
         <>
-          <ellipse cx="50" cy="66" rx="12" ry="8.5" fill={belly} stroke="#8a5a2a" strokeWidth="1.5" />
-          <circle cx="45" cy="66" r="2.4" fill="#47101f" />
-          <circle cx="55" cy="66" r="2.4" fill="#47101f" />
+          <ellipse cx="50" cy="66" rx="11" ry="8" fill={belly} stroke="#8a5a30" strokeWidth="2" />
+          <circle cx="46" cy="66" r="2.2" fill="#47101f" />
+          <circle cx="54" cy="66" r="2.2" fill="#47101f" />
         </>
+      ) : (
+        <ellipse cx="50" cy="70" rx="7.5" ry="5" fill="#47101f" />
       )}
       {p.tusks && (
         <>
-          <polygon points="34,74 30,60 40,70" fill="#f5e6c8" />
-          <polygon points="66,74 70,60 60,70" fill="#f5e6c8" />
+          <polygon points="34,72 30,60 40,68" fill="#f5e6c8" />
+          <polygon points="66,72 70,60 60,68" fill="#f5e6c8" />
         </>
       )}
-      {!p.snout && !dark && <ellipse cx="50" cy="70" rx="7.5" ry="5" fill="#47101f" />}
-      {dark && <path d="M38 74 L44 70 L50 74 L56 70 L62 74" stroke="#0a0512" strokeWidth="3" fill="none" />}
-      {sp.id === "nonnopurificato" && <path d="M40 76 Q50 84 60 76" stroke="#8a6a3a" strokeWidth="3" fill="none" />}
-      {p.heart && <path d="M50 26 C47 21 40 21 40 26 C40 30 46 33 50 37 C54 33 60 30 60 26 C60 21 53 21 50 26 Z" fill="#ff4f9a" />}
-      {p.chain && <ellipse cx="50" cy="84" rx="27" ry="8" fill="none" stroke={acc} strokeWidth="4" strokeDasharray="6 4" />}
+      {p.heart && (
+        <path
+          d="M50 22 C46 16 38 16 38 22 C38 27 45 31 50 35 C55 31 62 27 62 22 C62 16 54 16 50 22 Z"
+          fill="#ff4f9a"
+        />
+      )}
+      {p.chain && (
+        <ellipse cx="50" cy="86" rx="27" ry="8" fill="none" stroke={acc} strokeWidth="4" strokeDasharray="6 4" />
+      )}
     </svg>
   );
 }
@@ -165,7 +169,7 @@ function TuFace({ size = 72 }: { size?: number }) {
   );
 }
 
-function CookieIcon({ css, size = 24 }: { css: string; size?: number }) {
+function CookieIcon({ css, size = 26 }: { css: string; size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
       <circle cx="12" cy="12" r="9.5" fill={css} stroke="#3d2008" strokeWidth="2" />
@@ -179,13 +183,21 @@ function CookieIcon({ css, size = 24 }: { css: string; size?: number }) {
 }
 
 /* ================================================= DIALOGO JRPG */
-function DialogueBox({ lines, onDone }: { lines: DialogueLine[]; onDone: () => void }) {
+function DialogueBox({
+  lines,
+  onDone,
+  onChoice,
+}: {
+  lines: DialogueLine[];
+  onDone: () => void;
+  onChoice?: (idx: number) => void;
+}) {
   const [idx, setIdx] = useState(0);
   const [chars, setChars] = useState(0);
   const line = lines[Math.min(idx, lines.length - 1)];
   const full = line.text;
 
-  useEffect(() => setChars(0), [idx]);
+  useEffect(() => setChars(0), [idx, lines]);
   useEffect(() => {
     if (chars < full.length) {
       const t = window.setTimeout(() => {
@@ -204,6 +216,7 @@ function DialogueBox({ lines, onDone }: { lines: DialogueLine[]; onDone: () => v
       setChars(full.length);
       return;
     }
+    if (line.choices && onChoice) return; // aspetta la scelta
     if (idx + 1 < lines.length) setIdx(idx + 1);
     else onDone();
   };
@@ -219,107 +232,107 @@ function DialogueBox({ lines, onDone }: { lines: DialogueLine[]; onDone: () => v
     return () => window.removeEventListener("keydown", h);
   });
 
-  const sp = speciesById(line.spk);
-  const isNarrator = line.spk === "NARRATORE";
-  const isTu = line.spk === "TU";
-  const acc = !isNarrator && !isTu ? hexCss(sp.accentColor) : isTu ? "#4dffa6" : "#bfa8ff";
-  const name = !isNarrator && !isTu ? sp.name : isTu ? "TU — EVOCATORE MEDIOCRE" : "VOCE DELLA PROFEZIA";
+  const spk = line.spk;
+  const sp = spk === "TU" || spk === "NARRATORE" ? null : speciesById(spk);
+  const isNarrator = spk === "NARRATORE";
+  const acc = sp ? hexCss(sp.accentColor) : spk === "TU" ? "#4dffa6" : "#bfa8ff";
+  const name = sp ? sp.name : spk === "TU" ? "TU — EVOCATORE MEDIOCRE" : "PROFEZIA DI MORENOPOLI";
 
   return (
     <div className="dlg-root" onClick={advance}>
       <div className="dlg-box relative" style={{ "--acc": acc } as React.CSSProperties}>
-        <div className="dlg-name" style={{ background: acc }}>
+        <div className="dlg-name" style={{ background: acc, color: "#0b0614" }}>
           {name}
         </div>
         <div className="flex gap-4 items-center">
           {!isNarrator && (
-            <div className="dlg-portrait">{isTu ? <TuFace size={76} /> : <MorenoFace sp={sp} size={76} />}</div>
+            <div className="dlg-portrait">{sp ? <MorenoFace sp={sp} size={76} /> : <TuFace size={76} />}</div>
           )}
           <div className={`dlg-text flex-1 ${isNarrator ? "narrator" : ""}`}>
             {full.slice(0, chars)}
             <span className="blink">▌</span>
           </div>
         </div>
-        <div className="dlg-hint">
-          [SPAZIO / CLICK] {chars < full.length ? "COMPLETA" : idx + 1 < lines.length ? "CONTINUA ▼" : "AVANTI ▼"}
-        </div>
+        {chars >= full.length && line.choices && onChoice ? (
+          <div className="dlg-choices" onClick={(e) => e.stopPropagation()}>
+            {line.choices.map((ch, i) => (
+              <button key={i} className="dlg-choice" onClick={() => onChoice(i)}>
+                ▸ {ch}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className="dlg-hint">
+            [SPAZIO / CLICK] {chars < full.length ? "COMPLETA" : idx + 1 < lines.length ? "CONTINUA ▼" : "AVANTI ▼"}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-/* ================================================= STATO PARTITA */
+/* ================================================= BARRA HP */
+function HpBar({ hp, max, w = 110, col = "#4dffa6" }: { hp: number; max: number; w?: number; col?: string }) {
+  const pct = Math.max(0, Math.min(1, hp / max));
+  const c = pct > 0.5 ? col : pct > 0.22 ? "#ffc94d" : "#ff2e5f";
+  return (
+    <div style={{ width: w, height: 9 }} className="border border-edge bg-[#120a20]">
+      <div style={{ width: `${pct * 100}%`, height: "100%", background: c, transition: "width 0.25s ease" }} />
+    </div>
+  );
+}
+
+/* ================================================= GIOCO */
 interface Flags {
-  intro: boolean;
-  cinghiaPre: boolean;
-  cinghiaDone: boolean;
+  cinghiaBeaten: boolean;
   micoDone: boolean;
   coizioDone: boolean;
   ginoDone: boolean;
-  ginoPostDone: boolean;
-  don2Done: boolean;
+  don2: boolean;
   swordPulled: boolean;
   clompAwake: boolean;
-  maialeMid: boolean;
+  finaleDone: boolean;
 }
 const initialFlags: Flags = {
-  intro: false, cinghiaPre: false, cinghiaDone: false, micoDone: false, coizioDone: false,
-  ginoDone: false, ginoPostDone: false, don2Done: false, swordPulled: false, clompAwake: false, maialeMid: false,
+  cinghiaBeaten: false,
+  micoDone: false,
+  coizioDone: false,
+  ginoDone: false,
+  don2: false,
+  swordPulled: false,
+  clompAwake: false,
+  finaleDone: false,
 };
 
 interface PartyMon {
-  uid: number;
-  id: string;
+  spId: string;
   hp: number;
   maxHp: number;
   atk: number;
 }
 
-interface Bt {
-  enemySp: SpeciesDef;
+interface BattleState {
+  enemyId: string;
   enemyHp: number;
-  enemyMax: number;
+  enemyMaxHp: number;
   enemyAtk: number;
-  activeIdx: number;
-  stage: "menu" | "busy" | "enemy" | "switch";
-  convinced: boolean;
   boss: boolean;
-  isMaiale: boolean;
   wild: boolean;
-  diff: number;
+  cinghia: boolean;
+  male: boolean;
+  convinced: boolean;
+  captureBoost: number;
+  busy: boolean;
+  midPlayed: boolean;
   log: { id: number; text: string; kind: "info" | "good" | "bad" }[];
 }
 
-function objective(f: Flags, captured: number): string {
-  if (!f.intro) return "Parla con DON MORENO al centro di Morenopoli";
-  if (!f.cinghiaPre) return "Valle dei Facoceri: affronta CINGHIA ALE";
-  if (!f.cinghiaDone) return "Vinci contro Cinghia Ale e OFFRIGLI il morenino";
-  if (!f.micoDone) return "Accampamento della Rivolta: la prova di MICO NOSCA";
-  if (!f.coizioDone) return "Terme del Contatto: l'abbraccio di COIZIO";
-  if (!f.ginoDone) return "Abisso di Gino: scopri cosa nasconde GINO SATRI";
-  if (!f.ginoPostDone) return "Ferma il MALE DEL MONDO scatenato da Gino";
-  if (!f.don2Done) return "Torna da DON MORENO: ha una rivelazione";
-  if (!f.swordPulled)
-    return captured >= SWORD_REQ
-      ? "Estrai la SPADA DELL'AMORE dal Grande Morenino"
-      : `Fai amicizia con i Moreni (${captured}/${SWORD_REQ}) — catturali con i morenini`;
-  if (!f.clompAwake) return "Parla con Don Moreno: la spada ha scelto";
-  return "Entra nel PORTALE all'Antro del Maiale (Clomp ti segue)";
+function makeMon(spId: string): PartyMon {
+  const s = speciesById(spId);
+  return { spId, hp: s.baseHp, maxHp: s.baseHp, atk: s.baseAtk };
 }
 
-function questRingTarget(f: Flags): string | null {
-  if (!f.intro) return "don";
-  if (!f.cinghiaPre) return "cinghia";
-  if (!f.micoDone) return "mico";
-  if (!f.coizioDone) return "coizio";
-  if (!f.ginoDone) return "gino";
-  if (!f.don2Done) return "don";
-  if (!f.swordPulled) return "monument";
-  return null;
-}
-
-/* ================================================= APP */
-export default function App() {
+function MoreniGame() {
   const mountRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<MoreniEngine | null>(null);
 
@@ -329,86 +342,136 @@ export default function App() {
   const [score, setScore] = useState(0);
   const [flags, setFlags] = useState<Flags>(initialFlags);
   const [party, setParty] = useState<PartyMon[]>([]);
+  const [activeIdx, setActiveIdx] = useState(0);
   const [items, setItems] = useState<string[]>([]);
   const [dlgLines, setDlgLines] = useState<DialogueLine[]>([]);
   const [banner, setBanner] = useState<{ kicker: string; title: string; boss: boolean } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [zone, setZone] = useState<ZoneDef | null>(null);
   const [nearId, setNearId] = useState<string | null>(null);
-  const [bt, setBt] = useState<Bt | null>(null);
-  const [picker, setPicker] = useState<null | { forced: boolean }>(null);
-  const [quiz, setQuiz] = useState<{ q: number; hearts: number } | null>(null);
-  const [hug, setHug] = useState<{ power: number; running: boolean; done: boolean } | null>(null);
-  const [defeatInfo, setDefeatInfo] = useState("");
+  const [bt, setBt] = useState<BattleState | null>(null);
+  const [offerMode, setOfferMode] = useState(false);
+  const [switchMode, setSwitchMode] = useState(false);
+  const [flash, setFlash] = useState<{ kind: "red" | "gold"; key: number } | null>(null);
+  const [quiz, setQuiz] = useState({ q: 0, hearts: 3 });
+  const [hug, setHug] = useState({ progress: 0, running: false, done: false });
 
   const phaseRef = useRef<Phase>("title");
   const pausedRef = useRef(false);
   const flagsRef = useRef<Flags>(initialFlags);
   const partyRef = useRef<PartyMon[]>([]);
+  const activeIdxRef = useRef(0);
   const itemsRef = useRef<string[]>([]);
-  const btRef = useRef<Bt | null>(null);
+  const btRef = useRef<BattleState | null>(null);
   const afterDlgRef = useRef<(() => void) | null>(null);
+  const onChoiceRef = useRef<((i: number) => void) | null>(null);
   const keysRef = useRef<Record<string, boolean>>({});
+  const hugHeldRef = useRef(false);
   const bannerTRef = useRef<number | null>(null);
   const toastTRef = useRef<number | null>(null);
   const logIdRef = useRef(0);
-  const uidRef = useRef(1);
-  const hugHeldRef = useRef(false);
 
-  phaseRef.current = phase;
-  flagsRef.current = flags;
-  partyRef.current = party;
-  itemsRef.current = items;
-  btRef.current = bt;
+  useEffect(() => {
+    phaseRef.current = phase;
+  }, [phase]);
+  useEffect(() => {
+    flagsRef.current = flags;
+  }, [flags]);
+  useEffect(() => {
+    partyRef.current = party;
+  }, [party]);
+  useEffect(() => {
+    activeIdxRef.current = activeIdx;
+  }, [activeIdx]);
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
+  useEffect(() => {
+    btRef.current = bt;
+  }, [bt]);
 
-  const setFlag = (k: keyof Flags, v = true) => setFlags((f) => ({ ...f, [k]: v }));
-
-  const pushLog = (text: string, kind: "info" | "good" | "bad" = "info") =>
-    setBt((b) => (b ? { ...b, log: [...b.log.slice(-4), { id: ++logIdRef.current, text, kind }] } : b));
-
-  const showToast = (t: string) => {
-    setToast(t);
-    if (toastTRef.current) window.clearTimeout(toastTRef.current);
-    toastTRef.current = window.setTimeout(() => setToast(null), 3000);
+  /* ---------------- helpers ---------------- */
+  const patchBt = (p: Partial<BattleState>) => {
+    setBt((b) => (b ? { ...b, ...p } : b));
   };
+  const bLog = (text: string, kind: "info" | "good" | "bad" = "info") => {
+    setBt((b) => (b ? { ...b, log: [...b.log.slice(-3), { id: ++logIdRef.current, text, kind }] } : b));
+  };
+  const doFlash = (kind: "red" | "gold") => setFlash({ kind, key: Date.now() });
+  const addScore = (n: number) => setScore((s) => s + n);
+
   const showBanner = (kicker: string, title: string, boss: boolean) => {
     setBanner({ kicker, title, boss });
     if (bannerTRef.current) window.clearTimeout(bannerTRef.current);
     bannerTRef.current = window.setTimeout(() => setBanner(null), 2250);
   };
-  const doFlash = (kind: "red" | "gold") => setFlash({ kind, key: Date.now() });
-  const [flash, setFlash] = useState<{ kind: "red" | "gold"; key: number } | null>(null);
+  const showToast = (t: string) => {
+    setToast(t);
+    if (toastTRef.current) window.clearTimeout(toastTRef.current);
+    toastTRef.current = window.setTimeout(() => setToast(null), 2850);
+  };
 
-  const capturedIds = [...new Set(party.map((m) => m.id))];
-
-  /* ---------------- dialogo helper ---------------- */
-  const say = (key: string, after?: () => void) => {
-    afterDlgRef.current = after ?? null;
-    setDlgLines(SCRIPTS[key]);
+  const say = (script: string, after?: () => void) => {
+    setDlgLines(SCRIPTS[script]);
+    afterDlgRef.current = after ?? (() => setPhase("world"));
+    onChoiceRef.current = null;
     setPhase("dialogue");
   };
 
-  /* ---------------- engine init ---------------- */
+  const addItem = (id: string) => {
+    setItems((it) => (it.includes(id) ? it : [...it, id]));
+    showToast(`OGGETTO: ${ITEMS[id].name} — ${ITEMS[id].desc}`);
+  };
+
+  const recruitsCount = () => new Set(party.map((m) => m.spId)).size;
+
+  /* ---------------- quest ---------------- */
+  const questRingTarget = (f: Flags): string | null => {
+    if (!f.cinghiaBeaten) return "cinghia";
+    if (!f.micoDone) return "mico";
+    if (!f.coizioDone) return "coizio";
+    if (!f.ginoDone) return "gino";
+    if (!f.don2) return "don";
+    if (!f.swordPulled) return "monument";
+    return null;
+  };
+  const questText = (f: Flags): string => {
+    if (!f.cinghiaBeaten) return "OBIETTIVO: affronta CINGHIA ALE — Valle dei Facoceri";
+    if (!f.micoDone) return "OBIETTIVO: il processo di MICO NOSCA — Accampamento della Rivolta";
+    if (!f.coizioDone) return "OBIETTIVO: l'abbraccio di COIZIO — Terme del Contatto";
+    if (!f.ginoDone) return "OBIETTIVO: la cantina di GINO SATRI — Abisso";
+    if (!f.don2) return "OBIETTIVO: torna da DON MORENO (puzza di colpo di scena)";
+    if (!f.swordPulled) return `OBIETTIVO: estrai la Spada dell'Amore (servono ${SWORD_REQ} amici: ${recruitsCount()}/${SWORD_REQ})`;
+    if (!f.clompAwake) return "OBIETTIVO: sveglia CLOMP, il cavaliere sacro";
+    if (!f.finaleDone) return "OBIETTIVO: entra nel PORTALE DELL'ANTRO";
+    return "LA PROFEZIA È COMPIUTA. GIRA LIBERO, EROE.";
+  };
+
+  useEffect(() => {
+    engineRef.current?.setQuestNpc(questRingTarget(flags));
+  }, [flags]);
+
+  /* ---------------- engine ---------------- */
   useEffect(() => {
     const eng = new MoreniEngine(mountRef.current!);
     engineRef.current = eng;
     eng.onZone = (id) => {
       const z = ZONES.find((zz) => zz.id === id) ?? null;
       setZone(z);
-      if (z && z.id !== "morenopoli") showBanner(z.diff >= 3 ? "ZONA PERICOLOSA" : "NUOVA ZONA", z.name, z.diff >= 3);
+      if (z && z.id !== "morenopoli" && phaseRef.current === "world") {
+        showBanner(z.diff >= 3 ? "ZONA PERICOLOSA" : "NUOVA ZONA", z.name, z.diff >= 3);
+      }
     };
     eng.onEncounter = (spId, diff) => {
       if (phaseRef.current !== "world" || pausedRef.current) return;
       sfx.appear();
       startWildBattle(spId, diff);
     };
-    eng.onNear = (id) => setNearId(id);
     eng.onPortal = () => {
-      if (phaseRef.current !== "world") return;
-      if (flagsRef.current.clompAwake) {
-        say("antro_intro", () => startBossBattle("maialedelmondo"));
-      }
+      if (phaseRef.current !== "world" || pausedRef.current) return;
+      say("antro_intro", () => startScriptedBattle("maialedelmondo", { boss: true, male: true }));
     };
+    eng.onNear = (id) => setNearId(id);
     eng.start();
     return () => {
       eng.dispose();
@@ -416,11 +479,6 @@ export default function App() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  /* quest ring */
-  useEffect(() => {
-    engineRef.current?.setQuestNpc(questRingTarget(flags));
-  }, [flags]);
 
   /* ---------------- movimento ---------------- */
   useEffect(() => {
@@ -434,28 +492,21 @@ export default function App() {
     };
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
-    let raf = 0;
-    const loop = () => {
-      const eng = engineRef.current;
-      if (eng && phaseRef.current === "world" && !pausedRef.current) {
-        const k = keysRef.current;
-        let x = 0;
-        let z = 0;
-        if (k["w"] || k["arrowup"]) z -= 1;
-        if (k["s"] || k["arrowdown"]) z += 1;
-        if (k["a"] || k["arrowleft"]) x -= 1;
-        if (k["d"] || k["arrowright"]) x += 1;
-        eng.setInput(x, z);
-      } else {
-        eng?.setInput(0, 0);
-      }
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
+    const iv = window.setInterval(() => {
+      const k = keysRef.current;
+      let x = 0;
+      let z = 0;
+      if (k["w"] || k["arrowup"]) z -= 1;
+      if (k["s"] || k["arrowdown"]) z += 1;
+      if (k["a"] || k["arrowleft"]) x -= 1;
+      if (k["d"] || k["arrowright"]) x += 1;
+      const active = phaseRef.current === "world" && !pausedRef.current;
+      engineRef.current?.setInput(active ? x : 0, active ? z : 0);
+    }, 40);
     return () => {
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
-      cancelAnimationFrame(raf);
+      window.clearInterval(iv);
     };
   }, []);
 
@@ -471,438 +522,24 @@ export default function App() {
         });
         return;
       }
-      if (phaseRef.current === "dialogue") return;
       if (k === "p" || k === "escape") {
-        if (phaseRef.current === "world" || phaseRef.current === "battle") togglePause();
+        const ph = phaseRef.current;
+        if (ph === "world" || ph === "battle") togglePause();
         return;
       }
-      if (phaseRef.current === "title" && (k === " " || k === "enter")) {
-        startGame();
-        return;
-      }
-      if (phaseRef.current === "world" && k === "e" && nearIdRef.current) {
-        interact(nearIdRef.current);
+      if (k === "e" && phaseRef.current === "world" && !pausedRef.current) {
+        const near = engineRef.current?.getNearId() ?? null;
+        if (near) interact(near);
       }
     };
     window.addEventListener("keydown", h);
     return () => window.removeEventListener("keydown", h);
-  });
-  const nearIdRef = useRef<string | null>(null);
-  nearIdRef.current = nearId;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  /* ---------------- avvio ---------------- */
-  const startGame = () => {
-    sfx.unlock();
-    sfx.start();
-    setFlags(initialFlags);
-    setScore(0);
-    setItems([]);
-    const starter: PartyMon = { uid: uidRef.current++, id: "morenozzo", hp: 36, maxHp: 36, atk: 8 };
-    setParty([starter]);
-    setPhase("world");
-    engineRef.current?.setPortalOpen(false);
-    engineRef.current?.companionFollow(false);
-    engineRef.current?.enterWorld(0, 9);
-    showBanner("MORENOPOLI", "LA PROFEZIA INIZIA", false);
-  };
-
-  /* ---------------- interazioni ---------------- */
-  const interact = (id: string) => {
-    if (phaseRef.current !== "world" || pausedRef.current) return;
-    const f = flagsRef.current;
-    sfx.click();
-    const captured = new Set(partyRef.current.map((m) => m.id)).size;
-    if (id === "don") {
-      if (!f.intro) {
-        say("prologue", () => setFlag("intro"));
-      } else if (f.ginoPostDone && !f.don2Done) {
-        say("don2", () => {
-          setFlag("don2Done");
-          showToast("OBIETTIVO: FAI AMICIZIA CON 8 MORENI POI ESTRAI LA SPADA");
-        });
-      } else if (f.don2Done && f.swordPulled && !f.clompAwake) {
-        say("sword_pull", () => awakenClomp());
-      } else if (f.don2Done && !f.swordPulled) {
-        say("don1");
-      } else {
-        say("don1");
-      }
-      return;
-    }
-    if (id === "cinghia") {
-      if (!f.cinghiaPre) {
-        say("cinghia_pre", () => {
-          setFlag("cinghiaPre");
-          startBossBattle("cinghiaale");
-        });
-      } else if (f.cinghiaDone) {
-        say("cinghia_post");
-      } else {
-        startBossBattle("cinghiaale");
-      }
-      return;
-    }
-    if (id === "mico") {
-      if (!f.micoDone) say("mico1", () => startQuiz());
-      else showToast("MICO: «La spilla è tua. Vai e abbraccia il mondo.»");
-      return;
-    }
-    if (id === "coizio") {
-      if (!f.coizioDone) say("coizio1", () => startHug());
-      else showToast("COIZIO: «un abbraccio non finisce mai. torna quando vuoi.»");
-      return;
-    }
-    if (id === "gino") {
-      if (!f.ginoDone) {
-        say("gino1", () => {
-          setFlag("ginoDone");
-          startBossBattle("maledelmondo");
-        });
-      } else if (!f.ginoPostDone) {
-        showToast("GINO: «FERMALO! L'ESSENZA È USCITA DALLA BOTOLA!»");
-      } else {
-        showToast("GINO: «la fiala è tua. usala con saggezza... o no.»");
-      }
-      return;
-    }
-    if (id === "monument") {
-      if (!f.don2Done) {
-        showToast("Un morenino enorme con una spada conficcata. Don Moreno ne saprà di più.");
-      } else if (!f.swordPulled) {
-        if (captured >= SWORD_REQ) {
-          setFlag("swordPulled");
-          sfx.recruit();
-          engineRef.current?.pullSwordFx(() => {
-            showToast("LA SPADA DELL'AMORE È TUA! La piazza canta in falsetto.");
-          });
-        } else {
-          say("sword_fail");
-        }
-      } else {
-        showToast("Il Grande Morenino ti fa l'occhiolino. Crunch.");
-      }
-      return;
-    }
-  };
-
-  const awakenClomp = () => {
-    setFlag("clompAwake");
-    engineRef.current?.setPortalOpen(true);
-    engineRef.current?.companionFollow(true);
-    engineRef.current?.awakenClompFx(() => {
-      sfx.victory();
-      showToast("CLOMP SI UNISCE ALLA PROFEZIA! Verso l'Antro del Maiale!");
-    });
-  };
-
-  /* ---------------- battaglie ---------------- */
-  const makeBt = (spId: string, diff: number, boss: boolean): Bt => {
-    const sp = speciesById(spId);
-    const st = enemyStats(spId, diff);
-    return {
-      enemySp: sp,
-      enemyHp: st.hp,
-      enemyMax: st.hp,
-      enemyAtk: st.atk,
-      activeIdx: Math.max(0, partyRef.current.findIndex((m) => m.hp > 0)),
-      stage: "menu",
-      convinced: false,
-      boss,
-      isMaiale: spId === "maialedelmondo",
-      wild: !boss,
-      diff,
-      log: [{ id: ++logIdRef.current, text: `${sp.name} ti sfida: «${sp.title}»`, kind: "info" }],
-    };
-  };
-
-  const firstAlive = (): PartyMon | null => partyRef.current.find((m) => m.hp > 0) ?? null;
-
-  const startWildBattle = (spId: string, diff: number) => {
-    const alive = firstAlive();
-    if (!alive) return;
-    const b = makeBt(spId, diff, false);
-    setBt(b);
-    setPhase("battle");
-    engineRef.current?.startBattle(speciesById(alive.id), b.enemySp, false);
-  };
-
-  const startBossBattle = (spId: string) => {
-    const alive = firstAlive();
-    if (!alive) return;
-    const b = makeBt(spId, 0, true);
-    setBt(b);
-    setPhase("battle");
-    engineRef.current?.startBattle(speciesById(alive.id), b.enemySp, true);
-    showBanner(spId === "maialedelmondo" ? "BOSS FINALE" : spId === "maledelmondo" ? "IL MALE IN PERSONA" : "CAPO TRIBÙ", b.enemySp.name, true);
-  };
-
-  const endToWorld = () => {
-    engineRef.current?.endBattle();
-    setBt(null);
-    setPhase("world");
-  };
-
-  const atkMult = () => (itemsRef.current.includes("spilla") ? 1.25 : 1);
-  const critChance = () => (itemsRef.current.includes("fiala") ? 0.15 : 0);
-  const captureBonus = () => (itemsRef.current.includes("abbraccio") ? 0.2 : 0);
-
-  const doAttack = () => {
-    const b = btRef.current;
-    if (!b || b.stage !== "menu") return;
-    const mon = partyRef.current[b.activeIdx];
-    if (!mon || mon.hp <= 0) return;
-    setBt({ ...b, stage: "busy" });
-    const crit = Math.random() < critChance();
-    const dmg = Math.max(2, Math.round((mon.atk + Math.floor(Math.random() * 5) - 2) * atkMult() * (crit ? 2 : 1)));
-    sfx.click();
-    engineRef.current?.battleAttack("player", () => {
-      sfx.chomp();
-      const newHp = Math.max(0, b.enemyHp - dmg);
-      pushLog(`${monName(mon)} colpisce! ${dmg} danni${crit ? " — MALE OMEOPATICO RADDOPPIATO!" : ""}`, crit ? "good" : "info");
-      setBt((cur) => (cur ? { ...cur, enemyHp: newHp, stage: "busy" } : cur));
-      // cutscene maiale a metà vita
-      if (b.isMaiale && !flagsRef.current.maialeMid && newHp <= b.enemyMax * 0.5) {
-        setFlag("maialeMid");
-        window.setTimeout(() => {
-          say("maiale_mid", () => {
-            setBt((cur) =>
-              cur ? { ...cur, enemyAtk: Math.max(8, cur.enemyAtk - 5), stage: "menu", log: [...cur.log, { id: ++logIdRef.current, text: "IL MAIALE È SCOPERTO! ATK nemico ridotta.", kind: "good" }] } : cur
-            );
-            engineRef.current?.shake(0.5);
-          });
-        }, 400);
-        return;
-      }
-      if (newHp <= 0) {
-        enemyDefeated();
-        return;
-      }
-      window.setTimeout(enemyTurn, 350);
-    });
-  };
-
-  const monName = (m: PartyMon) => speciesById(m.id).name;
-
-  const doOffer = () => {
-    const b = btRef.current;
-    if (!b || b.stage !== "menu") return;
-    if (b.isMaiale) {
-      pushLog("CLOMP: «Non si offre, si PURIFICA! Ammorbidiscilo ancora!»", "info");
-      sfx.wrong();
-      return;
-    }
-    if (!b.convinced) {
-      setBt({ ...b, convinced: true, stage: "busy" });
-      engineRef.current?.setEnemyConvinced(true);
-      sfx.correct();
-      pushLog(`Offri un morenino al ${FLAVORS[b.enemySp.favorite].name}. ${b.enemySp.name} si scioglie... ma resta fiero!`, "good");
-      window.setTimeout(enemyTurn, 650);
-      return;
-    }
-    // tentativo di cattura = la parte finale
-    const rate = Math.min(0.95, 0.25 + (1 - b.enemyHp / b.enemyMax) * 0.6 + captureBonus());
-    const success = Math.random() < rate;
-    setBt({ ...b, stage: "busy" });
-    sfx.click();
-    pushLog(`Offri IL morenino al ${FLAVORS[b.enemySp.favorite].name}... ${b.enemySp.name} lo addenta!`, "info");
-    engineRef.current?.battleCaptureTry(success, () => {
-      if (success) captureSuccess(b);
-      else {
-        sfx.wrong();
-        engineRef.current?.shake(0.4);
-        doFlash("red");
-        pushLog(`${b.enemySp.name} LO SPUTACCHIA! «${pick(b.enemySp.angryLines)}»`, "bad");
-        window.setTimeout(enemyTurn, 500);
-      }
-    });
-  };
-
-  const captureSuccess = (b: Bt) => {
-    sfx.recruit();
-    doFlash("gold");
-    const sp = b.enemySp;
-    const already = partyRef.current.some((m) => m.id === sp.id);
-    if (!already) {
-      const nm: PartyMon = { uid: uidRef.current++, id: sp.id, hp: sp.baseHp + b.diff * 10, maxHp: sp.baseHp + b.diff * 10, atk: sp.baseAtk + b.diff * 2 };
-      setParty((p) => [...p, nm]);
-    }
-    const pts = b.boss ? 400 : 150 + b.diff * 25;
-    setScore((s) => s + pts);
-    pushLog(`${sp.name} RECLUTATO! «${pick(sp.recruitLines)}» +${pts} CARISMA`, "good");
-    window.setTimeout(() => {
-      if (b.isMaiale) return; // non succede: maiale non catturabile
-      endToWorld();
-      if (sp.id === "cinghiaale" && !flagsRef.current.cinghiaDone) {
-        setFlag("cinghiaDone");
-        say("cinghia_post");
-      }
-    }, 900);
-  };
-
-  const enemyDefeated = () => {
-    const b = btRef.current;
-    if (!b) return;
-    sfx.victory();
-    doFlash("gold");
-    const pts = b.boss ? 350 : 100 + b.diff * 20;
-    setScore((s) => s + pts);
-    pushLog(`${b.enemySp.name} è al tappeto! +${pts} CARISMA`, "good");
-    engineRef.current?.battleFaint("enemy", () => {
-      if (b.isMaiale) {
-        const nonno = speciesById("nonnopurificato");
-        engineRef.current?.battlePurify(nonno, () => {
-          window.setTimeout(() => {
-            engineRef.current?.endBattle();
-            setBt(null);
-            engineRef.current?.setPortalOpen(false);
-            say("finale", () => setPhase("victory"));
-          }, 1000);
-        });
-        return;
-      }
-      endToWorld();
-      if (b.enemySp.id === "cinghiaale" && !flagsRef.current.cinghiaDone) {
-        // convinto a suon di botte: si unisce comunque
-        const already = partyRef.current.some((m) => m.id === "cinghiaale");
-        if (!already) {
-          const nm: PartyMon = { uid: uidRef.current++, id: "cinghiaale", hp: 105, maxHp: 105, atk: 14 };
-          setParty((p) => [...p, nm]);
-        }
-        setFlag("cinghiaDone");
-        say("cinghia_post");
-      } else if (b.enemySp.id === "maledelmondo" && !flagsRef.current.ginoPostDone) {
-        setFlag("ginoPostDone");
-        setItems((it) => [...it, "fiala"]);
-        say("gino_post");
-      }
-    });
-  };
-
-  const enemyTurn = () => {
-    const b = btRef.current;
-    if (!b) return;
-    setBt({ ...b, stage: "enemy" });
-    window.setTimeout(() => {
-      engineRef.current?.battleAttack("enemy", () => {
-        const cur = btRef.current;
-        if (!cur) return;
-        if (Math.random() < 0.3) pushLog(`${cur.enemySp.name}: «${pick(cur.enemySp.angryLines)}»`, "bad");
-        const mon = partyRef.current[cur.activeIdx];
-        const dmg = Math.max(2, cur.enemyAtk + Math.floor(Math.random() * 5) - 2);
-        engineRef.current?.shake(0.35);
-        doFlash("red");
-        const newHp = Math.max(0, mon.hp - dmg);
-        setParty((p) => p.map((m, i) => (i === cur.activeIdx ? { ...m, hp: newHp } : m)));
-        pushLog(`${cur.enemySp.name} colpisce ${monName(mon)}: ${dmg} danni!`, "bad");
-        if (newHp <= 0) {
-          engineRef.current?.battleFaint("player", () => {
-            const others = partyRef.current.filter((m, i) => i !== cur.activeIdx && m.hp > 0);
-            if (others.length > 0) {
-              pushLog(`${monName(mon)} è KO! Schiera un altro Moreno!`, "bad");
-              setPicker({ forced: true });
-              setBt((c) => (c ? { ...c, stage: "switch" } : c));
-            } else {
-              defeat();
-            }
-          });
-        } else {
-          setBt((c) => (c ? { ...c, stage: "menu" } : c));
-        }
-      });
-    }, 450);
-  };
-
-  const defeat = () => {
-    sfx.gameover();
-    doFlash("red");
-    setDefeatInfo(pick(btRef.current?.enemySp.angryLines ?? ["GRUF."]));
-    window.setTimeout(() => {
-      engineRef.current?.endBattle();
-      setBt(null);
-      setPhase("gameover");
-    }, 700);
-  };
-
-  const respawn = () => {
-    sfx.click();
-    setParty((p) => p.map((m) => ({ ...m, hp: m.maxHp })));
-    setPhase("world");
-    engineRef.current?.enterWorld(-1.5, 8);
-    engineRef.current?.setPortalOpen(flagsRef.current.clompAwake);
-    say("don_revive");
-  };
-
-  const chooseSwitch = (idx: number) => {
-    const b = btRef.current;
-    if (!b) return;
-    sfx.click();
-    const mon = partyRef.current[idx];
-    if (!mon || mon.hp <= 0) return;
-    setPicker(null);
-    engineRef.current?.setActiveSpecies(speciesById(mon.id));
-    pushLog(`Vai, ${monName(mon)}!`, "good");
-    if (picker?.forced) {
-      setBt({ ...b, activeIdx: idx, stage: "menu" });
-    } else {
-      setBt({ ...b, activeIdx: idx, stage: "busy" });
-      window.setTimeout(enemyTurn, 600);
-    }
-  };
-
-  const doFlee = () => {
-    const b = btRef.current;
-    if (!b || b.stage !== "menu" || b.boss) return;
-    if (Math.random() < 0.85) {
-      sfx.click();
-      endToWorld();
-    } else {
-      pushLog("Fuga fallita! Il Moreno ti blocca la strada (e il cuore).", "bad");
-      setBt({ ...b, stage: "busy" });
-      window.setTimeout(enemyTurn, 500);
-    }
-  };
-
-  /* ---------------- minigiochi ---------------- */
-  const startQuiz = () => {
-    setQuiz({ q: 0, hearts: 3 });
-    setPhase("quiz");
-  };
-  const answerQuiz = (choiceIdx: number) => {
-    const qz = quiz;
-    if (!qz) return;
-    const correct = TRIAL_QUIZ.answers[qz.q] === choiceIdx;
-    if (correct) {
-      sfx.correct();
-      if (qz.q + 1 >= TRIAL_QUIZ.scripts.length) {
-        setQuiz(null);
-        say("mico_win", () => {
-          setFlag("micoDone");
-          setItems((it) => [...it, "spilla"]);
-          showToast("OGGETTO: SPILLA DELLA RIVOLTA — ATK party +25%");
-        });
-      } else {
-        setQuiz({ ...qz, q: qz.q + 1 });
-      }
-    } else {
-      sfx.wrong();
-      const hearts = qz.hearts - 1;
-      if (hearts <= 0) {
-        setQuiz(null);
-        say("mico_fail");
-      } else {
-        setQuiz({ ...qz, hearts });
-        showToast(`RISPOSTA SBAGLIATA! Cuori rimasti: ${hearts}`);
-      }
-    }
-  };
-
-  const startHug = () => {
-    setHug({ power: 0, running: true, done: false });
-    setPhase("hug");
-    hugHeldRef.current = false;
-  };
+  /* ---------------- abbraccio ---------------- */
   useEffect(() => {
-    if (phase !== "hug" || !hug?.running || hug.done) return;
+    if (phase !== "hug" || !hug.running || hug.done) return;
     const down = (e: KeyboardEvent) => {
       if (e.code === "Space") {
         e.preventDefault();
@@ -914,99 +551,662 @@ export default function App() {
     };
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);
-    const int = window.setInterval(() => {
+    const iv = window.setInterval(() => {
       setHug((h) => {
-        if (!h || h.done) return h;
-        const next = Math.max(0, Math.min(100, h.power + (hugHeldRef.current ? 2.6 : -1.7)));
-        if (next >= 100) {
-          window.clearInterval(int);
-          sfx.recruit();
-          window.setTimeout(() => {
-            setHug(null);
-            say("coizio_win", () => {
-              setFlag("coizioDone");
-              setItems((it) => [...it, "abbraccio"]);
-              showToast("OGGETTO: ABBRACCIO ETERNO — cattura +20%");
-            });
-          }, 450);
-          return { ...h, power: 100, done: true };
+        if (h.done) return h;
+        const next = Math.max(0, Math.min(100, h.progress + (hugHeldRef.current ? 2.4 : -1.4)));
+        if (next >= 100 && !h.done) {
+          hugHeldRef.current = false;
+          window.setTimeout(() => finishHug(), 350);
+          return { ...h, progress: 100, done: true };
         }
-        if (hugHeldRef.current && Math.random() < 0.2) sfx.type();
-        return { ...h, power: next };
+        return { ...h, progress: next };
       });
-    }, 50);
+    }, 40);
     return () => {
-      window.clearInterval(int);
       window.removeEventListener("keydown", down);
       window.removeEventListener("keyup", up);
+      window.clearInterval(iv);
     };
-  }, [phase, hug?.running, hug?.done]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, hug.running, hug.done]);
+
+  /* ---------------- avvio ---------------- */
+  const startGame = () => {
+    sfx.unlock();
+    sfx.start();
+    setScore(0);
+    setFlags(initialFlags);
+    setParty([]);
+    setItems([]);
+    setActiveIdx(0);
+    setBt(null);
+    engineRef.current?.companionFollow(false);
+    engineRef.current?.setPortalOpen(false);
+    say("prologue", () => setPhase("starter"));
+  };
+
+  const pickStarter = (spId: string) => {
+    sfx.recruit();
+    setParty([makeMon(spId)]);
+    setActiveIdx(0);
+    setPhase("world");
+    engineRef.current?.enterWorld(0, 9);
+    showBanner("MORENOPOLI", "LA PROFEZIA INIZIA", false);
+  };
+
+  /* ---------------- interazioni mondo ---------------- */
+  const interact = (id: string) => {
+    const f = flagsRef.current;
+    sfx.click();
+    if (id === "don") {
+      if (f.ginoDone && !f.don2) {
+        say("don2", () => {
+          setFlags((fl) => ({ ...fl, don2: true }));
+        });
+      } else {
+        say("don1");
+      }
+      return;
+    }
+    if (id === "monument") {
+      if (f.swordPulled) {
+        showToast("IL GRANDE MORENINO TI FA L'OCCHIOLINO. SENZA SPADA, ORMAI.");
+        return;
+      }
+      if (recruitsCount() >= SWORD_REQ) {
+        engineRef.current?.pullSwordFx(() => {
+          say("sword_pull", () => {
+            setFlags((fl) => ({ ...fl, swordPulled: true }));
+            engineRef.current?.awakenClompFx(() => {
+              const clomp = makeMon("clomp");
+              setParty((p) => (p.length < 8 ? [...p, clomp] : p));
+              setFlags((fl) => ({ ...fl, clompAwake: true }));
+              engineRef.current?.setPortalOpen(true);
+              engineRef.current?.companionFollow(true);
+              showToast("CLOMP SI È UNITO AL PARTY — IL PORTALE DELL'ANTRO È APERTO");
+              setPhase("world");
+            });
+          });
+        });
+      } else {
+        say("sword_fail");
+      }
+      return;
+    }
+    if (id === "clomp") {
+      if (!f.swordPulled) {
+        showToast("DORME PROFONDAMENTE. SOGNA SPADA E MORENINI.");
+      } else if (!f.clompAwake) {
+        showToast("SI STA STIRACCHIANDO... DAGLI UN SECONDO.");
+      } else {
+        showToast("CLOMP: «TI SEGUO OVUNQUE, CAPO. ANCHE IN MENSA.»");
+      }
+      return;
+    }
+    if (id === "cinghia") {
+      if (f.cinghiaBeaten) {
+        showToast("CINGHIA ALE: «GRUF. IL FANGO È CALMO. VAI PURE.»");
+        return;
+      }
+      say("cinghia_pre", () => startScriptedBattle("cinghiaale", { boss: true, cinghia: true }));
+      return;
+    }
+    if (id === "mico") {
+      if (f.micoDone) {
+        showToast("MICO: «LA RIVOLTA TI SALUTA. E TI RINGRAZIA.»");
+        return;
+      }
+      say("mico1", () => {
+        setQuiz({ q: 0, hearts: 3 });
+        startQuizQuestion(0);
+      });
+      return;
+    }
+    if (id === "coizio") {
+      if (f.coizioDone) {
+        showToast("COIZIO: «...un altro abbraccio? quando vuoi.»");
+        return;
+      }
+      say("coizio1", () => {
+        setHug({ progress: 0, running: true, done: false });
+        setPhase("hug");
+      });
+      return;
+    }
+    if (id === "gino") {
+      if (f.ginoDone) {
+        showToast("GINO: «ho lo stomaco leggero. grazie. davvero.»");
+        return;
+      }
+      say("gino1", () => startScriptedBattle("maledelmondo", { boss: true }));
+      return;
+    }
+  };
+
+  /* ---------------- quiz ---------------- */
+  const startQuizQuestion = (q: number) => {
+    setDlgLines(SCRIPTS[TRIAL_QUIZ.scripts[q]]);
+    onChoiceRef.current = (i: number) => answerQuiz(q, i);
+    setPhase("quiz");
+  };
+
+  const answerQuiz = (q: number, i: number) => {
+    sfx.click();
+    if (i === TRIAL_QUIZ.answers[q]) {
+      sfx.correct();
+      if (q + 1 < TRIAL_QUIZ.scripts.length) {
+        startQuizQuestion(q + 1);
+      } else {
+        say("mico_win", () => {
+          addItem("spilla");
+          addScore(100);
+          setFlags((fl) => ({ ...fl, micoDone: true }));
+        });
+      }
+    } else {
+      sfx.wrong();
+      doFlash("red");
+      const hearts = quiz.hearts - 1;
+      setQuiz((z) => ({ ...z, hearts }));
+      if (hearts <= 0) {
+        say("mico_fail", () => setPhase("world"));
+      } else {
+        startQuizQuestion(q);
+      }
+    }
+  };
+
+  /* ---------------- abbraccio fine ---------------- */
+  const finishHug = () => {
+    sfx.recruit();
+    doFlash("gold");
+    say("coizio_win", () => {
+      addItem("abbraccio");
+      addScore(100);
+      setFlags((fl) => ({ ...fl, coizioDone: true }));
+    });
+  };
+
+  /* ---------------- battaglie ---------------- */
+  const startWildBattle = (spId: string, diff: number) => {
+    const st = enemyStats(spId, diff);
+    const b: BattleState = {
+      enemyId: spId,
+      enemyHp: st.hp,
+      enemyMaxHp: st.hp,
+      enemyAtk: st.atk,
+      boss: false,
+      wild: true,
+      cinghia: false,
+      male: false,
+      convinced: false,
+      captureBoost: diff * 8,
+      busy: false,
+      midPlayed: false,
+      log: [{ id: ++logIdRef.current, text: `${speciesById(spId).name} SELVATICO TI SFIDA!`, kind: "bad" }],
+    };
+    btRef.current = b;
+    setBt(b);
+    setOfferMode(false);
+    setSwitchMode(false);
+    const active = partyRef.current[activeIdxRef.current] ?? partyRef.current[0];
+    setPhase("battle");
+    engineRef.current?.startBattle(speciesById(active.spId), speciesById(spId), false);
+  };
+
+  const startScriptedBattle = (spId: string, opts: { boss?: boolean; cinghia?: boolean; male?: boolean }) => {
+    const st = enemyStats(spId, 0);
+    const b: BattleState = {
+      enemyId: spId,
+      enemyHp: st.hp,
+      enemyMaxHp: st.hp,
+      enemyAtk: st.atk,
+      boss: !!opts.boss,
+      wild: false,
+      cinghia: !!opts.cinghia,
+      male: !!opts.male,
+      convinced: false,
+      captureBoost: 0,
+      busy: false,
+      midPlayed: false,
+      log: [
+        {
+          id: ++logIdRef.current,
+          text: opts.male ? "IL FACOCEMORENO FINALE SI ERGE. GRUF COSMICO." : `${speciesById(spId).name} NON HA INTENZIONE DI TRATTARE.`,
+          kind: "bad",
+        },
+      ],
+    };
+    btRef.current = b;
+    setBt(b);
+    setOfferMode(false);
+    setSwitchMode(false);
+    const active = partyRef.current[activeIdxRef.current] ?? partyRef.current[0];
+    setPhase("battle");
+    engineRef.current?.startBattle(speciesById(active.spId), speciesById(spId), !!opts.boss);
+    if (opts.boss) sfx.appear();
+    if (opts.male) showBanner("BOSS FINALE", "MAIALE DEL MONDO", true);
+    else if (opts.cinghia) showBanner("CAPO TRIBÙ", "CINGHIA ALE", true);
+    else showBanner("BOSS", "MALE DEL MONDO", true);
+  };
+
+  const hasItem = (id: string) => itemsRef.current.includes(id);
+
+  const playerAttack = () => {
+    const b = btRef.current;
+    if (!b || b.busy || phaseRef.current !== "battle") return;
+    setOfferMode(false);
+    setSwitchMode(false);
+    patchBt({ busy: true });
+    const mon = partyRef.current[activeIdxRef.current];
+    let dmg = Math.round(mon.atk * (0.85 + Math.random() * 0.3));
+    if (hasItem("spilla")) dmg = Math.round(dmg * 1.25);
+    let double = false;
+    if (hasItem("fiala") && Math.random() < 0.15) {
+      dmg *= 2;
+      double = true;
+    }
+    sfx.click();
+    engineRef.current?.battleAttack("player", () => {
+      sfx.correct();
+      doFlash("gold");
+      const newHp = Math.max(0, b.enemyHp - dmg);
+      patchBt({ enemyHp: newHp });
+      bLog(double ? `FIALA OMEOPATICA! ${speciesById(mon.spId).name} colpisce DOPPIO: ${dmg} danni!` : `${speciesById(mon.spId).name} colpisce: ${dmg} danni!`, "good");
+      afterPlayerAction(newHp);
+    });
+  };
+
+  const afterPlayerAction = (newEnemyHp: number) => {
+    const b = btRef.current;
+    if (!b) return;
+    if (newEnemyHp <= 0) {
+      onEnemyDefeated();
+      return;
+    }
+    if (b.male && !b.midPlayed && newEnemyHp <= b.enemyMaxHp / 2) {
+      patchBt({ midPlayed: true });
+      say("maiale_mid", () => {
+        setPhase("battle");
+        patchBt({ busy: false });
+      });
+      return;
+    }
+    // turno nemico
+    window.setTimeout(() => enemyTurn(), 350);
+  };
+
+  const enemyTurn = () => {
+    const b = btRef.current;
+    if (!b) return;
+    engineRef.current?.battleAttack("enemy", () => {
+      sfx.wrong();
+      doFlash("red");
+      engineRef.current?.shake(0.3);
+      const idx = activeIdxRef.current;
+      const mon = partyRef.current[idx];
+      const dmg = Math.max(1, Math.round(b.enemyAtk * (0.85 + Math.random() * 0.3)));
+      const newHp = Math.max(0, mon.hp - dmg);
+      const newParty = partyRef.current.map((m, i) => (i === idx ? { ...m, hp: newHp } : m));
+      partyRef.current = newParty;
+      setParty(newParty);
+      bLog(`${speciesById(b.enemyId).name} ti colpisce: ${dmg} danni a ${speciesById(mon.spId).name}!`, "bad");
+      if (newHp <= 0) {
+        engineRef.current?.battleFaint("player", () => {
+          const next = newParty.findIndex((m) => m.hp > 0);
+          if (next < 0) {
+            wipe();
+            return;
+          }
+          setActiveIdx(next);
+          activeIdxRef.current = next;
+          engineRef.current?.setActiveSpecies(speciesById(newParty[next].spId));
+          bLog(`VAI, ${speciesById(newParty[next].spId).name}!`, "info");
+          patchBt({ busy: false });
+        });
+      } else {
+        patchBt({ busy: false });
+      }
+    });
+  };
+
+  const offerMorenino = (flavor: FlavorId) => {
+    const b = btRef.current;
+    if (!b || b.busy || phaseRef.current !== "battle") return;
+    setOfferMode(false);
+    patchBt({ busy: true });
+    const enemy = speciesById(b.enemyId);
+    if (flavor === enemy.favorite) {
+      sfx.chomp();
+      doFlash("gold");
+      engineRef.current?.setEnemyConvinced(true);
+      let boost = b.captureBoost + 30;
+      if (hasItem("abbraccio")) boost += 20;
+      patchBt({ convinced: true, captureBoost: boost });
+      bLog(`MORENINO AL ${FLAVORS[flavor].name} ACCETTATO! ${enemy.name} SI È AMMORBIDITO. ORA PUOI CATTURARLO!`, "good");
+      window.setTimeout(() => patchBt({ busy: false }), 450);
+    } else {
+      sfx.wrong();
+      doFlash("red");
+      bLog(`${enemy.name} SPUTA IL MORENINO AL ${FLAVORS[flavor].name}! VOLEVA ${FLAVORS[enemy.favorite].name}!`, "bad");
+      window.setTimeout(() => enemyTurn(), 400);
+    }
+  };
+
+  const tryCapture = () => {
+    const b = btRef.current;
+    if (!b || b.busy || !b.convinced || phaseRef.current !== "battle") return;
+    if (b.male) {
+      bLog("È IL NONNO DI DON MORENO. NON SI CATTURA: SI SALVA.", "info");
+      return;
+    }
+    setOfferMode(false);
+    setSwitchMode(false);
+    patchBt({ busy: true });
+    const chance = Math.min(95, 35 + b.captureBoost);
+    const success = Math.random() * 100 < chance;
+    bLog(`OFFERTA FINALE! MORENINO AL ${FLAVORS[speciesById(b.enemyId).favorite].name}... (${chance}%)`, "info");
+    engineRef.current?.battleCaptureTry(success, () => {
+      if (success) {
+        sfx.recruit();
+        doFlash("gold");
+        addScore(150);
+        if (b.cinghia) {
+          finishCinghia();
+          return;
+        }
+        const capId = b.enemyId;
+        setParty((p) => {
+          if (p.length < 8) {
+            showToast(`${speciesById(capId).name} SI È UNITO AL PARTY!`);
+            return [...p, makeMon(capId)];
+          }
+          addScore(75);
+          showToast(`PARTY PIENO: ${speciesById(capId).name} TI SALUTA DA LONTANO (+75)`);
+          return p;
+        });
+        bLog(`${speciesById(capId).name} È CONVINTO: AMICIZIA!`, "good");
+        window.setTimeout(() => {
+          engineRef.current?.endBattle();
+          setBt(null);
+          setPhase("world");
+        }, 700);
+      } else {
+        sfx.wrong();
+        bLog(`${speciesById(b.enemyId).name} HA ANCORA LE BRICIOLE STORTE. RIPROVA O COMBATTI!`, "bad");
+        window.setTimeout(() => enemyTurn(), 500);
+      }
+    });
+  };
+
+  const tryFlee = () => {
+    const b = btRef.current;
+    if (!b || b.busy || phaseRef.current !== "battle") return;
+    if (b.boss) {
+      bLog("DA QUESTA BATTAGLIA NON SI SCAPPA. NESSUNO SCAPPA DAL GRUF.", "bad");
+      sfx.wrong();
+      return;
+    }
+    setOfferMode(false);
+    setSwitchMode(false);
+    patchBt({ busy: true });
+    if (Math.random() < 0.7) {
+      bLog("FUGA RIUSCITA! CORRI COME UN MORENINO IN FORNO.", "info");
+      window.setTimeout(() => {
+        engineRef.current?.endBattle();
+        setBt(null);
+        setPhase("world");
+      }, 450);
+    } else {
+      bLog("FUGA FALLITA! IL MORENO TI BLOCCA LA STRADA.", "bad");
+      window.setTimeout(() => enemyTurn(), 400);
+    }
+  };
+
+  const switchMon = (idx: number) => {
+    const b = btRef.current;
+    if (!b || b.busy || idx === activeIdxRef.current || phaseRef.current !== "battle") return;
+    const mon = partyRef.current[idx];
+    if (!mon || mon.hp <= 0) return;
+    setSwitchMode(false);
+    patchBt({ busy: true });
+    setActiveIdx(idx);
+    activeIdxRef.current = idx;
+    engineRef.current?.setActiveSpecies(speciesById(mon.spId));
+    bLog(`VAI, ${speciesById(mon.spId).name}!`, "info");
+    window.setTimeout(() => enemyTurn(), 500);
+  };
+
+  const finishCinghia = () => {
+    setFlags((fl) => ({ ...fl, cinghiaBeaten: true }));
+    say("cinghia_post", () => {
+      setParty((p) => (p.some((m) => m.spId === "cinghiaale") || p.length >= 8 ? p : [...p, makeMon("cinghiaale")]));
+      showToast("CINGHIA ALE SI È UNITO AL PARTY! LA TRIBÙ È CON TE.");
+      addScore(200);
+      engineRef.current?.endBattle();
+      setBt(null);
+      setPhase("world");
+    });
+  };
+
+  const onEnemyDefeated = () => {
+    const b = btRef.current;
+    if (!b) return;
+    patchBt({ busy: true });
+    if (b.male) {
+      setFlags((fl) => ({ ...fl, finaleDone: true }));
+      engineRef.current?.battlePurify(speciesById("nonnopurificato"), () => {
+        say("finale", () => {
+          addScore(500);
+          sfx.victory();
+          setPhase("victory");
+        });
+      });
+      return;
+    }
+    if (b.cinghia) {
+      engineRef.current?.battleFaint("enemy", () => finishCinghia());
+      return;
+    }
+    if (b.enemyId === "maledelmondo") {
+      setFlags((fl) => ({ ...fl, ginoDone: true }));
+      engineRef.current?.battleFaint("enemy", () => {
+        say("gino_post", () => {
+          addItem("fiala");
+          addScore(200);
+          engineRef.current?.endBattle();
+          setBt(null);
+          setPhase("world");
+        });
+      });
+      return;
+    }
+    // selvatico normale
+    sfx.victory();
+    addScore(b.boss ? 200 : 100);
+    bLog(`${speciesById(b.enemyId).name} È AL TAPPETO! +${b.boss ? 200 : 100} CARISMA`, "good");
+    engineRef.current?.battleFaint("enemy", () => {
+      window.setTimeout(() => {
+        engineRef.current?.endBattle();
+        setBt(null);
+        setPhase("world");
+      }, 350);
+    });
+  };
+
+  const wipe = () => {
+    sfx.gameover();
+    doFlash("red");
+    engineRef.current?.endBattle();
+    setBt(null);
+    setPhase("gameover");
+  };
+
+  const revive = () => {
+    sfx.click();
+    const healed = partyRef.current.map((m) => ({ ...m, hp: m.maxHp }));
+    partyRef.current = healed;
+    setParty(healed);
+    setActiveIdx(0);
+    activeIdxRef.current = 0;
+    setPhase("world");
+    engineRef.current?.enterWorld(-1.5, 8);
+    say("don_revive");
+  };
 
   const togglePause = () => {
+    sfx.pause();
     setPaused((p) => {
       const np = !p;
       pausedRef.current = np;
       engineRef.current?.setPaused(np);
-      sfx.pause();
       return np;
     });
   };
 
-  /* ================================================= RENDER */
-  const activeMon = bt ? party[bt.activeIdx] : null;
-  const activeSp = activeMon ? speciesById(activeMon.id) : null;
-  const quest = objective(flags, capturedIds.length);
+  const backToTitle = () => {
+    sfx.click();
+    setPaused(false);
+    pausedRef.current = false;
+    engineRef.current?.setPaused(false);
+    engineRef.current?.endBattle();
+    engineRef.current?.attractMode(true);
+    setBt(null);
+    setPhase("title");
+  };
+
+  /* ---------------- render ---------------- */
+  const inWorld = phase === "world";
+  const inBattle = phase === "battle";
+  const enemySp = bt ? speciesById(bt.enemyId) : null;
+  const activeMon = party[activeIdx];
 
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-void font-term text-bone">
       <div ref={mountRef} className="absolute inset-0" />
       <div className="vignette pointer-events-none absolute inset-0 z-[5]" />
       <div className="scanlines crt-flicker pointer-events-none absolute inset-0 z-[40] opacity-70" />
-      {bt?.boss && phase === "battle" && <div className="boss-vignette" />}
-      {flash && <div key={flash.key} className={`pointer-events-none absolute inset-0 z-[35] ${flash.kind === "red" ? "flash-red" : "flash-gold"}`} />}
+      {inBattle && bt?.boss && <div className="boss-vignette" />}
+      {flash && (
+        <div key={flash.key} className={`pointer-events-none absolute inset-0 z-[35] ${flash.kind === "red" ? "flash-red" : "flash-gold"}`} />
+      )}
 
-      {/* ------------------------------ TITOLO ------------------------------ */}
+      {/* ---------------- TITOLO ---------------- */}
       {phase === "title" && (
-        <div className="absolute inset-0 z-[20] flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(11,6,20,0.5),rgba(11,6,20,0.94))] px-4">
+        <div className="absolute inset-0 z-[20] flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(11,6,20,0.55),rgba(11,6,20,0.93))]">
           <div className="text-toxic tracking-[0.5em] text-sm md:text-base mb-2 title-float">✠ COMP-OS v6.66 PRESENTA ✠</div>
-          <h1 className="font-display text-[13vw] md:text-[7rem] leading-[0.85] font-extrabold text-center text-bone text-outline pulse-glow">
+          <h1 className="font-display text-[12vw] md:text-[7rem] leading-[0.85] font-extrabold text-center text-bone text-outline pulse-glow">
             SHIN MORENI
             <br />
             <span className="text-blood">TENSEI</span>
           </h1>
-          <p className="mt-3 text-gold tracking-[0.2em] text-lg md:text-2xl font-display text-center">L'EPICA DEL MAIALE DEL MONDO</p>
-          <p className="mt-1 text-dim text-base md:text-lg max-w-2xl text-center">
-            Un RPG demenziale: esplora Morenopoli, combatti a turni, supera prove di ideologia e cattura i Moreni...
-            <span className="text-toxic"> solo alla fine, offrendo loro i morenini giusti.</span>
+          <p className="mt-3 text-gold tracking-[0.25em] text-lg md:text-2xl font-display">L'EPICA DEL MAIALE DEL MONDO</p>
+          <p className="mt-1 text-dim text-base md:text-lg max-w-2xl text-center px-4">
+            Un RPG demenziale ad aree esplorabili: combatti a turni, offri morenini per convincere i Moreni, recluta gli Otto
+            Croccanti, sveglia il cavaliere Clomp e purifica il facocemoreno finale.
           </p>
           <button
             onClick={startGame}
             className="btn-hard mt-6 px-10 py-4 bg-blood border-2 border-[#ffd1dd] text-[#fff0f4] font-display text-2xl md:text-3xl tracking-widest"
           >
-            ▶ INIZIA LA PROFEZIA [INVIO]
+            ▶ INIZIA LA PROFEZIA
           </button>
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm md:text-base max-w-4xl w-full">
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm md:text-base max-w-3xl px-4 w-full">
             <div className="border-2 border-edge bg-panel/85 p-3">
-              <div className="text-toxic font-display text-lg mb-1">ESPLORA</div>
-              <div className="text-dim">WASD / frecce per girare il mondo. L'anello dorato segna l'obiettivo. I Moreni vagano nelle zone: toccali per combatterli.</div>
+              <div className="text-toxic font-display text-lg mb-1">MONDO</div>
+              <ul className="text-dim space-y-0.5">
+                <li>→ <span className="text-bone">WASD / FRECCE</span> per muoverti tra le 6 zone</li>
+                <li>→ <span className="text-bone">E</span> per parlare con i capi e agire sugli obiettivi</li>
+                <li>→ Segui l'<span className="text-gold">ANELLO DORATO</span>: è la tua prossima meta</li>
+                <li>→ Attento: i Moreni vagano e TI ASSALTANO</li>
+              </ul>
             </div>
             <div className="border-2 border-edge bg-panel/85 p-3">
-              <div className="text-blood font-display text-lg mb-1">COMBATTI</div>
-              <div className="text-dim">Battaglie a turni: Attacca, offri un morenino per convincere, cambia Moreno, fuggi. [E] per parlare con i capi.</div>
-            </div>
-            <div className="border-2 border-edge bg-panel/85 p-3">
-              <div className="text-gold font-display text-lg mb-1">CATTURA</div>
-              <div className="text-dim">Prima convinci il Moreno col suo gusto, poi offri di nuovo: più è ammorbidito, più la cattura riesce. 8 amicizie per la Spada dell'Amore.</div>
+              <div className="text-toxic font-display text-lg mb-1">BATTAGLIE</div>
+              <ul className="text-dim space-y-0.5">
+                <li>→ Turni: <span className="text-bone">ATTACCA</span> / <span className="text-bone">OFFRI MORENINO</span> / cambia / fuggi</li>
+                <li>→ Offri il gusto giusto → il Moreno si ammorbidisce</li>
+                <li>→ Poi <span className="text-gold">CATTURA</span> con l'offerta finale</li>
+                <li>→ <span className="text-bone">P</span> pausa · <span className="text-bone">M</span> audio · <span className="text-bone">SPAZIO</span> nei dialoghi</li>
+              </ul>
             </div>
           </div>
-          <div className="mt-4 text-dim text-xs tracking-widest">[P] PAUSA · [M] AUDIO · CONSIGLIATE LE CUFFIE: I MORENI GRUFOLANO IN 8-BIT</div>
+          <div className="mt-4 text-dim text-xs tracking-widest">AUDIO CONSIGLIATO — I MORENI GRUFOLANO IN 8-BIT</div>
         </div>
       )}
 
-      {/* ------------------------------ DIALOGO ------------------------------ */}
-      {phase === "dialogue" && <DialogueBox lines={dlgLines} onDone={() => afterDlgRef.current?.()} />}
+      {/* ---------------- SCELTA STARTER ---------------- */}
+      {phase === "starter" && (
+        <div className="absolute inset-0 z-[25] flex flex-col items-center justify-center bg-[rgba(5,2,10,0.86)] px-4">
+          <div className="font-display text-3xl md:text-5xl text-gold text-outline mb-1">DON MORENO TI AFFIDA UN COMPAGNO</div>
+          <div className="text-dim mb-6 text-lg">«SCEGLI CON IL CUORE. TANTO POI LI RECLUTI TUTTI.»</div>
+          <div className="flex flex-col md:flex-row gap-4">
+            {["morenozzo", "morenello", "morenilla"].map((id) => {
+              const s = speciesById(id);
+              return (
+                <button
+                  key={id}
+                  onClick={() => pickStarter(id)}
+                  className="btn-hard roster-card w-56 py-4"
+                  style={{ "--pc": hexCss(s.accentColor) } as React.CSSProperties}
+                >
+                  <MorenoFace sp={s} size={86} />
+                  <div className="font-display text-xl mt-2" style={{ color: hexCss(s.accentColor) }}>
+                    {s.name}
+                  </div>
+                  <div className="text-dim text-sm">{s.title}</div>
+                  <div className="text-bone text-sm mt-1">
+                    HP {s.baseHp} · ATK {s.baseAtk} · AMA IL {FLAVORS[s.favorite].name}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
-      {/* ------------------------------ BANNER ------------------------------ */}
+      {/* ---------------- DIALOGO ---------------- */}
+      {phase === "dialogue" && (
+        <DialogueBox lines={dlgLines} onDone={() => afterDlgRef.current?.()} onChoice={onChoiceRef.current ?? undefined} />
+      )}
+
+      {/* ---------------- QUIZ ---------------- */}
+      {phase === "quiz" && (
+        <>
+          <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[31] flex gap-2 border-2 border-blood bg-panel px-4 py-2">
+            {[0, 1, 2].map((i) => (
+              <HeartSvg key={i} size={22} on={i < quiz.hearts} />
+            ))}
+            <span className="text-dim ml-2 self-center text-sm">IL PROCESSO DELLA RIVOLTA</span>
+          </div>
+          <DialogueBox lines={dlgLines} onDone={() => {}} onChoice={(i) => onChoiceRef.current?.(i)} />
+        </>
+      )}
+
+      {/* ---------------- ABBRACCIO ---------------- */}
+      {phase === "hug" && (
+        <div className="absolute inset-0 z-[25] flex flex-col items-center justify-center bg-[rgba(20,4,16,0.82)]">
+          <div className={`text-8xl md:text-9xl ${hug.done ? "" : "hug-heart"}`}>
+            <svg width="150" height="150" viewBox="0 0 24 24">
+              <path
+                d="M12 21 C5 14.5 2 11 2 7.5 C2 4.5 4.5 2.5 7 2.5 C9 2.5 11 3.8 12 5.5 C13 3.8 15 2.5 17 2.5 C19.5 2.5 22 4.5 22 7.5 C22 11 19 14.5 12 21 Z"
+                fill="#ff4f9a"
+                stroke="#ffd9e8"
+                strokeWidth="1"
+              />
+            </svg>
+          </div>
+          <div className="font-display text-3xl md:text-4xl text-[#ff9ecf] mt-2 text-outline">L'ABBRACCIO ETERNO</div>
+          <div className="text-dim mt-1 text-lg">{hug.done ? "...PERFETTO. LO SENTI ANCHE TU, VERO?" : "TIENI PREMUTO [SPAZIO] — RIEMPI IL CUORE"}</div>
+          <div className="w-[min(480px,80vw)] h-7 border-2 border-[#ff4f9a] bg-[#1e1033] mt-4 overflow-hidden">
+            <div className="hug-meter-fill h-full" style={{ width: `${hug.progress}%` }} />
+          </div>
+          <div className="text-[#ff9ecf] mt-1 tabular-nums">{Math.round(hug.progress)}%</div>
+        </div>
+      )}
+
+      {/* ---------------- BANNER ---------------- */}
       {banner && (
         <div className="banner-root">
           <div className="banner-inner">
@@ -1018,50 +1218,46 @@ export default function App() {
       )}
       {toast && <div className="perk-toast">{toast}</div>}
 
-      {/* ------------------------------ HUD MONDO ------------------------------ */}
-      {phase === "world" && (
+      {/* ---------------- HUD MONDO ---------------- */}
+      {inWorld && (
         <>
           <div className="absolute top-3 left-3 z-[15] pointer-events-none">
-            <div className="border-2 border-edge bg-panel/85 px-3 py-2 w-[min(360px,80vw)]">
-              <div className="text-toxic text-xs tracking-[0.3em]">COMP-OS v6.66 // {zone ? zone.name : "WILDERNESS"}</div>
-              <div className="font-display text-xl md:text-2xl leading-tight text-bone">{zone?.name ?? "SENTIERO DI MORENOPOLI"}</div>
-              <div className="text-dim text-sm italic">{zone?.tagline ?? "Il crunch tornerà. Forse."}</div>
-              <div className="mt-1.5 border-t border-edge pt-1.5">
-                <div className="text-gold text-[11px] tracking-[0.25em]">OBIETTIVO DELLA PROFEZIA</div>
-                <div className="text-bone text-base leading-tight">{quest}</div>
-              </div>
-              <div className="mt-1 text-gold text-lg leading-none">
-                CARISMA: <span className="tabular-nums">{score}</span>
-              </div>
+            <div className="border-2 border-edge bg-panel/85 px-3 py-2 max-w-xs">
+              <div className="text-toxic text-xs tracking-[0.3em]">{zone ? zone.name : "MORENOPOLI"}</div>
+              <div className="text-dim text-sm">{zone ? zone.tagline : "La piazza profuma di forno spento."}</div>
+              <div className="text-gold text-sm mt-1">{questText(flags)}</div>
+            </div>
+            <div className="border-2 border-edge bg-panel/85 px-3 py-1.5 mt-2 text-dim text-xs">
+              WASD MUOVI · E INTERAGISCI · P PAUSA
             </div>
           </div>
 
-          <div className="absolute top-3 right-3 z-[15] pointer-events-none">
-            <div className="border-2 border-edge bg-panel/85 px-2 py-2 w-[210px]">
-              <div className="text-dim text-[10px] tracking-[0.3em] text-right mb-1">PARTY ({party.length}) · AMICI {capturedIds.length}/8</div>
+          <div className="absolute top-3 right-3 z-[15] flex flex-col items-end gap-2">
+            <div className="border-2 border-edge bg-panel/85 px-3 py-2">
+              <div className="text-gold text-lg leading-none mb-1.5">
+                CARISMA: <span className="tabular-nums">{score}</span>
+              </div>
+              <div className="text-dim text-[10px] tracking-[0.3em] text-right mb-1">
+                PARTY ({party.length}/8) · AMICI {recruitsCount()}/{SWORD_REQ}
+              </div>
               <div className="flex flex-col gap-1">
-                {party.slice(0, 6).map((m) => {
-                  const sp = speciesById(m.id);
-                  return (
-                    <div key={m.uid} className="flex items-center gap-1.5">
-                      <div className="w-7 h-7 grid place-items-center border" style={{ borderColor: hexCss(sp.accentColor), background: "#160b26" }}>
-                        <MorenoFace sp={sp} size={24} />
-                      </div>
-                      <div className="flex-1">
-                        <div className="text-[11px] leading-none text-bone truncate">{sp.name}</div>
-                        <div className="h-1.5 mt-0.5 bg-[#120a20] border border-edge">
-                          <div className="h-full" style={{ width: `${(m.hp / m.maxHp) * 100}%`, background: m.hp / m.maxHp > 0.4 ? "#4dffa6" : "#ff2e5f" }} />
-                        </div>
-                      </div>
-                      <div className="text-[11px] tabular-nums text-dim">{m.hp}</div>
-                    </div>
-                  );
-                })}
+                {party.map((m, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="w-4 h-4 grid place-items-center text-[10px] border border-edge" style={{ color: hexCss(speciesById(m.spId).accentColor) }}>
+                      {i + 1}
+                    </span>
+                    <MorenoFace sp={speciesById(m.spId)} size={26} />
+                    <HpBar hp={m.hp} max={m.maxHp} w={90} />
+                    <span className="tabular-nums text-xs text-dim w-14">
+                      {m.hp}/{m.maxHp}
+                    </span>
+                  </div>
+                ))}
               </div>
               {items.length > 0 && (
                 <div className="mt-1.5 border-t border-edge pt-1">
                   {items.map((it) => (
-                    <div key={it} className="text-[11px] text-gold leading-tight" title={ITEMS[it].desc}>
+                    <div key={it} className="text-toxic text-xs" title={ITEMS[it].desc}>
                       ◆ {ITEMS[it].name}
                     </div>
                   ))}
@@ -1070,258 +1266,180 @@ export default function App() {
             </div>
           </div>
 
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-[15] pointer-events-none text-center">
-            {nearId && (
-              <div className="pop-in border-2 border-gold bg-panel/90 px-5 py-2 font-display text-xl text-gold tracking-wide shadow-[0_0_24px_rgba(255,201,77,0.35)]">
-                [E] {nearId === "monument" ? "ESAMINA IL GRANDE MORENINO" : `PARLA CON ${nearId === "don" ? "DON MORENO" : nearId === "cinghia" ? "CINGHIA ALE" : nearId === "mico" ? "MICO NOSCA" : nearId === "coizio" ? "COIZIO" : "GINO SATRI"}`}
-              </div>
-            )}
-            {!nearId && (
-              <div className="text-dim text-sm tracking-widest bg-[rgba(11,6,20,0.55)] px-3 py-1 inline-block border border-edge/60">
-                WASD / FRECCE — MUOVI · TOCCA I MORENI SELVATICI PER COMBATTERE
-              </div>
-            )}
-          </div>
-        </>
-      )}
-
-      {/* ------------------------------ BATTAGLIA ------------------------------ */}
-      {phase === "battle" && bt && activeMon && activeSp && (
-        <>
-          {/* nemico */}
-          <div className="absolute top-3 right-3 z-[15] w-[min(400px,86vw)]">
-            <div className={`border-2 bg-panel/90 px-3 py-2 ${bt.boss ? "border-blood" : "border-edge"}`}>
-              <div className="flex items-center justify-between gap-2">
-                <div>
-                  <div className={`font-display text-xl md:text-2xl leading-tight ${bt.boss ? "text-blood" : "text-bone"}`}>{bt.enemySp.name}</div>
-                  <div className="text-dim text-sm">{bt.enemySp.title}</div>
-                </div>
-                {bt.convinced && (
-                  <div className="flex items-center gap-1 border border-toxic px-2 py-1 text-toxic text-xs chip-pop">
-                    <HeartSvg size={13} /> CONVINTO
-                  </div>
-                )}
-              </div>
-              <div className="flex items-center gap-2 mt-1.5">
-                <div className="flex-1 h-4 border-2 border-edge bg-[#120a20] overflow-hidden">
-                  <div
-                    className="h-full transition-[width] duration-300"
-                    style={{ width: `${(bt.enemyHp / bt.enemyMax) * 100}%`, background: "linear-gradient(90deg,#ff2e5f,#ff7b3d)" }}
-                  />
-                </div>
-                <span className="tabular-nums text-lg">
-                  {bt.enemyHp}/{bt.enemyMax}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 mt-1 text-sm text-dim">
-                VOGLIA:
-                <span className="flex items-center gap-1.5 border px-2 py-0.5" style={{ borderColor: FLAVORS[bt.enemySp.favorite].css, color: FLAVORS[bt.enemySp.favorite].css }}>
-                  <CookieIcon css={FLAVORS[bt.enemySp.favorite].css} size={18} /> MORENINO AL {FLAVORS[bt.enemySp.favorite].name}
-                </span>
-                {bt.isMaiale && <span className="text-blood">— NON SI CATTURA: SI PURIFICA</span>}
-              </div>
-            </div>
-          </div>
-
-          {/* log + turno */}
-          <div className="absolute top-3 left-3 z-[15] pointer-events-none w-[min(340px,52vw)]">
-            <div className="border-2 border-edge bg-panel/85 px-3 py-2">
-              <div className="text-toxic text-xs tracking-[0.3em] mb-1">
-                REGISTRO COMP {bt.boss ? "// ALLARME CAPO" : ""} · CARISMA {score}
-              </div>
-              {bt.log.map((l) => (
-                <div key={l.id} className={`text-sm md:text-base leading-tight truncate ${l.kind === "good" ? "text-toxic" : l.kind === "bad" ? "text-blood" : "text-dim"}`}>
-                  &gt; {l.text}
-                </div>
-              ))}
-              <div className="mt-1 font-display text-lg text-gold">
-                {bt.stage === "menu" ? "— TOCCA A TE —" : bt.stage === "enemy" || bt.stage === "busy" ? "— IL NEMICO AGISCE... —" : "— SCHIERA UN MORENO! —"}
-              </div>
-            </div>
-          </div>
-
-          {/* attivo + comandi */}
-          <div className="absolute bottom-3 right-3 z-[15] w-[min(480px,92vw)]">
-            <div className="border-2 border-edge bg-panel/90 px-3 py-2">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-12 grid place-items-center border-2" style={{ borderColor: hexCss(activeSp.accentColor), background: "#160b26" }}>
-                  <MorenoFace sp={activeSp} size={44} />
-                </div>
-                <div className="flex-1">
-                  <div className="font-display text-xl leading-tight" style={{ color: hexCss(activeSp.accentColor) }}>
-                    {activeSp.name} <span className="text-dim text-sm font-term">ATK {activeMon.atk}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 h-3.5 border-2 border-edge bg-[#120a20] overflow-hidden">
-                      <div
-                        className="h-full transition-[width] duration-300"
-                        style={{ width: `${(activeMon.hp / activeMon.maxHp) * 100}%`, background: activeMon.hp / activeMon.maxHp > 0.4 ? "#4dffa6" : "#ff2e5f" }}
-                      />
-                    </div>
-                    <span className="tabular-nums text-base">
-                      {activeMon.hp}/{activeMon.maxHp}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <button onClick={doAttack} disabled={bt.stage !== "menu"} className="btn-hard flex items-center justify-center gap-2 px-2 py-2.5 border-2 border-blood bg-[#5c0f24] font-display text-lg md:text-xl tracking-wide text-[#ffe6ec]">
-                  <svg width="20" height="20" viewBox="0 0 24 24"><path d="M3 21 L10 14 M14 10 L21 3 L18 10 L10 18 Z" stroke="#ff2e5f" strokeWidth="2.4" fill="none" /></svg>
-                  ATTACCA <span className="text-xs font-term opacity-70">[1]</span>
-                </button>
-                <button
-                  onClick={doOffer}
-                  disabled={bt.stage !== "menu" || bt.isMaiale}
-                  className="btn-hard flex items-center justify-center gap-2 px-2 py-2.5 border-2 font-display text-lg md:text-xl tracking-wide text-[#fff6ea]"
-                  style={{ borderColor: FLAVORS[bt.enemySp.favorite].css, background: FLAVORS[bt.enemySp.favorite].cssDark }}
-                >
-                  <CookieIcon css={FLAVORS[bt.enemySp.favorite].css} />
-                  {bt.convinced ? "OFFRI E CATTURA!" : "OFFRI MORENINO"} <span className="text-xs font-term opacity-70">[2]</span>
-                </button>
-                <button onClick={() => setPicker({ forced: false })} disabled={bt.stage !== "menu"} className="btn-hard flex items-center justify-center gap-2 px-2 py-2.5 border-2 border-toxic bg-[#0c3d28] font-display text-lg md:text-xl tracking-wide text-[#d8fff0]">
-                  <MorenoFace sp={activeSp} size={22} /> MORENO <span className="text-xs font-term opacity-70">[3]</span>
-                </button>
-                <button onClick={doFlee} disabled={bt.stage !== "menu" || bt.boss} className="btn-hard flex items-center justify-center gap-2 px-2 py-2.5 border-2 border-edge bg-panel2 font-display text-lg md:text-xl tracking-wide text-dim">
-                  FUGGI <span className="text-xs font-term opacity-70">[4]</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* picker party */}
-          {picker && (
-            <div className="absolute inset-0 z-[32] grid place-items-center bg-[rgba(5,2,10,0.78)]">
-              <div className="border-2 border-toxic bg-panel px-6 py-5 w-[min(430px,92vw)]">
-                <div className="font-display text-2xl text-toxic mb-1">{picker.forced ? "SCHIERA UN ALTRO MORENO!" : "QUALE MORENO SCENDI IN CAMPO?"}</div>
-                <div className="text-dim text-sm mb-3">{picker.forced ? "Il tuo Moreno è KO. Presto!" : "Cambiare Moreno consuma il turno."}</div>
-                <div className="flex flex-col gap-2">
-                  {party.map((m, i) => {
-                    const sp = speciesById(m.id);
-                    const dead = m.hp <= 0;
-                    const current = i === bt.activeIdx;
-                    return (
-                      <button
-                        key={m.uid}
-                        disabled={dead || current}
-                        onClick={() => chooseSwitch(i)}
-                        className="btn-hard flex items-center gap-2 px-3 py-2 border-2 text-left"
-                        style={{ borderColor: dead ? "#3a2160" : hexCss(sp.accentColor), background: "#160b26", opacity: dead ? 0.4 : 1 }}
-                      >
-                        <MorenoFace sp={sp} size={34} />
-                        <div className="flex-1">
-                          <div className="font-display text-lg leading-none text-bone">
-                            {sp.name} {current && <span className="text-toxic text-sm">IN CAMPO</span>} {dead && <span className="text-blood text-sm">KO</span>}
-                          </div>
-                          <div className="h-1.5 mt-1 bg-[#120a20] border border-edge w-full">
-                            <div className="h-full" style={{ width: `${(m.hp / m.maxHp) * 100}%`, background: "#4dffa6" }} />
-                          </div>
-                        </div>
-                        <div className="tabular-nums text-dim text-sm">
-                          {m.hp}/{m.maxHp}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-                {!picker.forced && (
-                  <button onClick={() => setPicker(null)} className="btn-hard mt-3 w-full px-4 py-2 border-2 border-edge bg-panel2 text-dim font-display text-lg">
-                    ANNULLA
-                  </button>
-                )}
+          {nearId && (
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[15]">
+              <div className="border-2 border-gold bg-panel/90 px-5 py-2 text-gold text-lg tracking-wider animate-[popIn_0.2s_ease_both]">
+                [E] {nearId === "monument" ? "ESAMINA IL GRANDE MORENINO" : nearId === "clomp" ? (flags.clompAwake ? "SALUTA CLOMP" : "OSSERVA CLOMP CHE DORME") : `PARLA CON ${nearId === "don" ? "DON MORENO" : nearId === "cinghia" ? "CINGHIA ALE" : nearId === "mico" ? "MICO NOSCA" : nearId === "coizio" ? "COIZIO" : "GINO SATRI"}`}
               </div>
             </div>
           )}
         </>
       )}
 
-      {/* ------------------------------ QUIZ MICO ------------------------------ */}
-      {phase === "quiz" && quiz && (
-        <div className="absolute inset-0 z-[24] grid place-items-center bg-[rgba(11,6,20,0.88)] px-4">
-          <div className="border-2 border-[#ffe066] bg-panel px-6 py-5 w-[min(680px,94vw)] shadow-[0_0_40px_rgba(255,224,102,0.2)]">
-            <div className="flex items-center justify-between mb-2">
-              <div className="font-display text-2xl md:text-3xl text-[#ffe066]">LA RIVOLTA SOCIALE — PROVA DI IDEOLOGIA</div>
-              <div className="flex gap-1">
-                {[0, 1, 2].map((i) => (
-                  <HeartSvg key={i} size={20} on={i < quiz.hearts} />
-                ))}
+      {/* ---------------- BATTAGLIA ---------------- */}
+      {inBattle && bt && enemySp && (
+        <>
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[15] pointer-events-none w-[min(460px,90vw)]">
+            <div className={`border-2 bg-panel/90 px-3 py-2 ${bt.boss ? "border-blood" : "border-edge"}`}>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <MorenoFace sp={enemySp} size={34} />
+                  <div>
+                    <div className={`font-display text-xl leading-none ${bt.boss ? "text-blood" : "text-bone"}`}>{enemySp.name}</div>
+                    <div className="text-dim text-xs">{enemySp.title}</div>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <HpBar hp={bt.enemyHp} max={bt.enemyMaxHp} w={170} col="#ff2e5f" />
+                  <div className="text-right text-xs text-dim tabular-nums mt-0.5">
+                    {bt.enemyHp}/{bt.enemyMaxHp}
+                  </div>
+                </div>
+              </div>
+              {bt.convinced && (
+                <div className="text-toxic text-xs mt-1 tracking-wider">
+                  ♥ AMMORBIDITO — GUSTO PREFERITO: {FLAVORS[enemySp.favorite].name} — CATTURA PRONTA
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="absolute bottom-3 left-3 right-3 z-[15] flex flex-col md:flex-row items-end justify-between gap-3">
+            {/* party */}
+            <div className="border-2 border-edge bg-panel/90 px-3 py-2 w-full md:w-auto">
+              <div className="text-toxic text-xs tracking-[0.3em] mb-1">I TUOI MORENI</div>
+              <div className="flex flex-col gap-1">
+                {party.map((m, i) => {
+                  const s = speciesById(m.spId);
+                  const active = i === activeIdx;
+                  return (
+                    <button
+                      key={i}
+                      onClick={() => switchMon(i)}
+                      disabled={bt.busy || !switchMode || active || m.hp <= 0}
+                      className={`flex items-center gap-2 px-1 py-0.5 text-left transition-colors ${
+                        active ? "bg-[#2a1b45]" : switchMode && m.hp > 0 && !bt.busy ? "hover:bg-[#2a1b45] cursor-pointer" : "opacity-90"
+                      } ${m.hp <= 0 ? "opacity-40" : ""}`}
+                    >
+                      <span className={`w-3 h-3 border ${active ? "bg-toxic border-toxic" : "border-edge"}`} />
+                      <MorenoFace sp={s} size={26} />
+                      <span className="text-sm w-24 truncate" style={{ color: hexCss(s.accentColor) }}>
+                        {s.name}
+                      </span>
+                      <HpBar hp={m.hp} max={m.maxHp} w={80} />
+                      <span className="tabular-nums text-xs text-dim w-14">
+                        {m.hp}/{m.maxHp}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-            <div className="text-dim text-sm mb-3">
-              DOMANDA {quiz.q + 1} DI {TRIAL_QUIZ.scripts.length} · Mico Nosca ti fissa con speranza rivoluzionaria
+
+            {/* comandi */}
+            <div className="border-2 border-edge bg-panel/90 px-3 py-2 w-full md:w-[430px]">
+              <div className="min-h-[52px] mb-1.5">
+                {bt.log.map((l) => (
+                  <div
+                    key={l.id}
+                    className={`text-sm leading-tight truncate ${l.kind === "good" ? "text-toxic" : l.kind === "bad" ? "text-blood" : "text-dim"}`}
+                  >
+                    &gt; {l.text}
+                  </div>
+                ))}
+              </div>
+
+              {offerMode ? (
+                <div className="grid grid-cols-4 gap-2">
+                  {FLAVOR_LIST.map((f) => (
+                    <button
+                      key={f}
+                      disabled={bt.busy}
+                      onClick={() => offerMorenino(f)}
+                      className="btn-hard flex flex-col items-center gap-1 px-1 py-2 border-2 font-display text-sm"
+                      style={{ background: FLAVORS[f].cssDark, borderColor: FLAVORS[f].css, color: "#fff6ea" }}
+                    >
+                      <CookieIcon css={FLAVORS[f].css} size={24} />
+                      {FLAVORS[f].name}
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => setOfferMode(false)}
+                    className="btn-hard col-span-4 py-1 border-2 border-edge bg-panel2 text-dim font-display text-base"
+                  >
+                    ← INDIETRO
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                  <button
+                    onClick={playerAttack}
+                    disabled={bt.busy}
+                    className="btn-hard py-2.5 bg-blood border-2 border-[#ffd1dd] text-[#fff0f4] font-display text-lg tracking-wide"
+                  >
+                    ⚔ ATTACCA
+                  </button>
+                  <button
+                    onClick={() => {
+                      setOfferMode(true);
+                      setSwitchMode(false);
+                      sfx.click();
+                    }}
+                    disabled={bt.busy}
+                    className="btn-hard py-2.5 bg-[#5c2f17] border-2 border-gold text-[#fff6ea] font-display text-lg tracking-wide"
+                  >
+                    🍪 OFFRI
+                  </button>
+                  <button
+                    onClick={tryCapture}
+                    disabled={bt.busy || !bt.convinced || bt.male}
+                    title={bt.male ? "È il nonno di Don Moreno: non si cattura, si salva." : bt.convinced ? "Offerta finale!" : "Prima ammorbidiscilo col morenino giusto"}
+                    className="btn-hard py-2.5 bg-[#1c4a35] border-2 border-toxic text-[#eafff4] font-display text-lg tracking-wide"
+                  >
+                    ✋ CATTURA
+                  </button>
+                  <button
+                    onClick={() => {
+                      setSwitchMode((s) => !s);
+                      setOfferMode(false);
+                      sfx.click();
+                    }}
+                    disabled={bt.busy}
+                    className="btn-hard py-2.5 bg-panel2 border-2 border-[#7a5fd0] text-[#e8e0ff] font-display text-lg tracking-wide"
+                  >
+                    ⇄ MORENO
+                  </button>
+                  <button
+                    onClick={tryFlee}
+                    disabled={bt.busy}
+                    className="btn-hard py-2.5 bg-panel2 border-2 border-edge text-dim font-display text-lg tracking-wide"
+                  >
+                    💨 FUGGI
+                  </button>
+                </div>
+              )}
             </div>
-            <div className="dlg-text mb-4" style={{ minHeight: "auto" }}>
-              {SCRIPTS[TRIAL_QUIZ.scripts[quiz.q]][0].text}
-            </div>
-            <div className="flex flex-col gap-2">
-              {SCRIPTS[TRIAL_QUIZ.scripts[quiz.q]][0].choices?.map((c, i) => (
-                <button
-                  key={i}
-                  onClick={() => answerQuiz(i)}
-                  className="btn-hard text-left px-4 py-2.5 border-2 border-edge bg-panel2 text-bone font-term text-lg hover:border-[#ffe066] hover:text-[#ffe066] transition-colors"
-                >
-                  ▸ {c}
-                </button>
-              ))}
-            </div>
-            <div className="mt-3 text-dim text-xs tracking-widest">SBAGLIARE FA MALE AL CUORE. LETTERALMENTE.</div>
           </div>
-        </div>
+        </>
       )}
 
-      {/* ------------------------------ ABBRACCIO COIZIO ------------------------------ */}
-      {phase === "hug" && hug && (
-        <div className="absolute inset-0 z-[24] grid place-items-center bg-[rgba(11,6,20,0.88)] px-4">
-          <div className="border-2 border-[#ff7fb2] bg-panel px-6 py-6 w-[min(620px,94vw)] text-center shadow-[0_0_50px_rgba(255,127,178,0.25)]">
-            <div className="font-display text-2xl md:text-3xl text-[#ff7fb2]">L'ABBRACCIO ETERNO</div>
-            <div className="text-dim text-sm mt-1 mb-4">
-              Coizio allarga le braccia. Riempilo di contatto fisico: <span className="text-[#ff7fb2]">TIENI PREMIUTO SPAZIO</span>. Se molli, il cuore si sgonfia.
-            </div>
-            <div
-              className="inline-block transition-transform duration-100"
-              style={{ transform: `scale(${0.8 + (hug.power / 100) * 0.9})` }}
-            >
-              <HeartSvg size={90} on={hug.power > 5} />
-            </div>
-            <div className="mt-4 h-7 border-2 border-edge bg-[#120a20] overflow-hidden">
-              <div
-                className="h-full transition-[width] duration-100"
-                style={{ width: `${hug.power}%`, background: "linear-gradient(90deg,#ff4f9a,#ff7fb2,#ffd9e8)" }}
-              />
-            </div>
-            <div className="mt-2 tabular-nums text-2xl text-[#ff7fb2]">{Math.floor(hug.power)}%</div>
-            {hug.done && <div className="pop-in mt-2 font-display text-2xl text-gold">ABBRACCIO COMPLETATO. IL MONDO È GUARITO (UN PO').</div>}
-          </div>
-        </div>
-      )}
-
-      {/* ------------------------------ PAUSA ------------------------------ */}
-      {paused && (phase === "world" || phase === "battle") && (
+      {/* ---------------- PAUSA ---------------- */}
+      {paused && (inWorld || inBattle) && (
         <div className="absolute inset-0 z-[45] grid place-items-center bg-[rgba(5,2,10,0.82)]">
           <div className="border-2 border-toxic bg-panel px-10 py-8 text-center shadow-[0_0_40px_rgba(77,255,166,0.25)]">
             <div className="font-display text-5xl text-toxic mb-1">PAUSA</div>
-            <div className="text-dim mb-5">I MORENI ASPETTANO. GRUFOLANDO.</div>
+            <div className="text-dim mb-5">I MORENI ASPETTANO. MALVOLENTI.</div>
             <button onClick={togglePause} className="btn-hard block w-full px-8 py-3 bg-toxic border-2 border-[#d8fff0] text-[#04150c] font-display text-2xl tracking-widest mb-3">
               RIPRENDI [P]
             </button>
-            <button
-              onClick={() => {
-                setPaused(false);
-                pausedRef.current = false;
-                engineRef.current?.setPaused(false);
-                engineRef.current?.endBattle();
-                setBt(null);
-                engineRef.current?.attractMode(true);
-                setPhase("title");
-              }}
-              className="btn-hard block w-full px-8 py-2 bg-panel2 border-2 border-edge text-dim font-display text-xl tracking-widest"
-            >
+            <button onClick={backToTitle} className="btn-hard block w-full px-8 py-2 bg-panel2 border-2 border-edge text-dim font-display text-xl tracking-widest">
               TITOLI DI TESTA
             </button>
           </div>
         </div>
       )}
 
-      {/* ------------------------------ GAME OVER ------------------------------ */}
+      {/* ---------------- GAME OVER ---------------- */}
       {phase === "gameover" && (
         <div className="absolute inset-0 z-[30] flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(40,4,16,0.8),rgba(8,2,6,0.95))] px-4">
           <div className="font-display text-[11vw] md:text-[6rem] leading-none text-blood text-outline pulse-glow text-center">
@@ -1329,73 +1447,75 @@ export default function App() {
             <br />
             SBRICIOLATO
           </div>
-          <div className="mt-4 stamp-in border-4 border-blood px-6 py-2 font-display text-xl md:text-2xl text-blood tracking-widest bg-[rgba(20,2,8,0.8)] text-center">
-            «{defeatInfo}»
+          <div className="mt-4 stamp-in border-4 border-blood px-6 py-2 font-display text-2xl md:text-3xl text-blood tracking-widest bg-[rgba(20,2,8,0.8)]">
+            TUTTI I MORENI AL TAPPETO
           </div>
-          <div className="mt-4 text-gold text-xl">
-            CARISMA: <span className="tabular-nums">{score}</span> · AMICI: {capturedIds.length}/8
+          <div className="mt-5 max-w-xl text-center text-lg md:text-xl text-dim">
+            «Un giorno i tuoi Moreni racconteranno di questa sconfitta. Ridendo.» — Don Moreno, probabilmente
           </div>
-          <button onClick={respawn} className="btn-hard mt-6 px-8 py-3 bg-blood border-2 border-[#ffd1dd] text-[#fff0f4] font-display text-2xl tracking-widest">
-            DON MORENO TI RACCOGLIE — RIPARTI
-          </button>
-        </div>
-      )}
-
-      {/* ------------------------------ VITTORIA ------------------------------ */}
-      {phase === "victory" && (
-        <div className="absolute inset-0 z-[30] overflow-y-auto bg-[radial-gradient(ellipse_at_center,rgba(20,12,4,0.75),rgba(8,5,2,0.95))]">
-          <div className="min-h-full flex flex-col items-center justify-center py-8 px-4">
-            <div className="text-gold tracking-[0.5em] text-sm mb-2">IL MAIALE È PURIFICATO · IL CRUNCH È TORNATO</div>
-            <div className="font-display text-[9vw] md:text-[5rem] leading-[0.9] text-center text-gold text-outline title-float">
-              MORENOPOLI
-              <br />
-              RISORGE
-            </div>
-            <div className="mt-2 text-toxic text-2xl">
-              CARISMA FINALE: <span className="tabular-nums">{score}</span>
-            </div>
-            <div className="mt-6 w-full max-w-3xl border-2 border-edge bg-panel/85 p-4">
-              <div className="font-display text-2xl text-gold mb-2 text-center">— TITOLI DI CODA — IL CAST —</div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1">
-                {CAST.map((c) => (
-                  <div key={c.name} className="flex gap-2 text-base leading-tight py-0.5 border-b border-edge/40">
-                    <span className="text-bone font-bold whitespace-nowrap">{c.name}</span>
-                    <span className="text-dim italic">{c.role}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-2 text-center text-dim text-sm italic">
-                «Nessun morenino è stato lasciato nel cassetto durante le riprese. Il Male del Mondo ringrazia per la visibilità.»
-              </div>
-            </div>
-            <div className="mt-5 grid grid-cols-4 md:grid-cols-8 gap-2.5 w-full max-w-4xl">
-              {SPECIES.filter((s) => s.id !== "maledelmondo" && s.id !== "maialedelmondo").map((sp) => {
-                const owned = capturedIds.includes(sp.id);
-                return (
-                  <div key={sp.id} className="roster-card" style={{ "--pc": owned ? hexCss(sp.accentColor) : "#2a1b45", opacity: owned ? 1 : 0.35 } as React.CSSProperties}>
-                    <MorenoFace sp={sp} size={54} />
-                    <div className="font-display text-[11px] mt-1 leading-tight" style={{ color: owned ? hexCss(sp.accentColor) : "#4a2b6e" }}>
-                      {sp.name}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <button
-              onClick={() => {
-                sfx.click();
-                engineRef.current?.attractMode(true);
-                setPhase("title");
-              }}
-              className="btn-hard mt-7 px-10 py-3 bg-gold border-2 border-[#fff0d1] text-[#241503] font-display text-2xl tracking-widest"
-            >
-              GIOCA ANCORA
+          <div className="mt-2 text-gold text-xl">
+            CARISMA: <span className="tabular-nums">{score}</span> · AMICI: {recruitsCount()}
+          </div>
+          <div className="mt-7 flex flex-col md:flex-row gap-3">
+            <button onClick={revive} className="btn-hard px-8 py-3 bg-blood border-2 border-[#ffd1dd] text-[#fff0f4] font-display text-2xl tracking-widest">
+              RIALZATI (DON TI AIUTA)
+            </button>
+            <button onClick={backToTitle} className="btn-hard px-8 py-3 bg-panel2 border-2 border-edge text-dim font-display text-2xl tracking-widest">
+              TITOLI DI TESTA
             </button>
           </div>
         </div>
       )}
 
-      {/* audio toggle */}
+      {/* ---------------- VITTORIA ---------------- */}
+      {phase === "victory" && (
+        <div className="absolute inset-0 z-[30] overflow-y-auto bg-[radial-gradient(ellipse_at_center,rgba(20,12,4,0.78),rgba(8,5,2,0.95))]">
+          <div className="min-h-full flex flex-col items-center justify-center py-8 px-4">
+            <div className="text-gold tracking-[0.5em] text-sm mb-2">LA PROFEZIA È COMPIUTA</div>
+            <div className="font-display text-[9vw] md:text-[5rem] leading-[0.9] text-center text-gold text-outline title-float">
+              IL GRUF È
+              <br />
+              PURIFICATO
+            </div>
+            <p className="mt-3 text-dim max-w-xl text-center text-base md:text-lg">
+              Nonno Moreno è tornato lindo e profumato. La Croccantezza Eterna scorre di nuovo. Morenopoli ti nomina
+              Pasticcere Sacro Onorario.
+            </p>
+            <div className="mt-2 text-toxic text-2xl">
+              CARISMA FINALE: <span className="tabular-nums">{score}</span>
+            </div>
+            <div className="mt-5 w-full max-w-3xl border-2 border-edge bg-panel/85 p-4">
+              <div className="text-toxic font-display text-xl mb-2 text-center">IL CAST</div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1 text-sm">
+                {CAST.map((c) => (
+                  <div key={c.name} className="flex justify-between gap-3 border-b border-edge/50 py-0.5">
+                    <span className="text-gold whitespace-nowrap">{c.name}</span>
+                    <span className="text-dim text-right">{c.role}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="mt-4 grid grid-cols-4 md:grid-cols-8 gap-2 w-full max-w-4xl">
+              {party.map((m, i) => {
+                const s = speciesById(m.spId);
+                return (
+                  <div key={i} className="roster-card" style={{ "--pc": hexCss(s.accentColor) } as React.CSSProperties}>
+                    <MorenoFace sp={s} size={44} />
+                    <div className="font-display text-[10px] mt-1 leading-tight" style={{ color: hexCss(s.accentColor) }}>
+                      {s.name}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <button onClick={backToTitle} className="btn-hard mt-7 px-10 py-3 bg-gold border-2 border-[#fff0d1] text-[#241503] font-display text-2xl tracking-widest">
+              TITOLI DI CODA → GIOCA ANCORA
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ---------------- audio toggle ---------------- */}
       <button
         onClick={() => {
           sfx.unlock();
@@ -1404,11 +1524,48 @@ export default function App() {
             return !m;
           });
         }}
-        className="absolute top-3 left-1/2 -translate-x-1/2 z-[46] border-2 border-edge bg-panel/85 px-3 py-1 text-dim hover:text-toxic hover:border-toxic transition-colors text-sm tracking-widest"
+        className="absolute top-3 left-3 z-[46] border-2 border-edge bg-panel/85 px-3 py-1 text-dim hover:text-toxic hover:border-toxic transition-colors text-sm tracking-widest"
         title="Audio [M]"
       >
         {muted ? "♪ AUDIO: OFF" : "♪ AUDIO: ON"}
       </button>
     </div>
+  );
+}
+
+/* ---------------- rete di sicurezza: mai schermo nero ---------------- */
+interface BoundaryState {
+  err: Error | null;
+}
+class MoreniBoundary extends React.Component<{ children: React.ReactNode }, BoundaryState> {
+  state: BoundaryState = { err: null };
+  static getDerivedStateFromError(err: Error): BoundaryState {
+    return { err };
+  }
+  componentDidCatch(err: Error, info: React.ErrorInfo) {
+    // eslint-disable-next-line no-console
+    console.error("MORENI-CRASH:", err, info);
+  }
+  render() {
+    if (this.state.err) {
+      return (
+        <div className="h-dvh w-full grid place-items-center bg-void p-6">
+          <div className="border-2 border-blood bg-panel px-8 py-6 max-w-xl text-center">
+            <div className="font-display text-4xl text-blood mb-2">CRASH DEMONIACO</div>
+            <div className="text-dim mb-4">Un Moreno è inciampato nel codice. Ricarica la pagina e riprova.</div>
+            <div className="text-left border border-edge bg-[#120a20] p-3 text-toxic text-sm break-words">{String(this.state.err)}</div>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export default function App() {
+  return (
+    <MoreniBoundary>
+      <MoreniGame />
+    </MoreniBoundary>
   );
 }
