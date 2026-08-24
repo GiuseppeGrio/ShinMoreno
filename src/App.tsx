@@ -446,6 +446,8 @@ function MoreniGame() {
   const [morenini, setMorenini] = useState<Record<FlavorId, number>>({ ...START_MORENINI });
   const [shopOpen, setShopOpen] = useState(false);
   const [gameOpen, setGameOpen] = useState(false);
+  const [arcadePlaying, setArcadePlaying] = useState(false);
+  const [arcadeResult, setArcadeResult] = useState<{ score: number; morenini: number; briciole: number } | null>(null);
   const [flags, setFlags] = useState<Flags>(initialFlags);
   const [zone, setZone] = useState<ZoneDef | null>(null);
   const [nearId, setNearId] = useState<string | null>(null);
@@ -837,10 +839,12 @@ function MoreniGame() {
     sfx.click();
     if (id === "forno") {
       setShopOpen(true);
+      engineRef.current?.setPaused(true);
       return;
     }
     if (id === "arcade") {
       setGameOpen(true);
+      engineRef.current?.setPaused(true);
       return;
     }
     if (id === "pc") {
@@ -1376,6 +1380,7 @@ function MoreniGame() {
   /* ---------------- pausa & menu ---------------- */
   const togglePause = () => {
     if (menuOpenRef.current) return;
+    if (gameOpen || shopOpen || pcOpen) return; // pannelli aperti: la pausa non deve sovrapporsi
     sfx.pause();
     setPaused((p) => {
       const np = !p;
@@ -1468,6 +1473,41 @@ function MoreniGame() {
     setPcSel(null);
     setPcReleaseArm(false);
     engineRef.current?.setPaused(pausedRef.current);
+  };
+
+  const closeShop = () => {
+    sfx.click();
+    setShopOpen(false);
+    engineRef.current?.setPaused(pausedRef.current);
+  };
+
+  const closeArcade = () => {
+    sfx.click();
+    setGameOpen(false);
+    setArcadePlaying(false);
+    engineRef.current?.setPaused(pausedRef.current);
+  };
+
+  const startArcade = () => {
+    if (bricioleRef.current < MINIGAME.entry) {
+      showToast(`L'INGRESSO COSTA ${MINIGAME.entry} BRICIOLE. VINCI QUALCHE BATTAGLIA, PRIMA!`);
+      sfx.wrong();
+      return;
+    }
+    addBriciole(-MINIGAME.entry);
+    sfx.start();
+    setArcadePlaying(true);
+  };
+
+  /* Ricompense della sala giochi: punti → morenini + briciole. */
+  const collectArcade = (score: number) => {
+    const earnedMorenini = Math.floor(score / MINIGAME.pointsPerMorenino);
+    const earnedBriciole = Math.floor(score * MINIGAME.briciolePerPunto);
+    for (let i = 0; i < earnedMorenini; i++) addMorenini(pick(FLAVOR_LIST), 1);
+    if (earnedBriciole > 0) addBriciole(earnedBriciole);
+    setArcadeResult({ score, morenini: earnedMorenini, briciole: earnedBriciole });
+    setArcadePlaying(false);
+    sfx.victory();
   };
 
   const fixActiveIdx = (newParty: PartyMon[]) => {
@@ -1605,12 +1645,13 @@ function MoreniGame() {
         return;
       }
       if (k === "p" || k === "escape") {
-        if (menuOpenRef.current) closeMenu();
+        if (shopOpen) closeShop();
+        else if (menuOpenRef.current) closeMenu();
         else if (pcOpen) closePc();
         else if (phaseRef.current === "world" || phaseRef.current === "battle") togglePause();
         return;
       }
-      if (k === "e" && phaseRef.current === "world" && !pcOpen) {
+      if (k === "e" && phaseRef.current === "world" && !pcOpen && !shopOpen && !gameOpen) {
         const near = engineRef.current?.getNearId();
         if (near) interact(near);
         return;
@@ -1636,7 +1677,7 @@ function MoreniGame() {
       window.removeEventListener("keyup", ku);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [offerMode, pcOpen]);
+  }, [offerMode, pcOpen, shopOpen, gameOpen, arcadePlaying]);
 
   /* input movimento continuo */
   useEffect(() => {
@@ -1875,7 +1916,16 @@ function MoreniGame() {
           {nearId && (
             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[15] pointer-events-none">
               <div className="border-2 border-gold bg-panel/90 px-5 py-2 text-gold font-display text-xl tracking-widest pop-in">
-                [E] {nearId === "pc" ? "USA IL PC DI MICA RIZZI" : nearId === "monument" ? "ESAMINA IL GRANDE MORENINO" : `PARLA CON ${nearId.toUpperCase()}`}
+                [E]{" "}
+                {nearId === "pc"
+                  ? "USA IL PC DI MICA RIZZI"
+                  : nearId === "monument"
+                  ? "ESAMINA IL GRANDE MORENINO"
+                  : nearId === "forno"
+                  ? "ENTRA NEL FORNO — COMPRA MORENINI"
+                  : nearId === "arcade"
+                  ? "SALA GIOCHI — MORENOPONG"
+                  : `PARLA CON ${nearId.toUpperCase()}`}
               </div>
             </div>
           )}
@@ -2491,6 +2541,178 @@ function MoreniGame() {
         </div>
       )}
 
+      {/* ================================ FORNO (negozio morenini) ================================ */}
+      {shopOpen && (
+        <div className="absolute inset-0 z-[46] flex items-center justify-center bg-[rgba(5,2,10,0.88)] p-3">
+          <div className="w-full max-w-3xl max-h-[92vh] flex flex-col border-2 border-gold bg-panel shadow-[0_0_60px_rgba(255,201,77,0.22)]">
+            <div className="flex items-center gap-3 border-b-2 border-edge px-4 py-2.5">
+              <div>
+                <div className="font-display text-2xl text-gold tracking-widest leading-none">FORNO DI NONNA MORENILDE</div>
+                <div className="text-dim text-xs mt-0.5">«Morenini freschi, sfornati col male del mondo spento.»</div>
+              </div>
+              <div className="flex-1" />
+              <div className="text-bone text-sm whitespace-nowrap">
+                🍪 BRICIOLE <span className="text-gold tabular-nums text-lg">{briciole}</span>
+              </div>
+              <button onClick={closeShop} className="btn-hard px-3 py-1.5 bg-panel2 border-2 border-edge text-dim font-display text-xl">
+                ✕
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div>
+                <div className="text-toxic text-xs tracking-[0.25em] mb-2">MORENINI DA OFFERTA — NON SONO INFINITI, SI COMPRANO!</div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+                  {FLAVOR_LIST.map((f) => (
+                    <div key={f} className="border-2 border-edge bg-panel2/70 p-2.5 text-center">
+                      <div className="flex justify-center mb-1">
+                        <CookieIcon css={FLAVORS[f].css} size={34} />
+                      </div>
+                      <div className="font-display text-sm leading-tight" style={{ color: FLAVORS[f].css }}>
+                        {FLAVORS[f].name}
+                      </div>
+                      <div className="text-dim text-xs mt-0.5">
+                        NE HAI <span className="text-bone tabular-nums">×{morenini[f] ?? 0}</span>
+                      </div>
+                      <button
+                        onClick={() => buyMorenino(f)}
+                        disabled={briciole < MORENINI_PRICES[f]}
+                        className="btn-hard mt-1.5 w-full py-1 border-2 border-gold bg-[#3a2a10] text-gold font-display text-sm tracking-widest"
+                      >
+                        COMPRA · {MORENINI_PRICES[f]}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-toxic text-xs tracking-[0.25em] mb-2">DOLCI CURATIVI</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {(
+                    [
+                      { id: "croccantino", price: 25 },
+                      { id: "crostata", price: 45 },
+                      { id: "caffe", price: 60 },
+                      { id: "famiglia", price: 80 },
+                    ] as { id: string; price: number }[]
+                  ).map(({ id, price }) => (
+                    <div key={id} className="flex items-center gap-2.5 border-2 border-edge bg-panel2/70 p-2">
+                      <div
+                        className="w-9 h-9 grid place-items-center border border-edge text-lg"
+                        style={{ background: CONSUMABLES[id].hue + "33", color: CONSUMABLES[id].hue }}
+                      >
+                        ♥
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-bone text-sm leading-tight">{CONSUMABLES[id].name}</div>
+                        <div className="text-dim text-[11px] leading-tight">{CONSUMABLES[id].desc}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-dim text-[11px]">×{consumables[id] ?? 0}</div>
+                        <button
+                          onClick={() => buyConsumable(id, price)}
+                          disabled={briciole < price}
+                          className="btn-hard mt-0.5 px-2 py-0.5 border-2 border-gold bg-[#3a2a10] text-gold font-display text-xs tracking-widest"
+                        >
+                          {price} 🍪
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="text-dim text-xs">
+                LE BRICIOLE SI VINCONO IN BATTAGLIA E ALLA SALA GIOCHI (MORENOPONG). SPENDILE CON GIUDIZIO: LA NONNA TI GUARDA.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================================ SALA GIOCHI — MORENOPONG ================================ */}
+      {gameOpen && (
+        <div className="absolute inset-0 z-[46] flex items-center justify-center bg-[rgba(5,2,10,0.9)] p-3">
+          <div className="w-full max-w-xl max-h-[94vh] flex flex-col border-2 border-blood bg-panel shadow-[0_0_60px_rgba(255,46,95,0.25)]">
+            <div className="flex items-center gap-3 border-b-2 border-edge px-4 py-2.5">
+              <div>
+                <div className="font-display text-2xl text-blood tracking-widest leading-none">SALA GIOCHI — MORENOPONG</div>
+                <div className="text-dim text-xs mt-0.5">TETRIS × PONG FUSI NEL PECCATO. SI PAGA PER ENTRARE, SI VINCONO MORENINI.</div>
+              </div>
+              <div className="flex-1" />
+              <div className="text-bone text-sm whitespace-nowrap">
+                🍪 <span className="text-gold tabular-nums text-lg">{briciole}</span>
+              </div>
+              <button onClick={closeArcade} className="btn-hard px-3 py-1.5 bg-panel2 border-2 border-edge text-dim font-display text-xl">
+                ✕
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4">
+              {!arcadePlaying && !arcadeResult && (
+                <div className="text-center py-4">
+                  <div className="font-display text-4xl text-gold mb-2">COME SI GIOCA</div>
+                  <ul className="text-dim text-sm space-y-1 mb-4 text-left max-w-sm mx-auto">
+                    <li>→ I pezzi cadono e si IMPILANO come a tetris.</li>
+                    <li>→ La pallina rimbalza e SBRICIOLA i blocchi (+10).</li>
+                    <li>→ Le righe complete si cancellano (+100 × combo).</li>
+                    <li>→ Muovi la racchetta con ◄ ► / A D / mouse.</li>
+                    <li>→ 3 vite. Ogni {MINIGAME.pointsPerMorenino} punti = 1 MORENINO in regalo.</li>
+                  </ul>
+                  <button
+                    onClick={startArcade}
+                    disabled={briciole < MINIGAME.entry}
+                    className="btn-hard px-8 py-3 bg-blood border-2 border-[#ffd1dd] text-[#fff0f4] font-display text-2xl tracking-widest"
+                  >
+                    GIOCA · {MINIGAME.entry} 🍪
+                  </button>
+                  {briciole < MINIGAME.entry && (
+                    <div className="text-blood text-sm mt-2">NON HAI ABBASTANZA BRICIOLE. VINCI QUALCHE BATTAGLIA!</div>
+                  )}
+                </div>
+              )}
+
+              {arcadePlaying && (
+                <div className="flex flex-col items-center gap-3">
+                  <Morenopong onExit={(score) => collectArcade(score)} />
+                </div>
+              )}
+
+              {arcadeResult && (
+                <div className="text-center py-6 pop-in">
+                  <div className="font-display text-4xl text-gold mb-3">PUNTEGGIO: {arcadeResult.score}</div>
+                  <div className="text-bone text-lg mb-1">
+                    HAI VINTO <span className="text-gold">{arcadeResult.morenini} MORENINI</span> (gusti casuali)
+                  </div>
+                  <div className="text-dim text-base mb-5">
+                    + <span className="text-gold tabular-nums">{arcadeResult.briciole}</span> briciole di consolazione
+                  </div>
+                  <div className="flex gap-3 justify-center">
+                    <button
+                      onClick={() => {
+                        setArcadeResult(null);
+                        startArcade();
+                      }}
+                      disabled={briciole < MINIGAME.entry}
+                      className="btn-hard px-6 py-2.5 bg-blood border-2 border-[#ffd1dd] text-[#fff0f4] font-display text-xl tracking-widest"
+                    >
+                      GIOCA ANCORA · {MINIGAME.entry} 🍪
+                    </button>
+                    <button
+                      onClick={closeArcade}
+                      className="btn-hard px-6 py-2.5 bg-panel2 border-2 border-edge text-dim font-display text-xl tracking-widest"
+                    >
+                      ESCI
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ================================ NOTIFICA D'INERZIA ================================ */}
       {inertiaNotice && (
         <div className="absolute inset-0 z-[52] flex items-center justify-center bg-[rgba(5,2,10,0.85)] p-4">
@@ -2654,6 +2876,424 @@ function MoreniGame() {
         {muted ? "♪ AUDIO: OFF" : "♪ AUDIO: ON"}
       </button>
     </div>
+  );
+}
+
+/* ================================================================
+   MORENOPONG — il minigioco della Sala Giochi (tetris × pong)
+   Pezzi tetromino cadono e si impilano; una pallina rimbalza e
+   sbriciola i blocchi; le righe complete si cancellano per i punti.
+   ================================================================ */
+const MCOLS = 12;
+const MROWS = 14;
+const MCELL = 30;
+const MW = MCOLS * MCELL; // 360
+const MH = 420 + 110; // griglia + zona racchetta = 530
+const FLAVOR_CSS = ["#d8b98a", "#8a4b2a", "#ff6fa5", "#9bd84b"];
+
+interface PongPiece {
+  cells: { c: number; r: number }[];
+  color: number;
+  dy: number; // pixel di caduta
+}
+interface PongBall {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+}
+
+function Morenopong({ onExit }: { onExit: (score: number) => void }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const stateRef = useRef({
+    grid: [] as number[][], // -1 vuoto, altrimenti indice colore
+    piece: null as PongPiece | null,
+    spawnIn: 0.4,
+    ball: { x: MW / 2, y: 480, vx: 2.6, vy: -4.2 } as PongBall,
+    paddleX: MW / 2 - 40,
+    paddleW: 80,
+    paddleTarget: MW / 2 - 40,
+    score: 0,
+    lives: 3,
+    combo: 1,
+    over: false,
+    clearing: [] as { row: number; t: number }[],
+    particles: [] as { x: number; y: number; vx: number; vy: number; life: number; color: string }[],
+    shake: 0,
+    keys: { left: false, right: false },
+    time: 0,
+  });
+  const onExitRef = useRef(onExit);
+  onExitRef.current = onExit;
+
+  useEffect(() => {
+    const S = stateRef.current;
+    // griglia vuota
+    S.grid = Array.from({ length: MROWS }, () => Array(MCOLS).fill(-1));
+
+    const SHAPES: { c: number; r: number }[][] = [
+      [{ c: 0, r: 0 }, { c: 1, r: 0 }, { c: 2, r: 0 }, { c: 3, r: 0 }], // I
+      [{ c: 0, r: 0 }, { c: 1, r: 0 }, { c: 0, r: 1 }, { c: 1, r: 1 }], // O
+      [{ c: 0, r: 0 }, { c: 1, r: 0 }, { c: 2, r: 0 }, { c: 1, r: 1 }], // T
+      [{ c: 1, r: 0 }, { c: 2, r: 0 }, { c: 0, r: 1 }, { c: 1, r: 1 }], // S
+      [{ c: 0, r: 0 }, { c: 0, r: 1 }, { c: 0, r: 2 }, { c: 1, r: 2 }], // L
+      [{ c: 0, r: 0 }, { c: 1, r: 0 }, { c: 1, r: 1 }, { c: 1, r: 2 }], // J
+    ];
+
+    const spawnPiece = () => {
+      const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+      const width = Math.max(...shape.map((c) => c.c)) + 1;
+      const col = Math.floor(Math.random() * (MCOLS - width + 1));
+      S.piece = {
+        cells: shape.map((c) => ({ c: c.c + col, r: c.r })),
+        color: Math.floor(Math.random() * 4),
+        dy: 0,
+      };
+    };
+
+    const stackTop = (c: number) => {
+      for (let r = 0; r < MROWS; r++) if (S.grid[r][c] !== -1) return r;
+      return MROWS;
+    };
+
+    const lockPiece = () => {
+      if (!S.piece) return;
+      let overflow = false;
+      for (const cell of S.piece.cells) {
+        const target = stackTop(cell.c) - 1;
+        if (target < 0) {
+          overflow = true;
+          break;
+        }
+        S.grid[target][cell.c] = S.piece.color;
+      }
+      S.piece = null;
+      S.spawnIn = 0.6;
+      if (overflow) {
+        S.over = true;
+      } else {
+        checkRows();
+      }
+    };
+
+    const checkRows = () => {
+      for (let r = 0; r < MROWS; r++) {
+        if (S.grid[r].every((v) => v !== -1) && !S.clearing.some((c) => c.row === r)) {
+          S.clearing.push({ row: r, t: 0.3 });
+          S.score += 100 * S.combo;
+          S.combo = Math.min(4, S.combo + 1);
+          S.shake = 6;
+          for (let c = 0; c < MCOLS; c++) {
+            for (let i = 0; i < 3; i++) {
+              S.particles.push({
+                x: c * MCELL + MCELL / 2,
+                y: r * MCELL + MCELL / 2,
+                vx: (Math.random() - 0.5) * 240,
+                vy: (Math.random() - 0.5) * 240,
+                life: 0.6,
+                color: FLAVOR_CSS[S.grid[r][c]] ?? "#ffc94d",
+              });
+            }
+          }
+        }
+      }
+    };
+
+    const collapseRows = () => {
+      const done = S.clearing.filter((c) => c.t <= 0).map((c) => c.row).sort((a, b) => b - a);
+      for (const row of done) {
+        S.grid.splice(row, 1);
+        S.grid.unshift(Array(MCOLS).fill(-1));
+      }
+      if (done.length) S.clearing = S.clearing.filter((c) => c.t > 0);
+    };
+
+    const resetBall = () => {
+      S.ball = { x: S.paddleX + S.paddleW / 2, y: 470, vx: (Math.random() < 0.5 ? -1 : 1) * 2.6, vy: -4.4 };
+    };
+
+    const canvas = canvasRef.current!;
+    const ctx = canvas.getContext("2d")!;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = MW * dpr;
+    canvas.height = MH * dpr;
+    ctx.scale(dpr, dpr);
+
+    let raf = 0;
+    let last = performance.now();
+
+    const step = (dt: number) => {
+      S.time += dt;
+      // racchetta
+      if (S.keys.left) S.paddleTarget -= 420 * dt;
+      if (S.keys.right) S.paddleTarget += 420 * dt;
+      S.paddleTarget = Math.max(0, Math.min(MW - S.paddleW, S.paddleTarget));
+      S.paddleX += (S.paddleTarget - S.paddleX) * Math.min(1, dt * 18);
+
+      // pezzo che cade
+      if (!S.piece && !S.over) {
+        S.spawnIn -= dt;
+        if (S.spawnIn <= 0) spawnPiece();
+      }
+      if (S.piece && !S.over) {
+        const fallSpeed = 46 + Math.min(90, S.score / 14);
+        S.piece.dy += fallSpeed * dt;
+        // atterraggio: ogni cella cade nella colonna fino alla cima dello stack
+        let landed = false;
+        for (const cell of S.piece.cells) {
+          const top = stackTop(cell.c);
+          const bottom = cell.r * MCELL + S.piece.dy + MCELL;
+          if (bottom >= top * MCELL) landed = true;
+        }
+        if (landed) lockPiece();
+      }
+
+      // righe in cancellazione
+      for (const c of S.clearing) c.t -= dt;
+      collapseRows();
+
+      // pallina (substep per evitare tunneling)
+      if (!S.over) {
+        const steps = 3;
+        const bSpeed = 4.4 + Math.min(3.5, S.score / 260);
+        const mag = Math.hypot(S.ball.vx, S.ball.vy) || 1;
+        S.ball.vx = (S.ball.vx / mag) * bSpeed;
+        S.ball.vy = (S.ball.vy / mag) * bSpeed;
+        for (let i = 0; i < steps; i++) {
+          const b = S.ball;
+          b.x += (S.ball.vx * 60 * dt) / steps;
+          b.y += (S.ball.vy * 60 * dt) / steps;
+          // muri
+          if (b.x < 7) {
+            b.x = 7;
+            b.vx = Math.abs(b.vx);
+          }
+          if (b.x > MW - 7) {
+            b.x = MW - 7;
+            b.vx = -Math.abs(b.vx);
+          }
+          if (b.y < 7) {
+            b.y = 7;
+            b.vy = Math.abs(b.vy);
+          }
+          // racchetta
+          if (b.vy > 0 && b.y > 482 && b.y < 500 && b.x > S.paddleX - 7 && b.x < S.paddleX + S.paddleW + 7) {
+            const hit = (b.x - (S.paddleX + S.paddleW / 2)) / (S.paddleW / 2);
+            b.vy = -Math.abs(b.vy);
+            b.vx = hit * 4.6;
+            b.y = 481;
+            S.score += 5;
+          }
+          // blocchi della griglia
+          const gc = Math.floor(b.x / MCELL);
+          const gr = Math.floor(b.y / MCELL);
+          for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+              const r = gr + dr;
+              const c = gc + dc;
+              if (r < 0 || r >= MROWS || c < 0 || c >= MCOLS) continue;
+              if (S.grid[r][c] === -1) continue;
+              const bx = c * MCELL;
+              const by = r * MCELL;
+              const nx = Math.max(bx, Math.min(b.x, bx + MCELL));
+              const ny = Math.max(by, Math.min(b.y, by + MCELL));
+              const dx = b.x - nx;
+              const dy = b.y - ny;
+              if (dx * dx + dy * dy < 49) {
+                // sbriciola il blocco
+                const col = FLAVOR_CSS[S.grid[r][c]];
+                S.grid[r][c] = -1;
+                S.score += 10;
+                S.shake = 3;
+                for (let p = 0; p < 6; p++) {
+                  S.particles.push({
+                    x: bx + MCELL / 2,
+                    y: by + MCELL / 2,
+                    vx: (Math.random() - 0.5) * 200,
+                    vy: (Math.random() - 0.5) * 200,
+                    life: 0.5,
+                    color: col,
+                  });
+                }
+                if (Math.abs(dx) > Math.abs(dy)) b.vx = dx > 0 ? Math.abs(b.vx) : -Math.abs(b.vx);
+                else b.vy = dy > 0 ? Math.abs(b.vy) : -Math.abs(b.vy);
+                dr = 2; // esci
+                break;
+              }
+            }
+          }
+          // pallina persa
+          if (b.y > MH + 12) {
+            S.lives -= 1;
+            S.combo = 1;
+            S.shake = 8;
+            if (S.lives <= 0) S.over = true;
+            else resetBall();
+          }
+        }
+      }
+
+      // particelle
+      for (let i = S.particles.length - 1; i >= 0; i--) {
+        const p = S.particles[i];
+        p.life -= dt;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += 300 * dt;
+        if (p.life <= 0) S.particles.splice(i, 1);
+      }
+      S.shake = Math.max(0, S.shake - 30 * dt);
+    };
+
+    const draw = () => {
+      const b = S.ball;
+      ctx.save();
+      ctx.clearRect(0, 0, MW, MH);
+      ctx.fillStyle = "#120a20";
+      ctx.fillRect(0, 0, MW, MH);
+      if (S.shake > 0) ctx.translate((Math.random() - 0.5) * S.shake, (Math.random() - 0.5) * S.shake);
+
+      // griglia
+      ctx.strokeStyle = "rgba(58,33,96,0.5)";
+      ctx.lineWidth = 1;
+      for (let c = 0; c <= MCOLS; c++) {
+        ctx.beginPath();
+        ctx.moveTo(c * MCELL, 0);
+        ctx.lineTo(c * MCELL, MROWS * MCELL);
+        ctx.stroke();
+      }
+      for (let r = 0; r <= MROWS; r++) {
+        ctx.beginPath();
+        ctx.moveTo(0, r * MCELL);
+        ctx.lineTo(MW, r * MCELL);
+        ctx.stroke();
+      }
+
+      // blocchi impilati
+      for (let r = 0; r < MROWS; r++) {
+        for (let c = 0; c < MCOLS; c++) {
+          const v = S.grid[r][c];
+          if (v === -1) continue;
+          const clearing = S.clearing.some((cl) => cl.row === r);
+          ctx.fillStyle = clearing && Math.floor(S.time * 12) % 2 === 0 ? "#ffffff" : FLAVOR_CSS[v];
+          ctx.fillRect(c * MCELL + 2, r * MCELL + 2, MCELL - 4, MCELL - 4);
+          ctx.fillStyle = "rgba(255,255,255,0.25)";
+          ctx.fillRect(c * MCELL + 2, r * MCELL + 2, MCELL - 4, 6);
+        }
+      }
+
+      // pezzo in caduta
+      if (S.piece) {
+        ctx.fillStyle = FLAVOR_CSS[S.piece.color];
+        for (const cell of S.piece.cells) {
+          const y = cell.r * MCELL + S.piece.dy;
+          ctx.fillRect(cell.c * MCELL + 2, y + 2, MCELL - 4, MCELL - 4);
+          ctx.fillStyle = "rgba(255,255,255,0.35)";
+          ctx.fillRect(cell.c * MCELL + 2, y + 2, MCELL - 4, 6);
+          ctx.fillStyle = FLAVOR_CSS[S.piece.color];
+        }
+      }
+
+      // zona racchetta
+      ctx.fillStyle = "rgba(77,255,166,0.06)";
+      ctx.fillRect(0, 420, MW, MH - 420);
+
+      // racchetta
+      ctx.fillStyle = "#4dffa6";
+      ctx.fillRect(S.paddleX, 486, S.paddleW, 12);
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.fillRect(S.paddleX, 486, S.paddleW, 4);
+
+      // pallina con scia
+      ctx.fillStyle = "rgba(255,201,77,0.25)";
+      ctx.beginPath();
+      ctx.arc(b.x - b.vx * 1.2, b.y - b.vy * 1.2, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ffc94d";
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      // particelle
+      for (const p of S.particles) {
+        ctx.globalAlpha = Math.max(0, p.life / 0.6);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x - 3, p.y - 3, 6, 6);
+      }
+      ctx.globalAlpha = 1;
+
+      // HUD
+      ctx.fillStyle = "#efe6d8";
+      ctx.font = "bold 20px 'VT323', monospace";
+      ctx.textAlign = "left";
+      ctx.fillText(`PUNTI ${S.score}`, 8, MH - 8);
+      ctx.textAlign = "right";
+      ctx.fillText(`VITE ${"●".repeat(Math.max(0, S.lives))}`, MW - 8, MH - 8);
+
+      if (S.over) {
+        ctx.fillStyle = "rgba(5,2,10,0.75)";
+        ctx.fillRect(0, 0, MW, MH);
+        ctx.fillStyle = "#ff2e5f";
+        ctx.font = "bold 40px 'Grenze Gotisch', serif";
+        ctx.textAlign = "center";
+        ctx.fillText("GAME OVER", MW / 2, MH / 2 - 10);
+        ctx.fillStyle = "#efe6d8";
+        ctx.font = "bold 22px 'VT323', monospace";
+        ctx.fillText(`HAI FATTO ${S.score} PUNTI`, MW / 2, MH / 2 + 26);
+      }
+      ctx.restore();
+    };
+
+    const frame = (now: number) => {
+      const dt = Math.min(0.033, (now - last) / 1000);
+      last = now;
+      if (!S.over) step(dt);
+      draw();
+      if (S.over) {
+        // piccolo delay per far leggere il game over, poi incassa
+        window.setTimeout(() => onExitRef.current(S.score), 900);
+        return;
+      }
+      raf = requestAnimationFrame(frame);
+    };
+
+    const kd = (e: KeyboardEvent) => {
+      if (e.code === "ArrowLeft" || e.code === "KeyA") S.keys.left = true;
+      if (e.code === "ArrowRight" || e.code === "KeyD") S.keys.right = true;
+    };
+    const ku = (e: KeyboardEvent) => {
+      if (e.code === "ArrowLeft" || e.code === "KeyA") S.keys.left = false;
+      if (e.code === "ArrowRight" || e.code === "KeyD") S.keys.right = false;
+    };
+    window.addEventListener("keydown", kd);
+    window.addEventListener("keyup", ku);
+
+    resetBall();
+    spawnPiece();
+    raf = requestAnimationFrame(frame);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("keydown", kd);
+      window.removeEventListener("keyup", ku);
+    };
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ width: "100%", maxWidth: 380, touchAction: "none" }}
+      onMouseMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * MW;
+        stateRef.current.paddleTarget = Math.max(0, Math.min(MW - stateRef.current.paddleW, x - stateRef.current.paddleW / 2));
+      }}
+      onTouchMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = ((e.touches[0].clientX - rect.left) / rect.width) * MW;
+        stateRef.current.paddleTarget = Math.max(0, Math.min(MW - stateRef.current.paddleW, x - stateRef.current.paddleW / 2));
+      }}
+    />
   );
 }
 
