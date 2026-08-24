@@ -332,6 +332,46 @@ function makeMon(spId: string): PartyMon {
   return { spId, hp: s.baseHp, maxHp: s.baseHp, atk: s.baseAtk };
 }
 
+/* ================================================= SALVATAGGIO LOCALSTORAGE */
+const SAVE_KEY = "shin-moreni-tensei-save-v1";
+
+interface SaveData {
+  flags: Flags;
+  party: PartyMon[];
+  items: string[];
+  score: number;
+  activeIdx: number;
+  pos: { x: number; z: number };
+}
+
+function loadSave(): SaveData | null {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    const d = JSON.parse(raw) as SaveData;
+    if (!d || typeof d !== "object" || !Array.isArray(d.party) || !d.flags) return null;
+    return d;
+  } catch {
+    return null;
+  }
+}
+
+function writeSave(d: SaveData) {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(d));
+  } catch {
+    /* storage pieno o non disponibile: ignora */
+  }
+}
+
+function clearSave() {
+  try {
+    localStorage.removeItem(SAVE_KEY);
+  } catch {
+    /* ignora */
+  }
+}
+
 function MoreniGame() {
   const mountRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<MoreniEngine | null>(null);
@@ -367,9 +407,12 @@ function MoreniGame() {
   const onChoiceRef = useRef<((i: number) => void) | null>(null);
   const keysRef = useRef<Record<string, boolean>>({});
   const hugHeldRef = useRef(false);
+  const hugDoneRef = useRef(false);
   const bannerTRef = useRef<number | null>(null);
   const toastTRef = useRef<number | null>(null);
   const logIdRef = useRef(0);
+  const gameStartedRef = useRef(false);
+  const [hasSave, setHasSave] = useState(false);
 
   useEffect(() => {
     phaseRef.current = phase;
@@ -389,6 +432,18 @@ function MoreniGame() {
   useEffect(() => {
     btRef.current = bt;
   }, [bt]);
+
+  /* controllo save all'avvio */
+  useEffect(() => {
+    setHasSave(loadSave() !== null);
+  }, []);
+
+  /* autosave: ogni progresso significativo finisce in localStorage */
+  useEffect(() => {
+    if (!gameStartedRef.current) return;
+    const pos = engineRef.current?.getPlayerPos() ?? { x: 0, z: 9 };
+    writeSave({ flags, party, items, score, activeIdx, pos });
+  }, [flags, party, items, score, activeIdx]);
 
   /* ---------------- helpers ---------------- */
   const patchBt = (p: Partial<BattleState>) => {
@@ -413,7 +468,12 @@ function MoreniGame() {
 
   const say = (script: string, after?: () => void) => {
     setDlgLines(SCRIPTS[script]);
-    afterDlgRef.current = after ?? (() => setPhase("world"));
+    // Torna sempre al mondo, poi il callback può cambiare fase (battle/quiz/hug/...).
+    // Senza questo, i dialoghi senza fase di uscita (coizio_win, mico_win, don2...) bloccavano il gioco.
+    afterDlgRef.current = () => {
+      setPhase("world");
+      after?.();
+    };
     onChoiceRef.current = null;
     setPhase("dialogue");
   };
@@ -555,7 +615,8 @@ function MoreniGame() {
       setHug((h) => {
         if (h.done) return h;
         const next = Math.max(0, Math.min(100, h.progress + (hugHeldRef.current ? 2.4 : -1.4)));
-        if (next >= 100 && !h.done) {
+        if (next >= 100 && !h.done && !hugDoneRef.current) {
+          hugDoneRef.current = true;
           hugHeldRef.current = false;
           window.setTimeout(() => finishHug(), 350);
           return { ...h, progress: 100, done: true };
@@ -575,6 +636,8 @@ function MoreniGame() {
   const startGame = () => {
     sfx.unlock();
     sfx.start();
+    clearSave();
+    gameStartedRef.current = true;
     setScore(0);
     setFlags(initialFlags);
     setParty([]);
@@ -583,7 +646,34 @@ function MoreniGame() {
     setBt(null);
     engineRef.current?.companionFollow(false);
     engineRef.current?.setPortalOpen(false);
+    engineRef.current?.setSwordVisible(true);
+    engineRef.current?.setClompAwakeState(false);
     say("prologue", () => setPhase("starter"));
+  };
+
+  const continueGame = () => {
+    const save = loadSave();
+    if (!save) {
+      startGame();
+      return;
+    }
+    sfx.unlock();
+    sfx.start();
+    gameStartedRef.current = true;
+    const healed = save.party.map((m) => ({ ...m, hp: m.maxHp }));
+    setFlags(save.flags);
+    setParty(healed);
+    setActiveIdx(Math.min(save.activeIdx, Math.max(0, healed.length - 1)));
+    setItems(save.items);
+    setScore(save.score);
+    setBt(null);
+    engineRef.current?.companionFollow(save.flags.clompAwake);
+    engineRef.current?.setPortalOpen(save.flags.clompAwake);
+    engineRef.current?.setSwordVisible(!save.flags.swordPulled);
+    engineRef.current?.setClompAwakeState(save.flags.clompAwake);
+    engineRef.current?.enterWorld(save.pos.x, save.pos.z);
+    setPhase("world");
+    showBanner("BENTORNATO", "LA PROFEZIA CONTINUA", false);
   };
 
   const pickStarter = (spId: string) => {
@@ -669,6 +759,7 @@ function MoreniGame() {
         return;
       }
       say("coizio1", () => {
+        hugDoneRef.current = false;
         setHug({ progress: 0, running: true, done: false });
         setPhase("hug");
       });
@@ -1000,6 +1091,8 @@ function MoreniGame() {
         say("finale", () => {
           addScore(500);
           sfx.victory();
+          clearSave();
+          gameStartedRef.current = false;
           setPhase("victory");
         });
       });
@@ -1073,6 +1166,7 @@ function MoreniGame() {
     engineRef.current?.endBattle();
     engineRef.current?.attractMode(true);
     setBt(null);
+    setHasSave(loadSave() !== null);
     setPhase("title");
   };
 
@@ -1106,12 +1200,22 @@ function MoreniGame() {
             Un RPG demenziale ad aree esplorabili: combatti a turni, offri morenini per convincere i Moreni, recluta gli Otto
             Croccanti, sveglia il cavaliere Clomp e purifica il facocemoreno finale.
           </p>
-          <button
-            onClick={startGame}
-            className="btn-hard mt-6 px-10 py-4 bg-blood border-2 border-[#ffd1dd] text-[#fff0f4] font-display text-2xl md:text-3xl tracking-widest"
-          >
-            ▶ INIZIA LA PROFEZIA
-          </button>
+          <div className="mt-6 flex flex-col items-center gap-3">
+            {hasSave && (
+              <button
+                onClick={continueGame}
+                className="btn-hard px-10 py-4 bg-toxic border-2 border-[#d8fff0] text-[#04150c] font-display text-2xl md:text-3xl tracking-widest"
+              >
+                ▶ CONTINUA LA PROFEZIA
+              </button>
+            )}
+            <button
+              onClick={startGame}
+              className="btn-hard px-10 py-4 bg-blood border-2 border-[#ffd1dd] text-[#fff0f4] font-display text-2xl md:text-3xl tracking-widest"
+            >
+              {hasSave ? "✠ NUOVA PROFEZIA" : "▶ INIZIA LA PROFEZIA"}
+            </button>
+          </div>
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm md:text-base max-w-3xl px-4 w-full">
             <div className="border-2 border-edge bg-panel/85 p-3">
               <div className="text-toxic font-display text-lg mb-1">MONDO</div>
