@@ -285,6 +285,35 @@ export const START_CONSUMABLES: Record<string, number> = {
   crostata: 1,
 };
 
+/* ------------------------------------------ ECONOMIA: BRICIOLE & MORENINI
+   I morenini da offrire ai Moreni NON sono infiniti: si comprano al Forno
+   con le BRICIOLE (la valuta), si vincono in battaglia o alla Sala Giochi. */
+export const START_BRICIOLE = 60;
+
+export const MORENINI_PRICES: Record<FlavorId, number> = {
+  liscio: 8,
+  cioccolato: 12,
+  fragola: 12,
+  pistacchio: 15,
+};
+
+export const START_MORENINI: Record<FlavorId, number> = {
+  liscio: 3,
+  cioccolato: 2,
+  fragola: 2,
+  pistacchio: 1,
+};
+
+/* Ricompensa base in briciole per una vittoria (scala con la difficoltà). */
+export const battleBriciole = (diff: number, boss: boolean) => (boss ? 60 : 25 + diff * 10);
+
+/* Sala Giochi: MORENOPONG (tetris × pong). Si paga per entrare, si vincono morenini. */
+export const MINIGAME = {
+  entry: 10, // costo di ingresso in briciole
+  pointsPerMorenino: 120, // ogni tot punti → 1 morenino in regalo
+  briciolePerPunto: 0.08, // il punteggio residuo viene convertito in briciole
+};
+
 /* ------------------------------------------ DIALOGHI */
 export interface DialogueLine {
   spk: string;

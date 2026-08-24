@@ -290,6 +290,7 @@ export class MoreniEngine {
   private clompSleepSprite: THREE.Sprite | null = null;
   private props: { id: string; x: number; z: number }[] = [];
   private pcScreenMat: THREE.MeshBasicMaterial | null = null;
+  private arcadeMat: THREE.MeshBasicMaterial | null = null;
   private nearId: string | null = null;
   private curZone: string | null = null;
   private zoneCheckT = 0;
@@ -670,6 +671,12 @@ export class MoreniEngine {
     this.buildPcProp(4.1, 5.6);
     this.props.push({ id: "pc", x: 4.1, z: 5.6 });
 
+    // FORNO DEI MORENINI (negozio, hub) e SALA GIOCHI (minigioco, hub)
+    this.buildShopProp(-6.6, 6.4);
+    this.props.push({ id: "forno", x: -6.6, z: 6.4 });
+    this.buildArcadeProp(7.4, 2.2);
+    this.props.push({ id: "arcade", x: 7.4, z: 2.2 });
+
     // etichette zone
     for (const z of ZONES) {
       const col = "#" + z.color.toString(16).padStart(6, "0");
@@ -725,6 +732,63 @@ export class MoreniEngine {
     g.add(glow);
     const lab = makeLabel("PC DI MICA RIZZI", "#4dffa6");
     lab.position.set(0, 3.2, 0);
+    g.add(lab);
+    g.position.set(x, 0, z);
+    g.rotation.y = Math.atan2(-x, -z) * 0.5;
+    this.worldGroup.add(g);
+  }
+
+  /* FORNO DEI MORENINI: casetta col tetto a punta e un'insegna che arde. */
+  private buildShopProp(x: number, z: number) {
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.7, 2.0), new THREE.MeshStandardMaterial({ color: 0x6e4a2b, roughness: 0.9 }));
+    body.position.y = 0.85;
+    g.add(body);
+    const roof = new THREE.Mesh(new THREE.ConeGeometry(2.1, 1.2, 4), new THREE.MeshStandardMaterial({ color: 0xb3542e, roughness: 0.9 }));
+    roof.position.y = 2.3;
+    roof.rotation.y = Math.PI / 4;
+    g.add(roof);
+    const door = new THREE.Mesh(new THREE.PlaneGeometry(0.8, 1.1), new THREE.MeshStandardMaterial({ color: 0x3d2a10, roughness: 0.9 }));
+    door.position.set(0, 0.55, 1.01);
+    g.add(door);
+    const sign = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.5, 0.08), new THREE.MeshStandardMaterial({ color: 0xffc94d, emissive: 0x8a5a00, emissiveIntensity: 0.6 }));
+    sign.position.set(0, 1.95, 1.05);
+    g.add(sign);
+    const warm = new THREE.PointLight(0xff9a3d, 14, 9, 1.8);
+    warm.position.set(0, 2.4, 1.6);
+    g.add(warm);
+    const lab = makeLabel("FORNO DEI MORENINI", "#ffc94d");
+    lab.position.set(0, 3.5, 0);
+    g.add(lab);
+    g.position.set(x, 0, z);
+    g.rotation.y = Math.atan2(-x, -z) * 0.5;
+    this.worldGroup.add(g);
+  }
+
+  /* SALA GIOCHI: cabinato arcade collosi al neon che lampeggia. */
+  private buildArcadeProp(x: number, z: number) {
+    const g = new THREE.Group();
+    const cab = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.3, 1.1), new THREE.MeshStandardMaterial({ color: 0x2e1b4f, roughness: 0.7 }));
+    cab.position.y = 1.15;
+    g.add(cab);
+    const marqueeMat = new THREE.MeshBasicMaterial({ color: 0xff2e5f });
+    const marquee = new THREE.Mesh(new THREE.BoxGeometry(1.42, 0.4, 0.3), marqueeMat);
+    marquee.position.set(0, 2.5, 0.35);
+    g.add(marquee);
+    this.arcadeMat = marqueeMat;
+    const screen = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.8), new THREE.MeshBasicMaterial({ color: 0x4dd8ff }));
+    screen.position.set(0, 1.8, 0.56);
+    screen.rotation.x = -0.12;
+    g.add(screen);
+    const deck = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.12, 0.5), new THREE.MeshStandardMaterial({ color: 0x1c1030, roughness: 0.6 }));
+    deck.position.set(0, 1.15, 0.55);
+    deck.rotation.x = 0.3;
+    g.add(deck);
+    const neon = new THREE.PointLight(0xff2e5f, 12, 7, 1.8);
+    neon.position.set(0, 2.8, 1.2);
+    g.add(neon);
+    const lab = makeLabel("SALA GIOCHI — MORENOPONG", "#ff2e5f");
+    lab.position.set(0, 3.6, 0);
     g.add(lab);
     g.position.set(x, 0, z);
     g.rotation.y = Math.atan2(-x, -z) * 0.5;
@@ -1749,6 +1813,10 @@ export class MoreniEngine {
     if (this.pcScreenMat) {
       const flick = 0.85 + Math.sin(t * 30) * 0.05 + (Math.random() < 0.02 ? -0.4 : 0);
       this.pcScreenMat.color.setRGB(0.3 * flick, 1.0 * flick, 0.65 * flick);
+    }
+    if (this.arcadeMat) {
+      const pulse = 0.7 + Math.sin(t * 6) * 0.3;
+      this.arcadeMat.color.setRGB(1.0 * pulse, 0.18 * pulse, 0.37 * pulse);
     }
 
     // morenini in volo

@@ -8,11 +8,16 @@ import {
   FLAVOR_LIST,
   FLAVORS,
   ITEMS,
+  MINIGAME,
+  MORENINI_PRICES,
   SCRIPTS,
+  START_BRICIOLE,
   START_CONSUMABLES,
+  START_MORENINI,
   SWORD_REQ,
   TRIAL_QUIZ,
   ZONES,
+  battleBriciole,
   enemyStats,
   generateMorenoName,
   pick,
@@ -193,6 +198,7 @@ interface BattleState {
   captureBoost: number;
   busy: boolean;
   midPlayed: boolean;
+  diff: number;
   log: { id: number; text: string; kind: "info" | "good" | "bad" }[];
 }
 
@@ -243,6 +249,8 @@ interface SaveData {
   consumables?: Record<string, number>;
   capturedSpecies?: string[];
   pc?: PartyMon[];
+  briciole?: number;
+  morenini?: Record<FlavorId, number>;
   score: number;
   activeIdx: number;
   pos: { x: number; z: number };
@@ -434,6 +442,10 @@ function MoreniGame() {
   const [consumables, setConsumables] = useState<Record<string, number>>({ ...START_CONSUMABLES });
   const [capturedSpecies, setCapturedSpecies] = useState<string[]>([]);
   const [pc, setPc] = useState<PartyMon[]>([]);
+  const [briciole, setBriciole] = useState<number>(START_BRICIOLE);
+  const [morenini, setMorenini] = useState<Record<FlavorId, number>>({ ...START_MORENINI });
+  const [shopOpen, setShopOpen] = useState(false);
+  const [gameOpen, setGameOpen] = useState(false);
   const [flags, setFlags] = useState<Flags>(initialFlags);
   const [zone, setZone] = useState<ZoneDef | null>(null);
   const [nearId, setNearId] = useState<string | null>(null);
@@ -473,6 +485,8 @@ function MoreniGame() {
   const consumablesRef = useRef<Record<string, number>>({ ...START_CONSUMABLES });
   const capturedRef = useRef<string[]>([]);
   const pcRef = useRef<PartyMon[]>([]);
+  const bricioleRef = useRef<number>(START_BRICIOLE);
+  const moreniniRef = useRef<Record<FlavorId, number>>({ ...START_MORENINI });
   const flagsRef = useRef<Flags>(initialFlags);
   const menuOpenRef = useRef(false);
   const btRef = useRef<BattleState | null>(null);
@@ -509,6 +523,12 @@ function MoreniGame() {
     pcRef.current = pc;
   }, [pc]);
   useEffect(() => {
+    bricioleRef.current = briciole;
+  }, [briciole]);
+  useEffect(() => {
+    moreniniRef.current = morenini;
+  }, [morenini]);
+  useEffect(() => {
     flagsRef.current = flags;
   }, [flags]);
   useEffect(() => {
@@ -527,8 +547,8 @@ function MoreniGame() {
   useEffect(() => {
     if (!gameStartedRef.current) return;
     const pos = engineRef.current?.getPlayerPos() ?? { x: 0, z: 9 };
-    writeSave({ flags, party, items, consumables, capturedSpecies, pc, score, activeIdx, pos, savedAt: Date.now() });
-  }, [flags, party, items, consumables, capturedSpecies, pc, score, activeIdx]);
+    writeSave({ flags, party, items, consumables, capturedSpecies, pc, briciole, morenini, score, activeIdx, pos, savedAt: Date.now() });
+  }, [flags, party, items, consumables, capturedSpecies, pc, briciole, morenini, score, activeIdx]);
 
   /* ---------------- helpers ---------------- */
   const hasItem = (id: string) => itemsRef.current.includes(id);
@@ -597,6 +617,46 @@ function MoreniGame() {
     }, 600);
   };
 
+  /* ---------------- ECONOMIA: briciole & morenini ---------------- */
+  const addBriciole = (n: number) => setBriciole((v) => Math.max(0, v + n));
+
+  const addMorenini = (flavor: FlavorId, n: number) =>
+    setMorenini((m) => ({ ...m, [flavor]: Math.max(0, (m[flavor] ?? 0) + n) }));
+
+  /* Consuma un morenino; ritorna false se non ne hai. */
+  const spendMorenino = (flavor: FlavorId): boolean => {
+    const have = moreniniRef.current[flavor] ?? 0;
+    if (have <= 0) return false;
+    setMorenini((m) => ({ ...m, [flavor]: Math.max(0, (m[flavor] ?? 0) - 1) }));
+    return true;
+  };
+
+  /* Acquisto al Forno. */
+  const buyMorenino = (flavor: FlavorId) => {
+    const price = MORENINI_PRICES[flavor];
+    if (bricioleRef.current < price) {
+      showToast(`TI SERVONO ${price} BRICIOLE. VAI A VINCERNE ALLA SALA GIOCHI!`);
+      sfx.wrong();
+      return;
+    }
+    addBriciole(-price);
+    addMorenini(flavor, 1);
+    sfx.correct();
+    showToast(`MORENINO AL ${FLAVORS[flavor].name} ACQUISTATO (-${price})`);
+  };
+
+  const buyConsumable = (id: string, price: number) => {
+    if (bricioleRef.current < price) {
+      showToast(`TI SERVONO ${price} BRICIOLE.`);
+      sfx.wrong();
+      return;
+    }
+    addBriciole(-price);
+    grantConsumable(id);
+    sfx.correct();
+    showToast(`${CONSUMABLES[id].name} ACQUISTATO (-${price})`);
+  };
+
   const bLog = (text: string, kind: "info" | "good" | "bad" = "info") => {
     setBt((b) => (b ? { ...b, log: [...b.log.slice(-3), { id: ++logIdRef.current, text, kind }] } : b));
   };
@@ -623,6 +683,10 @@ function MoreniGame() {
     setConsumables({ ...START_CONSUMABLES });
     setCapturedSpecies([]);
     setPc([]);
+    setBriciole(START_BRICIOLE);
+    setMorenini({ ...START_MORENINI });
+    setShopOpen(false);
+    setGameOpen(false);
     setActiveIdx(0);
     setBt(null);
     setMenuOpen(false);
@@ -668,6 +732,10 @@ function MoreniGame() {
     setConsumables(save.consumables ?? { ...START_CONSUMABLES });
     setCapturedSpecies(save.capturedSpecies ?? []);
     setPc(save.pc ?? []);
+    setBriciole(save.briciole ?? START_BRICIOLE);
+    setMorenini(save.morenini ?? { ...START_MORENINI });
+    setShopOpen(false);
+    setGameOpen(false);
     setScore(save.score);
     setBt(null);
     setMenuOpen(false);
@@ -722,6 +790,8 @@ function MoreniGame() {
     consumables,
     capturedSpecies,
     pc,
+    briciole,
+    morenini,
     score,
     activeIdx,
     pos: engineRef.current?.getPlayerPos() ?? { x: 0, z: 9 },
@@ -765,6 +835,14 @@ function MoreniGame() {
   const interact = (id: string) => {
     const f = flagsRef.current;
     sfx.click();
+    if (id === "forno") {
+      setShopOpen(true);
+      return;
+    }
+    if (id === "arcade") {
+      setGameOpen(true);
+      return;
+    }
     if (id === "pc") {
       say("pc_intro", () => {
         setPcOpen(true);
@@ -961,6 +1039,7 @@ function MoreniGame() {
       captureBoost: diff * 8,
       busy: false,
       midPlayed: false,
+      diff,
       log: [{ id: ++logIdRef.current, text: `${name}, ${speciesById(spId).name} SELVATICO, TI SFIDA!`, kind: "bad" }],
     };
     btRef.current = b;
@@ -989,6 +1068,7 @@ function MoreniGame() {
       captureBoost: 0,
       busy: false,
       midPlayed: false,
+      diff: 0,
       log: [
         {
           id: ++logIdRef.current,
@@ -1104,6 +1184,13 @@ function MoreniGame() {
   const offerMorenino = (flavor: FlavorId) => {
     const b = btRef.current;
     if (!b || b.busy || phaseRef.current !== "battle") return;
+    // I morenini NON sono infiniti: ne consumi uno dall'inventario.
+    if ((moreniniRef.current[flavor] ?? 0) <= 0) {
+      bLog(`NON HAI PIÙ MORENINI AL ${FLAVORS[flavor].name}! COMPRALI AL FORNO O VINCILI ALLA SALA GIOCHI.`, "bad");
+      sfx.wrong();
+      return;
+    }
+    spendMorenino(flavor);
     setOfferMode(false);
     patchBt({ busy: true });
     const enemy = speciesById(b.enemyId);
@@ -1154,16 +1241,23 @@ function MoreniGame() {
         }
         const capId = b.enemyId;
         const capName = displayName(b);
+        const newMon = makeMon(capId, b.enemyName ?? undefined);
         markCaptured(capId);
-        setParty((p) => {
-          if (p.length < 8) {
-            showToast(`${capName} SI È UNITO AL PARTY!`);
-            return [...p, makeMon(capId, b.enemyName ?? undefined)];
-          }
+        if (partyRef.current.length < 8) {
+          const newParty = [...partyRef.current, newMon];
+          partyRef.current = newParty;
+          setParty(newParty);
+          showToast(`${capName} SI È UNITO AL PARTY!`);
+        } else if (pcRef.current.length < PC_CAP) {
+          // Squadra piena: il Moreno reclutato va DRITTO al PC di Mica Rizzi.
+          const newPc = [...pcRef.current, newMon];
+          pcRef.current = newPc;
+          setPc(newPc);
+          showToast(`PARTY PIENO: ${capName} È STATO TRASFERITO AL PC DI MICA RIZZI`);
+        } else {
           addScore(75);
-          showToast(`PARTY PIENO: ${capName} TI SALUTA DA LONTANO (+75)`);
-          return p;
-        });
+          showToast(`PARTY E PC PIENI: ${capName} TI SALUTA DA LONTANO (+75)`);
+        }
         bLog(`${capName} È CONVINTO: AMICIZIA!`, "good");
         window.setTimeout(() => {
           engineRef.current?.endBattle();
@@ -1245,7 +1339,9 @@ function MoreniGame() {
     }
     sfx.victory();
     addScore(b.boss ? 200 : 100);
-    bLog(`${displayName(b)} È AL TAPPETO! +${b.boss ? 200 : 100} CARISMA`, "good");
+    const reward = battleBriciole(b.diff, b.boss);
+    addBriciole(reward);
+    bLog(`${displayName(b)} È AL TAPPETO! +${b.boss ? 200 : 100} CARISMA · +${reward} BRICIOLE`, "good");
     rollDrop(b.boss ? 1 : 0.6);
     engineRef.current?.battleFaint("enemy", () => {
       window.setTimeout(() => {
@@ -1906,19 +2002,22 @@ function MoreniGame() {
               </div>
               {offerMode && (
                 <div className="grid grid-cols-4 gap-2 mt-2">
-                  {FLAVOR_LIST.map((f, i) => (
-                    <button
-                      key={f}
-                      onClick={() => offerMorenino(f)}
-                      disabled={bt.busy}
-                      className="btn-hard flex flex-col items-center gap-1 px-1 py-2 border-2 font-display text-sm tracking-wide"
-                      style={{ background: FLAVORS[f].cssDark, borderColor: FLAVORS[f].css, color: "#fff6ea" }}
-                    >
-                      <CookieIcon css={FLAVORS[f].css} size={20} />
-                      {FLAVORS[f].name}
-                      <span className="text-[10px] opacity-70 font-term">[{i + 1}]</span>
-                    </button>
-                  ))}
+                  {FLAVOR_LIST.map((f, i) => {
+                    const have = morenini[f] ?? 0;
+                    return (
+                      <button
+                        key={f}
+                        onClick={() => offerMorenino(f)}
+                        disabled={bt.busy || have <= 0}
+                        className="btn-hard flex flex-col items-center gap-1 px-1 py-2 border-2 font-display text-sm tracking-wide"
+                        style={{ background: FLAVORS[f].cssDark, borderColor: FLAVORS[f].css, color: "#fff6ea", opacity: have <= 0 ? 0.45 : 1 }}
+                      >
+                        <CookieIcon css={FLAVORS[f].css} size={20} />
+                        {FLAVORS[f].name}
+                        <span className="text-[10px] font-term">×{have} · [{i + 1}]</span>
+                      </button>
+                    );
+                  })}
                 </div>
               )}
               {bt.convinced && !offerMode && (
