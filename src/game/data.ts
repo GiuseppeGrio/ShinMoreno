@@ -49,6 +49,7 @@ export interface SpeciesDef {
   parts: MorenoParts;
   favorite: FlavorId;
   big?: boolean;
+  special?: boolean;
   baseHp: number;
   baseAtk: number;
   recruitLines: string[];
@@ -153,7 +154,7 @@ export const SPECIES: SpeciesDef[] = [
   sp({
     id: "reMorenone", name: "RE MORENONE III", title: "SOVRANO DEL REGNO DEI MORENI", radius: 1.25,
     bodyColor: 0xa55eea, bellyColor: 0xd3a6ff, accentColor: 0xffd700, parts: { crown: true, chain: true }, favorite: "cioccolato",
-    big: true, baseHp: 62, baseAtk: 13,
+    big: true, special: true, baseHp: 62, baseAtk: 13,
     recruitLines: ["HAI VINTO CON ONORE, SUDDITO. IL REGNO TI ACCOGLIE.", "LA CORONA APPROVA. SEI IL MIO NUOVO PASTICCERE DI CORTE."],
     angryLines: ["LESA MAESTÀ! QUESTO È UN REGICIDIO GASTRONOMICO!", "TI CONDANNO ALLA FILA ETERNA ALLA MENSA INFERNALE!"],
     hurtLines: ["UN RE NON SENTE IL DOLORE. AHI.", "LA CORONA MI TRATTIENE DAL CADERE."],
@@ -169,7 +170,7 @@ export const SPECIES: SpeciesDef[] = [
   sp({
     id: "cinghiaale", name: "CINGHIA ALE", title: "CAPO TRIBÙ DEI MORENOFACOCERI", radius: 1.15,
     bodyColor: 0x8f5a2b, bellyColor: 0xd6b183, accentColor: 0xffd700, parts: { snout: true, tusks: true, chain: true, horns: true }, favorite: "cioccolato",
-    big: true, baseHp: 105, baseAtk: 14,
+    big: true, special: true, baseHp: 105, baseAtk: 14,
     recruitLines: ["GRUF. SEI FORTE. LA TRIBÙ TI RICONOSCE... E IO PURE.", "UN CAPO CHE PERDE CON ONORE È DOPPIO CAPO. SONO TUO."],
     angryLines: ["GRUUUF! NESSUNO OFFENDE CINGHIA ALE!", "TI CARICO FINO AL CONFINE DEL MONDO!"],
     hurtLines: ["LE ZANNE! LE ZANNE SONO SACRE!", "GRUF... COLPO DA CAPO."],
@@ -177,7 +178,7 @@ export const SPECIES: SpeciesDef[] = [
   sp({
     id: "maledelmondo", name: "MALE DEL MONDO", title: "L'ESSENZA DEL MALE DEL MONDO", radius: 1.1,
     bodyColor: 0x170d26, bellyColor: 0x2e1b47, accentColor: 0xff2e5f, parts: { hood: true, tears: true }, favorite: "liscio",
-    big: true, baseHp: 135, baseAtk: 15,
+    big: true, special: true, baseHp: 135, baseAtk: 15,
     recruitLines: ["...MI OFFRO VOLONTARIO. LETTERALMENTE.", "VA BENE. MA NEL CASSETTO CI STO COMODO, EH."],
     angryLines: ["IO SONO TUTTO CIÒ CHE AVANZA. ANCHE TU AVANZERAI.", "IL MALE NON SI OFFRE. IL MALE SI PRENDE."],
     hurtLines: ["...STO SOLO FACENDO FINTA.", "IL DOLORE È IL MIO HABITAT."],
@@ -251,6 +252,37 @@ export const ITEMS: Record<string, { name: string; desc: string }> = {
   spilla: { name: "SPILLA DELLA RIVOLTA", desc: "ATK del party +25% (la solidarietà è un moltiplicatore)" },
   abbraccio: { name: "ABBRACCIO ETERNO DI COIZIO", desc: "Tasso di cattura +20% (il contatto convince)" },
   fiala: { name: "FIALA DI MALE OMEOPATICO", desc: "15% di colpi a danno doppio: il male cura il male" },
+};
+
+/* ------------------------------------------ CONSUMABILI (menu RPG) */
+export interface ConsumableDef {
+  id: string;
+  name: string;
+  desc: string;
+  hue: string;
+  heal: number;
+  fullHeal?: boolean;
+  all?: boolean;
+  revive?: boolean;
+}
+
+export const CONSUMABLES: Record<string, ConsumableDef> = {
+  croccantino: { id: "croccantino", name: "MORENINO CROCCANTE", desc: "Ridona 45 HP a un Moreno. Il crunch è terapeutico.", hue: "#d8b98a", heal: 45 },
+  famiglia: { id: "famiglia", name: "MORENINO FAMIGLIA", desc: "Ripristina TUTTI gli HP di un Moreno. Formato XL.", hue: "#ffc94d", heal: 0, fullHeal: true },
+  crostata: { id: "crostata", name: "CROSTATA DI NONNA MORENILDE", desc: "Ridona 60 HP a TUTTO il party. Punge un po', ma cura.", hue: "#ff6fa5", heal: 60, all: true },
+  caffe: { id: "caffe", name: "CAFFÈ DEMONIACO", desc: "Rianima un Moreno al tappeto con il 50% degli HP. Doppio, ristretto, cattivo.", hue: "#8a4b2a", heal: 0, revive: true },
+};
+
+export const CONSUMABLE_LIST: ConsumableDef[] = [
+  CONSUMABLES.croccantino,
+  CONSUMABLES.famiglia,
+  CONSUMABLES.crostata,
+  CONSUMABLES.caffe,
+];
+
+export const START_CONSUMABLES: Record<string, number> = {
+  croccantino: 3,
+  crostata: 1,
 };
 
 /* ------------------------------------------ DIALOGHI */
@@ -385,6 +417,11 @@ export const SCRIPTS: Record<string, DialogueLine[]> = {
   hug_hint: [
     { spk: "coizio", text: "premi SPAZIO. riempi il cuore. non fermarti: l'abbraccio non è una raffica, è una promessa." },
   ],
+
+  pc_intro: [
+    { spk: "NARRATORE", text: "Sullo schermo del PC lampeggia un logo a forma di cuore pixellato. Una voce gentile filtra dalle casse." },
+    { spk: "NARRATORE", text: "«Ciao! Sono MICA LIZZI. Questo è il mio PC: 100 slot per i tuoi Morenini. Depositane, ritirane, e se proprio devi... liberali. Ma pensaci due volte.»" },
+  ],
 };
 
 export const TRIAL_QUIZ = {
@@ -424,4 +461,28 @@ export function enemyStats(id: string, diff: number): { hp: number; atk: number 
   const s = speciesById(id);
   if (s.baseHp > 90) return { hp: s.baseHp, atk: s.baseAtk };
   return { hp: s.baseHp + diff * 10, atk: s.baseAtk + diff * 2 };
+}
+
+/* ------------------------------------------ GENERATORE DI NOMI
+   Regole: lunghezza casuale, primo carattere vocale o consonante a caso,
+   alternanza consonante/vocale; raramente una doppia vocale o consonante. */
+const VOWELS = "aeiou";
+const CONS = "bcdfglmnrstvz";
+
+export function generateMorenoName(): string {
+  const len = 4 + Math.floor(Math.random() * 6); // 4..9
+  let isVowel = Math.random() < 0.5;
+  let out = "";
+  for (let i = 0; i < len; i++) {
+    const double = i > 0 && i < len - 1 && Math.random() < 0.12; // rara doppia
+    const pool = isVowel ? VOWELS : CONS;
+    const ch = pool[Math.floor(Math.random() * pool.length)];
+    out += double ? ch + ch : ch;
+    if (double) {
+      // la doppia "salta" l'alternanza di un passo in più
+      isVowel = !isVowel;
+    }
+    isVowel = !isVowel;
+  }
+  return out.charAt(0).toUpperCase() + out.slice(1);
 }

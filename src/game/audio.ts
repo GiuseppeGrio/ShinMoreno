@@ -77,13 +77,6 @@ class Sfx {
   click() {
     this.tone(340, 0.06, "square", 0.12);
   }
-  type() {
-    this.tone(1900, 0.018, "sine", 0.03);
-  }
-  chomp() {
-    this.noise(0.1, 0.5, 0, 500);
-    this.tone(190, 0.13, "triangle", 0.3, 0, 70);
-  }
   correct() {
     this.tone(523, 0.09, "sine", 0.2);
     this.tone(659, 0.12, "sine", 0.2, 0.07);
@@ -91,6 +84,10 @@ class Sfx {
   wrong() {
     this.tone(170, 0.34, "sawtooth", 0.28, 0, 65);
     this.noise(0.3, 0.35, 0.02, 300, 2);
+  }
+  chomp() {
+    this.noise(0.1, 0.5, 0, 500);
+    this.tone(190, 0.13, "triangle", 0.3, 0, 70);
   }
   tick() {
     this.tone(1250, 0.04, "square", 0.1);
