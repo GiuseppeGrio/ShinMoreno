@@ -253,6 +253,64 @@ export const ITEMS: Record<string, { name: string; desc: string }> = {
   fiala: { name: "FIALA DI MALE OMEOPATICO", desc: "15% di colpi a danno doppio: il male cura il male" },
 };
 
+/* ------------------------------------------ CONSUMABILI (menu RPG) */
+export interface ConsumableDef {
+  id: string;
+  name: string;
+  desc: string;
+  hue: string; // colore icona
+  heal: number; // HP curati (0 se fullHeal/revive)
+  fullHeal?: boolean;
+  all?: boolean; // cura tutto il party
+  revive?: boolean; // rianima un Moreno al tappeto
+}
+
+export const CONSUMABLES: Record<string, ConsumableDef> = {
+  croccantino: {
+    id: "croccantino",
+    name: "MORENINO CROCCANTE",
+    desc: "Ridona 45 HP a un Moreno. Il crunch è terapeutico.",
+    hue: "#d8b98a",
+    heal: 45,
+  },
+  famiglia: {
+    id: "famiglia",
+    name: "MORENINO FAMIGLIA",
+    desc: "Ripristina TUTTI gli HP di un Moreno. Formato XL.",
+    hue: "#ffc94d",
+    heal: 0,
+    fullHeal: true,
+  },
+  crostata: {
+    id: "crostata",
+    name: "CROSTATA DI NONNA MORENILDE",
+    desc: "Ridona 60 HP a TUTTO il party. Punge un po', ma cura.",
+    hue: "#ff6fa5",
+    heal: 60,
+    all: true,
+  },
+  caffe: {
+    id: "caffe",
+    name: "CAFFÈ DEMONIACO",
+    desc: "Rianima un Moreno al tappeto con il 50% degli HP. Doppio, ristretto, cattivo.",
+    hue: "#8a4b2a",
+    heal: 0,
+    revive: true,
+  },
+};
+
+export const CONSUMABLE_LIST: ConsumableDef[] = [
+  CONSUMABLES.croccantino,
+  CONSUMABLES.famiglia,
+  CONSUMABLES.crostata,
+  CONSUMABLES.caffe,
+];
+
+export const START_CONSUMABLES: Record<string, number> = {
+  croccantino: 3,
+  crostata: 1,
+};
+
 /* ------------------------------------------ DIALOGHI */
 export interface DialogueLine {
   spk: string;

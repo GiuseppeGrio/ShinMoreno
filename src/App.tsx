@@ -3,10 +3,13 @@ import { MoreniEngine } from "./game/engine";
 import { sfx } from "./game/audio";
 import {
   CAST,
+  CONSUMABLES,
+  CONSUMABLE_LIST,
   FLAVOR_LIST,
   FLAVORS,
   ITEMS,
   SCRIPTS,
+  START_CONSUMABLES,
   SWORD_REQ,
   TRIAL_QUIZ,
   ZONES,
@@ -344,6 +347,7 @@ interface SaveData {
   flags: Flags;
   party: PartyMon[];
   items: string[];
+  consumables?: Record<string, number>;
   score: number;
   activeIdx: number;
   pos: { x: number; z: number };
@@ -413,6 +417,14 @@ function MoreniGame() {
   const [party, setParty] = useState<PartyMon[]>([]);
   const [activeIdx, setActiveIdx] = useState(0);
   const [items, setItems] = useState<string[]>([]);
+  const [consumables, setConsumables] = useState<Record<string, number>>({ ...START_CONSUMABLES });
+
+  /* ------- menu di gioco RPG ------- */
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuTab, setMenuTab] = useState<"formazione" | "stato" | "zaino">("formazione");
+  const [menuSel, setMenuSel] = useState(0);
+  const [useItemId, setUseItemId] = useState<string | null>(null);
+
   const [dlgLines, setDlgLines] = useState<DialogueLine[]>([]);
   const [banner, setBanner] = useState<{ kicker: string; title: string; boss: boolean } | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -431,6 +443,8 @@ function MoreniGame() {
   const partyRef = useRef<PartyMon[]>([]);
   const activeIdxRef = useRef(0);
   const itemsRef = useRef<string[]>([]);
+  const consumablesRef = useRef<Record<string, number>>({ ...START_CONSUMABLES });
+  const menuOpenRef = useRef(false);
   const btRef = useRef<BattleState | null>(null);
   const afterDlgRef = useRef<(() => void) | null>(null);
   const onChoiceRef = useRef<((i: number) => void) | null>(null);
@@ -452,6 +466,7 @@ function MoreniGame() {
     flags,
     party,
     items,
+    consumables,
     score,
     activeIdx,
     pos: engineRef.current?.getPlayerPos() ?? { x: 0, z: 9 },
@@ -516,6 +531,12 @@ function MoreniGame() {
     itemsRef.current = items;
   }, [items]);
   useEffect(() => {
+    consumablesRef.current = consumables;
+  }, [consumables]);
+  useEffect(() => {
+    menuOpenRef.current = menuOpen;
+  }, [menuOpen]);
+  useEffect(() => {
     btRef.current = bt;
   }, [bt]);
 
@@ -528,8 +549,8 @@ function MoreniGame() {
   useEffect(() => {
     if (!gameStartedRef.current) return;
     const pos = engineRef.current?.getPlayerPos() ?? { x: 0, z: 9 };
-    writeSave({ flags, party, items, score, activeIdx, pos, savedAt: Date.now() });
-  }, [flags, party, items, score, activeIdx]);
+    writeSave({ flags, party, items, consumables, score, activeIdx, pos, savedAt: Date.now() });
+  }, [flags, party, items, consumables, score, activeIdx]);
 
   /* ---------------- helpers ---------------- */
   const patchBt = (p: Partial<BattleState>) => {
@@ -669,9 +690,16 @@ function MoreniGame() {
         });
         return;
       }
+      if (k === "tab" || k === "i") {
+        e.preventDefault();
+        if (menuOpenRef.current) closeMenu();
+        else if ((phaseRef.current === "world" || phaseRef.current === "battle") && !pausedRef.current) openMenu();
+        return;
+      }
       if (k === "p" || k === "escape") {
         const ph = phaseRef.current;
-        if (ph === "world" || ph === "battle") togglePause();
+        if (menuOpenRef.current) closeMenu();
+        else if (ph === "world" || ph === "battle") togglePause();
         return;
       }
       if (k === "e" && phaseRef.current === "world" && !pausedRef.current) {
@@ -729,8 +757,10 @@ function MoreniGame() {
     setFlags(initialFlags);
     setParty([]);
     setItems([]);
+    setConsumables({ ...START_CONSUMABLES });
     setActiveIdx(0);
     setBt(null);
+    setMenuOpen(false);
     engineRef.current?.companionFollow(false);
     engineRef.current?.setPortalOpen(false);
     engineRef.current?.setSwordVisible(true);
@@ -748,8 +778,10 @@ function MoreniGame() {
     setParty(healed);
     setActiveIdx(Math.min(save.activeIdx, Math.max(0, healed.length - 1)));
     setItems(save.items);
+    setConsumables(save.consumables ?? { ...START_CONSUMABLES });
     setScore(save.score);
     setBt(null);
+    setMenuOpen(false);
     setPaused(false);
     pausedRef.current = false;
     engineRef.current?.setPaused(false);
@@ -1202,6 +1234,8 @@ function MoreniGame() {
       engineRef.current?.battleFaint("enemy", () => {
         say("gino_post", () => {
           addItem("fiala");
+          grantConsumable("famiglia");
+          grantConsumable("crostata");
           addScore(200);
           engineRef.current?.endBattle();
           setBt(null);
@@ -1214,6 +1248,7 @@ function MoreniGame() {
     sfx.victory();
     addScore(b.boss ? 200 : 100);
     bLog(`${speciesById(b.enemyId).name} È AL TAPPETO! +${b.boss ? 200 : 100} CARISMA`, "good");
+    rollDrop(b.boss ? 1 : 0.6);
     engineRef.current?.battleFaint("enemy", () => {
       window.setTimeout(() => {
         engineRef.current?.endBattle();
@@ -1244,6 +1279,7 @@ function MoreniGame() {
   };
 
   const togglePause = () => {
+    if (menuOpenRef.current) return; // prima chiudi il menu di gioco
     sfx.pause();
     setPaused((p) => {
       const np = !p;
@@ -1251,6 +1287,104 @@ function MoreniGame() {
       engineRef.current?.setPaused(np);
       return np;
     });
+  };
+
+  /* ---------------- menu di gioco RPG ---------------- */
+  const openMenu = (tab: "formazione" | "stato" | "zaino" = "formazione") => {
+    if (phaseRef.current !== "world" && phaseRef.current !== "battle") return;
+    if (btRef.current?.busy) return;
+    sfx.click();
+    setMenuTab(tab);
+    setUseItemId(null);
+    setMenuSel(Math.min(activeIdxRef.current, Math.max(0, partyRef.current.length - 1)));
+    setMenuOpen(true);
+    engineRef.current?.setPaused(true);
+  };
+
+  const closeMenu = () => {
+    sfx.click();
+    setMenuOpen(false);
+    setUseItemId(null);
+    engineRef.current?.setPaused(pausedRef.current);
+  };
+
+  const setActiveMember = (idx: number) => {
+    const mon = partyRef.current[idx];
+    if (!mon || mon.hp <= 0) return;
+    sfx.click();
+    setActiveIdx(idx);
+    activeIdxRef.current = idx;
+    if (phaseRef.current === "battle") {
+      engineRef.current?.setActiveSpecies(speciesById(mon.spId));
+      bLog(`VAI, ${speciesById(mon.spId).name}!`, "info");
+      setMenuOpen(false);
+      engineRef.current?.setPaused(false);
+      window.setTimeout(() => enemyTurn(), 500);
+    } else {
+      showToast(`${speciesById(mon.spId).name} È ORA IN PRIMA LINEA`);
+    }
+  };
+
+  const grantConsumable = (id: string, n = 1) => {
+    setConsumables((c) => ({ ...c, [id]: (c[id] ?? 0) + n }));
+  };
+
+  /* bottino in consumabili dopo una vittoria */
+  const rollDrop = (chance: number) => {
+    if (Math.random() >= chance) return;
+    const pool = ["croccantino", "croccantino", "croccantino", "crostata", "caffe"];
+    const id = pick(pool);
+    grantConsumable(id);
+    window.setTimeout(() => {
+      showToast(`BOTTINO: ${CONSUMABLES[id].name}`);
+      sfx.correct();
+    }, 600);
+  };
+
+  const useConsumableOn = (itemId: string, targetIdx: number) => {
+    const def = CONSUMABLES[itemId];
+    const owned = consumablesRef.current[itemId] ?? 0;
+    if (!def || owned <= 0) return;
+
+    if (def.all) {
+      const before = partyRef.current;
+      const healed = before.map((m) => ({ ...m, hp: Math.min(m.maxHp, m.hp + def.heal) }));
+      partyRef.current = healed;
+      setParty(healed);
+    } else {
+      const mon = partyRef.current[targetIdx];
+      if (!mon) return;
+      if (def.revive) {
+        if (mon.hp > 0) {
+          showToast("QUEL MORENO È GIÀ IN PIEDI. IL CAFFÈ TI SERVE, SEMMAI.");
+          sfx.wrong();
+          return;
+        }
+      } else if (mon.hp <= 0) {
+        showToast("È AL TAPPETO: SERVE IL CAFFÈ DEMONIACO, NON UN CROCCANTINO.");
+        sfx.wrong();
+        return;
+      } else if (mon.hp >= mon.maxHp) {
+        showToast("È GIÀ SAZIO DI HP. NON SPRECHIAMO MORENINI.");
+        sfx.wrong();
+        return;
+      }
+      const newHp = def.revive
+        ? Math.round(mon.maxHp * 0.5)
+        : def.fullHeal
+        ? mon.maxHp
+        : Math.min(mon.maxHp, mon.hp + def.heal);
+      const healed = partyRef.current.map((m, i) => (i === targetIdx ? { ...m, hp: newHp } : m));
+      partyRef.current = healed;
+      setParty(healed);
+      // se era al tappeto ed era l'unico... niente di speciale; se è attivo in battaglia resta attivo
+    }
+
+    setConsumables((c) => ({ ...c, [itemId]: Math.max(0, (c[itemId] ?? 0) - 1) }));
+    sfx.correct();
+    doFlash("gold");
+    showToast(def.all ? `${def.name}: TUTTO IL PARTY RINGRAZIA` : `${def.name} → ${speciesById(partyRef.current[targetIdx].spId).name}`);
+    setUseItemId(null);
   };
 
   const backToTitle = () => {
@@ -1436,9 +1570,15 @@ function MoreniGame() {
               <div className="text-dim text-sm">{zone ? zone.tagline : "La piazza profuma di forno spento."}</div>
               <div className="text-gold text-sm mt-1">{questText(flags)}</div>
             </div>
-            <div className="border-2 border-edge bg-panel/85 px-3 py-1.5 mt-2 text-dim text-xs">
+            <div className="border-2 border-edge bg-panel/85 px-3 py-1.5 mt-2 text-dim text-xs pointer-events-auto">
               WASD MUOVI · E INTERAGISCI · P PAUSA
             </div>
+            <button
+              onClick={() => openMenu()}
+              className="btn-hard mt-2 border-2 border-toxic bg-panel/90 px-3 py-1.5 text-toxic font-display text-lg tracking-widest pointer-events-auto"
+            >
+              ☰ MENU MORENI [TAB]
+            </button>
           </div>
 
           <div className="absolute top-3 right-3 z-[15] flex flex-col items-end gap-2">
@@ -1644,6 +1784,17 @@ function MoreniGame() {
             <button
               onClick={() => {
                 sfx.click();
+                setPaused(false);
+                pausedRef.current = false;
+                openMenu();
+              }}
+              className="btn-hard block w-full px-8 py-2.5 bg-[#7a5fd0] border-2 border-[#cfc3ff] text-[#f4f0ff] font-display text-xl tracking-widest mb-3"
+            >
+              ☰ MENU GIOCO — FORMAZIONE / STATO / ZAINO
+            </button>
+            <button
+              onClick={() => {
+                sfx.click();
                 setSlotPanel("save");
                 setConfirmSlot(null);
               }}
@@ -1730,6 +1881,246 @@ function MoreniGame() {
             <button onClick={backToTitle} className="btn-hard mt-7 px-10 py-3 bg-gold border-2 border-[#fff0d1] text-[#241503] font-display text-2xl tracking-widest">
               TITOLI DI CODA → GIOCA ANCORA
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ---------------- MENU DI GIOCO RPG ---------------- */}
+      {menuOpen && (
+        <div className="absolute inset-0 z-[48] flex items-center justify-center bg-[rgba(5,2,10,0.85)] p-3">
+          <div className="w-full max-w-4xl h-[min(640px,92vh)] flex flex-col border-2 border-toxic bg-panel shadow-[0_0_60px_rgba(77,255,166,0.18)]">
+            {/* intestazione */}
+            <div className="flex items-center gap-2 border-b-2 border-edge px-4 py-2.5">
+              <div className="font-display text-2xl text-toxic tracking-widest mr-2">MENU MORENI</div>
+              {(["formazione", "stato", "zaino"] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => {
+                    sfx.click();
+                    setMenuTab(t);
+                    setUseItemId(null);
+                  }}
+                  className={`btn-hard px-4 py-1.5 border-2 font-display text-lg tracking-widest uppercase ${
+                    menuTab === t
+                      ? "bg-toxic border-[#d8fff0] text-[#04150c]"
+                      : "bg-panel2 border-edge text-dim"
+                  }`}
+                >
+                  {t === "formazione" ? "FORMAZIONE" : t === "stato" ? "STATO" : "ZAINO"}
+                </button>
+              ))}
+              <div className="flex-1" />
+              <div className="text-gold text-lg whitespace-nowrap mr-2">
+                CARISMA <span className="tabular-nums">{score}</span>
+              </div>
+              <button onClick={closeMenu} className="btn-hard px-3 py-1.5 bg-panel2 border-2 border-edge text-dim font-display text-xl">
+                ✕
+              </button>
+            </div>
+
+            {/* corpo */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {/* ---- FORMAZIONE ---- */}
+              {menuTab === "formazione" && (
+                <div>
+                  <div className="text-dim mb-3 tracking-wide text-sm">
+                    {phase === "battle" ? "TOCCA UN MORENO PER SCHIERARLO IN BATTAGLIA" : "TOCCA UN MORENO PER MANDARLO IN PRIMA LINEA"}
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {party.map((m, i) => {
+                      const s = speciesById(m.spId);
+                      const active = i === activeIdx;
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => setActiveMember(i)}
+                          disabled={m.hp <= 0}
+                          className={`btn-hard roster-card text-left p-3 ${active ? "ring-2 ring-toxic" : ""}`}
+                          style={{ "--pc": hexCss(s.accentColor) } as React.CSSProperties}
+                        >
+                          <div className="flex items-center justify-between">
+                            <MorenoFace sp={s} size={56} />
+                            {active && (
+                              <span className="text-[10px] font-display tracking-widest bg-toxic text-[#04150c] px-1.5 py-0.5">ATTIVO</span>
+                            )}
+                          </div>
+                          <div className="font-display text-lg mt-1 leading-tight" style={{ color: hexCss(s.accentColor) }}>
+                            {s.name}
+                          </div>
+                          <HpBar hp={m.hp} max={m.maxHp} w={120} />
+                          <div className="text-dim text-xs mt-1">
+                            HP <span className="text-bone tabular-nums">{m.hp}/{m.maxHp}</span> · ATK <span className="text-bone tabular-nums">{m.atk}</span>
+                          </div>
+                          {m.hp <= 0 && <div className="text-blood text-xs mt-1 font-display">AL TAPPETO</div>}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {party.length === 0 && <div className="text-dim">NESSUN MORENO. CHE PROFEZIA È?</div>}
+                </div>
+              )}
+
+              {/* ---- STATO ---- */}
+              {menuTab === "stato" && (
+                <div className="flex flex-col md:flex-row gap-4">
+                  {/* selettore */}
+                  <div className="flex md:flex-col gap-2 flex-wrap">
+                    {party.map((m, i) => {
+                      const s = speciesById(m.spId);
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => {
+                            sfx.click();
+                            setMenuSel(i);
+                          }}
+                          className={`btn-hard flex items-center gap-2 px-3 py-2 border-2 ${
+                            i === menuSel ? "bg-panel2 border-toxic" : "bg-[#120a20] border-edge"
+                          }`}
+                        >
+                          <MorenoFace sp={s} size={34} />
+                          <span className="font-display" style={{ color: hexCss(s.accentColor) }}>{s.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {/* dettaglio */}
+                  {(() => {
+                    const m = party[menuSel];
+                    if (!m) return <div className="text-dim">NESSUN MORENO SELEZIONATO.</div>;
+                    const s = speciesById(m.spId);
+                    const fav = FLAVORS[s.favorite];
+                    return (
+                      <div className="flex-1 border-2 border-edge bg-panel2 p-4" style={{ borderColor: hexCss(s.accentColor) }}>
+                        <div className="flex items-center gap-4">
+                          <div className="border-2 p-2" style={{ borderColor: hexCss(s.accentColor), background: "#160b26" }}>
+                            <MorenoFace sp={s} size={110} />
+                          </div>
+                          <div>
+                            <div className="font-display text-3xl leading-none" style={{ color: hexCss(s.accentColor) }}>{s.name}</div>
+                            <div className="text-dim text-sm mt-1">{s.title}</div>
+                            <div className="mt-2 text-sm">
+                              GUSTO PREFERITO: <span style={{ color: fav.css }}>{fav.name}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-base">
+                          <div className="text-dim">HP</div>
+                          <div className="flex items-center gap-2">
+                            <HpBar hp={m.hp} max={m.maxHp} w={140} />
+                            <span className="tabular-nums text-bone">{m.hp}/{m.maxHp}</span>
+                          </div>
+                          <div className="text-dim">ATTACCO</div>
+                          <div className="text-bone tabular-nums">{m.atk}</div>
+                          <div className="text-dim">STATO</div>
+                          <div className={m.hp <= 0 ? "text-blood" : "text-toxic"}>{m.hp <= 0 ? "AL TAPPETO" : "IN FORMA"}</div>
+                        </div>
+                        <div className="mt-4 text-dim text-sm italic border-t border-edge pt-3">
+                          «{(() => {
+                            const lines = s.recruitLines.length ? s.recruitLines : s.hurtLines.length ? s.hurtLines : s.angryLines;
+                            return lines.length ? pick(lines) : "…";
+                          })()}»
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              {/* ---- ZAINO ---- */}
+              {menuTab === "zaino" && (
+                <div>
+                  {!useItemId ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {CONSUMABLE_LIST.map((c) => {
+                        const count = consumables[c.id] ?? 0;
+                        const usable = count > 0;
+                        return (
+                          <div
+                            key={c.id}
+                            className={`flex items-center gap-3 border-2 p-3 ${usable ? "border-edge bg-panel2" : "border-edge bg-[#120a20] opacity-50"}`}
+                          >
+                            <CookieIcon css={c.hue} size={40} />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-display text-lg leading-tight" style={{ color: c.hue }}>{c.name}</div>
+                              <div className="text-dim text-xs">{c.desc}</div>
+                            </div>
+                            <div className="text-gold font-display text-xl tabular-nums">×{count}</div>
+                            <button
+                              onClick={() => {
+                                if (!usable) return;
+                                sfx.click();
+                                setUseItemId(c.id);
+                              }}
+                              disabled={!usable}
+                              className="btn-hard px-4 py-2 bg-gold border-2 border-[#fff0d1] text-[#241503] font-display text-lg tracking-widest"
+                            >
+                              USA
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="text-gold font-display text-xl mb-1">
+                        USA: {CONSUMABLES[useItemId].name}
+                      </div>
+                      <div className="text-dim text-sm mb-3">
+                        {CONSUMABLES[useItemId].all
+                          ? "CURA TUTTO IL PARTY — CONFERMA PER DARE IL VIA AL BANCHETTO"
+                          : "SCEGLI IL MORENO DA CURARE"}
+                      </div>
+                      {CONSUMABLES[useItemId].all ? (
+                        <button
+                          onClick={() => useConsumableOn(useItemId, 0)}
+                          className="btn-hard px-6 py-3 bg-gold border-2 border-[#fff0d1] text-[#241503] font-display text-xl tracking-widest"
+                        >
+                          🍰 DAI DA MANGIARE A TUTTI
+                        </button>
+                      ) : (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          {party.map((m, i) => {
+                            const s = speciesById(m.spId);
+                            const def = CONSUMABLES[useItemId];
+                            const valid = def.revive ? m.hp <= 0 : m.hp > 0 && m.hp < m.maxHp;
+                            return (
+                              <button
+                                key={i}
+                                onClick={() => valid && useConsumableOn(useItemId, i)}
+                                disabled={!valid}
+                                className={`btn-hard roster-card p-3 ${valid ? "" : "opacity-40"}`}
+                                style={{ "--pc": hexCss(s.accentColor) } as React.CSSProperties}
+                              >
+                                <MorenoFace sp={s} size={48} />
+                                <div className="font-display mt-1" style={{ color: hexCss(s.accentColor) }}>{s.name}</div>
+                                <HpBar hp={m.hp} max={m.maxHp} w={100} />
+                                <div className="text-dim text-xs mt-1 tabular-nums">{m.hp}/{m.maxHp}</div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                      <button
+                        onClick={() => {
+                          sfx.click();
+                          setUseItemId(null);
+                        }}
+                        className="btn-hard mt-4 px-5 py-2 bg-panel2 border-2 border-edge text-dim font-display text-lg tracking-widest"
+                      >
+                        ← INDIETRO
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* piede */}
+            <div className="border-t-2 border-edge px-4 py-2 text-dim text-sm tracking-wide flex justify-between">
+              <span>[TAB / I] APRI/CHIUDI · [ESC] CHIUDI</span>
+              <span>MORENI NEL PARTY: {party.length}/8</span>
+            </div>
           </div>
         </div>
       )}

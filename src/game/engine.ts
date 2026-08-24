@@ -1105,7 +1105,7 @@ export class MoreniEngine {
   }
 
   private removeRefs(refs: MorenoRefs) {
-    this.scene.remove(refs.group);
+    refs.group.removeFromParent();
     refs.group.traverse((o) => {
       const mesh = o as THREE.Mesh;
       if (mesh.isMesh) {
@@ -1116,7 +1116,7 @@ export class MoreniEngine {
       }
     });
     if (refs.shadow) {
-      this.scene.remove(refs.shadow);
+      refs.shadow.removeFromParent();
       refs.shadow.geometry.dispose();
       (refs.shadow.material as THREE.Material).dispose();
     }
@@ -1733,7 +1733,7 @@ export class MoreniEngine {
       f.mesh.rotation.x += dt * 9;
       f.mesh.rotation.y += dt * 6;
       if (k >= 1) {
-        this.scene.remove(f.mesh);
+        f.mesh.removeFromParent();
         f.mesh.traverse((o) => {
           const mm = o as THREE.Mesh;
           if (mm.isMesh) {
