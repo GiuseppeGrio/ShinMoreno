@@ -332,8 +332,13 @@ function makeMon(spId: string): PartyMon {
   return { spId, hp: s.baseHp, maxHp: s.baseHp, atk: s.baseAtk };
 }
 
-/* ================================================= SALVATAGGIO LOCALSTORAGE */
+/* ================================================= SALVATAGGIO LOCALSTORAGE
+   Slot 0 = AUTOSAVE (scritto automaticamente, mai sovrascrivibile a mano).
+   Slot 1..SLOT_COUNT = salvataggi MANUALI, gestiti dall'utente, protetti da
+   conferma prima di sovrascrivere un'occupazione esistente. */
 const SAVE_KEY = "shin-moreni-tensei-save-v1";
+const SLOT_COUNT = 3;
+const slotKey = (n: number) => `shin-moreni-tensei-slot-${n}`;
 
 interface SaveData {
   flags: Flags;
@@ -342,11 +347,12 @@ interface SaveData {
   score: number;
   activeIdx: number;
   pos: { x: number; z: number };
+  savedAt: number;
 }
 
-function loadSave(): SaveData | null {
+function readSaveKey(key: string): SaveData | null {
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
+    const raw = localStorage.getItem(key);
     if (!raw) return null;
     const d = JSON.parse(raw) as SaveData;
     if (!d || typeof d !== "object" || !Array.isArray(d.party) || !d.flags) return null;
@@ -356,19 +362,42 @@ function loadSave(): SaveData | null {
   }
 }
 
-function writeSave(d: SaveData) {
+function writeSaveKey(key: string, d: SaveData) {
   try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(d));
+    localStorage.setItem(key, JSON.stringify(d));
   } catch {
     /* storage pieno o non disponibile: ignora */
   }
 }
 
-function clearSave() {
+function deleteSaveKey(key: string) {
   try {
-    localStorage.removeItem(SAVE_KEY);
+    localStorage.removeItem(key);
   } catch {
     /* ignora */
+  }
+}
+
+/* --- autosave (slot 0) --- */
+const loadSave = () => readSaveKey(SAVE_KEY);
+const writeSave = (d: SaveData) => writeSaveKey(SAVE_KEY, d);
+const clearSave = () => deleteSaveKey(SAVE_KEY);
+
+/* --- slot manuali (1..SLOT_COUNT) --- */
+const readSlot = (n: number) => readSaveKey(slotKey(n));
+const writeSlot = (n: number, d: SaveData) => writeSaveKey(slotKey(n), d);
+const deleteSlot = (n: number) => deleteSaveKey(slotKey(n));
+
+function formatWhen(ts: number): string {
+  try {
+    return new Date(ts).toLocaleString("it-IT", {
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return "";
   }
 }
 
@@ -414,6 +443,63 @@ function MoreniGame() {
   const gameStartedRef = useRef(false);
   const [hasSave, setHasSave] = useState(false);
 
+  /* ------- slot manuali ------- */
+  const [slotPanel, setSlotPanel] = useState<null | "save" | "load">(null);
+  const [confirmSlot, setConfirmSlot] = useState<number | null>(null);
+  const [slotTick, setSlotTick] = useState(0);
+
+  const currentSnapshot = (): SaveData => ({
+    flags,
+    party,
+    items,
+    score,
+    activeIdx,
+    pos: engineRef.current?.getPlayerPos() ?? { x: 0, z: 9 },
+    savedAt: Date.now(),
+  });
+
+  const saveToSlot = (n: number) => {
+    const existing = readSlot(n);
+    if (existing && confirmSlot !== n) {
+      // prima pressione su slot occupato: chiede conferma per evitare sovrascritture
+      setConfirmSlot(n);
+      return;
+    }
+    writeSlot(n, currentSnapshot());
+    setConfirmSlot(null);
+    setSlotTick((t) => t + 1);
+    showToast(`SALVATO NELLO SLOT ${n} — AL SICURO DA SOVRASCRITTURE`);
+    sfx.recruit();
+  };
+
+  const loadFromSlot = (n: number) => {
+    const save = readSlot(n);
+    if (!save) return;
+    setSlotPanel(null);
+    setConfirmSlot(null);
+    applySave(save, `SLOT ${n} CARICATO`, "LA PROFEZIA RIPRENDE");
+  };
+
+  const loadFromAutosave = () => {
+    const save = readSaveKey(SAVE_KEY);
+    if (!save) return;
+    setSlotPanel(null);
+    setConfirmSlot(null);
+    applySave(save, "AUTOSAVE CARICATO", "LA PROFEZIA RIPRENDE");
+  };
+
+  const wipeSlot = (n: number) => {
+    if (confirmSlot !== -n) {
+      setConfirmSlot(-n);
+      return;
+    }
+    deleteSlot(n);
+    setConfirmSlot(null);
+    setSlotTick((t) => t + 1);
+    showToast(`SLOT ${n} SVUOTATO`);
+    sfx.wrong();
+  };
+
   useEffect(() => {
     phaseRef.current = phase;
   }, [phase]);
@@ -442,7 +528,7 @@ function MoreniGame() {
   useEffect(() => {
     if (!gameStartedRef.current) return;
     const pos = engineRef.current?.getPlayerPos() ?? { x: 0, z: 9 };
-    writeSave({ flags, party, items, score, activeIdx, pos });
+    writeSave({ flags, party, items, score, activeIdx, pos, savedAt: Date.now() });
   }, [flags, party, items, score, activeIdx]);
 
   /* ---------------- helpers ---------------- */
@@ -495,17 +581,18 @@ function MoreniGame() {
     if (!f.swordPulled) return "monument";
     return null;
   };
-  const questText = (f: Flags): string => {
-    if (!f.cinghiaBeaten) return "OBIETTIVO: affronta CINGHIA ALE — Valle dei Facoceri";
-    if (!f.micoDone) return "OBIETTIVO: il processo di MICO NOSCA — Accampamento della Rivolta";
-    if (!f.coizioDone) return "OBIETTIVO: l'abbraccio di COIZIO — Terme del Contatto";
-    if (!f.ginoDone) return "OBIETTIVO: la cantina di GINO SATRI — Abisso";
-    if (!f.don2) return "OBIETTIVO: torna da DON MORENO (puzza di colpo di scena)";
-    if (!f.swordPulled) return `OBIETTIVO: estrai la Spada dell'Amore (servono ${SWORD_REQ} amici: ${recruitsCount()}/${SWORD_REQ})`;
-    if (!f.clompAwake) return "OBIETTIVO: sveglia CLOMP, il cavaliere sacro";
-    if (!f.finaleDone) return "OBIETTIVO: entra nel PORTALE DELL'ANTRO";
-    return "LA PROFEZIA È COMPIUTA. GIRA LIBERO, EROE.";
+  const questTextFor = (f: Flags, recruits: number): string => {
+    if (!f.cinghiaBeaten) return "Affronta CINGHIA ALE — Valle dei Facoceri";
+    if (!f.micoDone) return "Il processo di MICO NOSCA — Accampamento della Rivolta";
+    if (!f.coizioDone) return "L'abbraccio di COIZIO — Terme del Contatto";
+    if (!f.ginoDone) return "La cantina di GINO SATRI — Abisso";
+    if (!f.don2) return "Torna da DON MORENO (puzza di colpo di scena)";
+    if (!f.swordPulled) return `Estrai la Spada dell'Amore (${recruits}/${SWORD_REQ} amici)`;
+    if (!f.clompAwake) return "Sveglia CLOMP, il cavaliere sacro";
+    if (!f.finaleDone) return "Entra nel PORTALE DELL'ANTRO";
+    return "LA PROFEZIA È COMPIUTA. Gira libero, eroe.";
   };
+  const questText = (f: Flags): string => questTextFor(f, recruitsCount());
 
   useEffect(() => {
     engineRef.current?.setQuestNpc(questRingTarget(flags));
@@ -651,12 +738,8 @@ function MoreniGame() {
     say("prologue", () => setPhase("starter"));
   };
 
-  const continueGame = () => {
-    const save = loadSave();
-    if (!save) {
-      startGame();
-      return;
-    }
+  /* Ripristina lo stato di gioco da un SaveData (usato da autosave e dagli slot). */
+  const applySave = (save: SaveData, kicker: string, title: string) => {
     sfx.unlock();
     sfx.start();
     gameStartedRef.current = true;
@@ -667,13 +750,25 @@ function MoreniGame() {
     setItems(save.items);
     setScore(save.score);
     setBt(null);
+    setPaused(false);
+    pausedRef.current = false;
+    engineRef.current?.setPaused(false);
     engineRef.current?.companionFollow(save.flags.clompAwake);
     engineRef.current?.setPortalOpen(save.flags.clompAwake);
     engineRef.current?.setSwordVisible(!save.flags.swordPulled);
     engineRef.current?.setClompAwakeState(save.flags.clompAwake);
     engineRef.current?.enterWorld(save.pos.x, save.pos.z);
     setPhase("world");
-    showBanner("BENTORNATO", "LA PROFEZIA CONTINUA", false);
+    showBanner(kicker, title, false);
+  };
+
+  const continueGame = () => {
+    const save = loadSave();
+    if (!save) {
+      startGame();
+      return;
+    }
+    applySave(save, "BENTORNATO", "LA PROFEZIA CONTINUA");
   };
 
   const pickStarter = (spId: string) => {
@@ -1210,6 +1305,16 @@ function MoreniGame() {
               </button>
             )}
             <button
+              onClick={() => {
+                sfx.click();
+                setSlotPanel("load");
+                setConfirmSlot(null);
+              }}
+              className="btn-hard px-10 py-3 bg-panel2 border-2 border-gold text-gold font-display text-xl md:text-2xl tracking-widest"
+            >
+              📜 CARICA DA SLOT
+            </button>
+            <button
               onClick={startGame}
               className="btn-hard px-10 py-4 bg-blood border-2 border-[#ffd1dd] text-[#fff0f4] font-display text-2xl md:text-3xl tracking-widest"
             >
@@ -1536,6 +1641,16 @@ function MoreniGame() {
             <button onClick={togglePause} className="btn-hard block w-full px-8 py-3 bg-toxic border-2 border-[#d8fff0] text-[#04150c] font-display text-2xl tracking-widest mb-3">
               RIPRENDI [P]
             </button>
+            <button
+              onClick={() => {
+                sfx.click();
+                setSlotPanel("save");
+                setConfirmSlot(null);
+              }}
+              className="btn-hard block w-full px-8 py-2.5 bg-gold border-2 border-[#fff0d1] text-[#241503] font-display text-xl tracking-widest mb-3"
+            >
+              💾 ARCHIVIO — SALVA / CARICA
+            </button>
             <button onClick={backToTitle} className="btn-hard block w-full px-8 py-2 bg-panel2 border-2 border-edge text-dim font-display text-xl tracking-widest">
               TITOLI DI TESTA
             </button>
@@ -1615,6 +1730,148 @@ function MoreniGame() {
             <button onClick={backToTitle} className="btn-hard mt-7 px-10 py-3 bg-gold border-2 border-[#fff0d1] text-[#241503] font-display text-2xl tracking-widest">
               TITOLI DI CODA → GIOCA ANCORA
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* ---------------- ARCHIVIO SLOT ---------------- */}
+      {slotPanel && (
+        <div className="absolute inset-0 z-[50] grid place-items-center bg-[rgba(5,2,10,0.88)] p-4">
+          <div className="w-full max-w-2xl border-2 border-gold bg-panel shadow-[0_0_50px_rgba(255,201,77,0.22)]">
+            <div className="flex items-center justify-between border-b-2 border-edge px-5 py-3">
+              <div>
+                <div className="font-display text-3xl text-gold leading-none">ARCHIVIO DEMONIACO</div>
+                <div className="text-dim text-sm mt-1 tracking-widest">
+                  {slotPanel === "save"
+                    ? "SALVA / CARICA — L'AUTOSAVE NON SI TOCCA, GLI SLOT SÌ"
+                    : "CARICA UNA PROFEZIA DA UNO SLOT"}
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  sfx.click();
+                  setSlotPanel(null);
+                  setConfirmSlot(null);
+                }}
+                className="btn-hard px-4 py-2 bg-panel2 border-2 border-edge text-dim font-display text-xl"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto" key={slotTick}>
+              {/* slot 0 = autosave, sola lettura */}
+              {(() => {
+                const auto = readSaveKey(SAVE_KEY);
+                const cnt = auto ? new Set(auto.party.map((m) => m.spId)).size : 0;
+                return (
+                  <div className="flex items-center gap-4 border-2 border-edge bg-panel2 px-4 py-3">
+                    <div className="font-display text-3xl text-toxic w-14 text-center leading-none">
+                      A<span className="block text-[10px] tracking-widest text-dim">AUTO</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      {auto ? (
+                        <>
+                          <div className="text-bone text-base truncate">🎯 {questTextFor(auto.flags, cnt)}</div>
+                          <div className="text-dim text-sm">
+                            CARISMA <span className="text-gold tabular-nums">{auto.score}</span> · AMICI{" "}
+                            <span className="text-toxic tabular-nums">{cnt}</span> · {formatWhen(auto.savedAt)}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-dim">NESSUN AUTOSAVE. GIOCA UN PO'.</div>
+                      )}
+                    </div>
+                    {auto && (
+                      <button
+                        onClick={() => loadFromAutosave()}
+                        className="btn-hard px-4 py-2 bg-toxic border-2 border-[#d8fff0] text-[#04150c] font-display text-lg tracking-widest"
+                      >
+                        CARICA
+                      </button>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* slot manuali */}
+              {Array.from({ length: SLOT_COUNT }, (_, i) => i + 1).map((n) => {
+                const save = readSlot(n);
+                const cnt = save ? new Set(save.party.map((m) => m.spId)).size : 0;
+                const occupied = !!save;
+                return (
+                  <div
+                    key={n}
+                    className={`flex items-center gap-4 border-2 px-4 py-3 transition-colors ${
+                      occupied ? "border-[#7a5fd0] bg-panel2" : "border-edge bg-[#120a20]"
+                    }`}
+                  >
+                    <div
+                      className={`font-display text-3xl w-14 text-center leading-none ${occupied ? "text-[#b39dff]" : "text-dim"}`}
+                    >
+                      {n}
+                      <span className="block text-[10px] tracking-widest text-dim">SLOT</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      {save ? (
+                        <>
+                          <div className="text-bone text-base truncate">🎯 {questTextFor(save.flags, cnt)}</div>
+                          <div className="text-dim text-sm">
+                            CARISMA <span className="text-gold tabular-nums">{save.score}</span> · AMICI{" "}
+                            <span className="text-toxic tabular-nums">{cnt}</span> · {formatWhen(save.savedAt)}
+                          </div>
+                        </>
+                      ) : (
+                        <div className="text-dim">VUOTO — PRONTO PER UNA PROFEZIA</div>
+                      )}
+                    </div>
+                    <div className="flex gap-2 flex-col md:flex-row">
+                      {slotPanel === "save" && (
+                        <button
+                          onClick={() => saveToSlot(n)}
+                          className={`btn-hard px-4 py-2 border-2 font-display text-lg tracking-widest ${
+                            confirmSlot === n
+                              ? "bg-blood border-[#ffd1dd] text-[#fff0f4]"
+                              : occupied
+                              ? "bg-[#5c2f17] border-[#8a4b2a] text-[#ffd9a0]"
+                              : "bg-gold border-[#fff0d1] text-[#241503]"
+                          }`}
+                        >
+                          {confirmSlot === n ? "SOVRASCRIVI?" : occupied ? "SALVA (OCCUPATO)" : "SALVA"}
+                        </button>
+                      )}
+                      {save && (
+                        <>
+                          <button
+                            onClick={() => loadFromSlot(n)}
+                            className="btn-hard px-4 py-2 bg-toxic border-2 border-[#d8fff0] text-[#04150c] font-display text-lg tracking-widest"
+                          >
+                            CARICA
+                          </button>
+                          <button
+                            onClick={() => wipeSlot(n)}
+                            className={`btn-hard px-3 py-2 border-2 font-display text-lg ${
+                              confirmSlot === -n
+                                ? "bg-blood border-[#ffd1dd] text-[#fff0f4]"
+                                : "bg-panel2 border-edge text-dim"
+                            }`}
+                            title="Svuota slot"
+                          >
+                            {confirmSlot === -n ? "CONFERMI?" : "✕"}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="border-t-2 border-edge px-5 py-2.5 text-dim text-sm tracking-wide">
+              {slotPanel === "save"
+                ? "L'AUTOSAVE (slot A) si aggiorna da solo. Gli slot manuali restano dove li metti."
+                : "Scegli uno slot per riprendere la tua PROFEZIA."}
+            </div>
           </div>
         </div>
       )}
