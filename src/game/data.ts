@@ -49,7 +49,7 @@ export interface SpeciesDef {
   parts: MorenoParts;
   favorite: FlavorId;
   big?: boolean;
-  special?: boolean; // catturabile UNA sola volta per partita
+  special?: boolean;
   baseHp: number;
   baseAtk: number;
   recruitLines: string[];
@@ -254,7 +254,7 @@ export const ITEMS: Record<string, { name: string; desc: string }> = {
   fiala: { name: "FIALA DI MALE OMEOPATICO", desc: "15% di colpi a danno doppio: il male cura il male" },
 };
 
-/* ------------------------------------------ CONSUMABILI */
+/* ------------------------------------------ CONSUMABILI (menu RPG) */
 export interface ConsumableDef {
   id: string;
   name: string;
@@ -280,11 +280,14 @@ export const CONSUMABLE_LIST: ConsumableDef[] = [
   CONSUMABLES.caffe,
 ];
 
-export const START_CONSUMABLES: Record<string, number> = { croccantino: 3, crostata: 1 };
+export const START_CONSUMABLES: Record<string, number> = {
+  croccantino: 3,
+  crostata: 1,
+};
 
 /* ------------------------------------------ ECONOMIA: BRICIOLE & MORENINI
    I morenini da offrire ai Moreni NON sono infiniti: si comprano al Forno
-   con le BRICIOLE, si vincono in battaglia o alla Sala Giochi. */
+   con le BRICIOLE (la valuta), si vincono in battaglia o alla Sala Giochi. */
 export const START_BRICIOLE = 60;
 
 export const MORENINI_PRICES: Record<FlavorId, number> = {
@@ -301,12 +304,14 @@ export const START_MORENINI: Record<FlavorId, number> = {
   pistacchio: 1,
 };
 
+/* Ricompensa base in briciole per una vittoria (scala con la difficoltà). */
 export const battleBriciole = (diff: number, boss: boolean) => (boss ? 60 : 25 + diff * 10);
 
+/* Sala Giochi: MORENOPONG (tetris × pong). Si paga per entrare, si vincono morenini. */
 export const MINIGAME = {
-  entry: 10,
-  pointsPerMorenino: 120,
-  briciolePerPunto: 0.08,
+  entry: 10, // costo di ingresso in briciole
+  pointsPerMorenino: 120, // ogni tot punti → 1 morenino in regalo
+  briciolePerPunto: 0.08, // il punteggio residuo viene convertito in briciole
 };
 
 /* ------------------------------------------ DIALOGHI */
@@ -324,7 +329,6 @@ export const SCRIPTS: Record<string, DialogueLine[]> = {
     { spk: "TU", text: "Veramente cercavo solo il bagno..." },
     { spk: "donmoreno", text: "BAGNO DOPO. PRIMA LA PROFEZIA: gli Otto Croccanti sono dispersi, la Tribù dei Facoceri è infuriata e tre ideologie litigano sulla cura del male del mondo." },
     { spk: "donmoreno", text: "SOLO CHI OFFRE MORENINI COL CUORE PUÒ CONVINCERE I MORENI. COMBATTI, CONVINCI, OFFRI. È COSÌ CHE SI CATTURA. È COSÌ CHE SI CURA." },
-    { spk: "donmoreno", text: "TI DO 60 BRICIOLE E QUALCHE MORENINO. ALTRI MORENINI LI COMPRI AL FORNO O LI VINCI ALLA SALA GIOCHI. NON SONO INFINITI: TRATTALI BENE." },
     { spk: "TU", text: "Quindi... la chiave di tutto sono i biscotti?" },
     { spk: "donmoreno", text: "I MORENINI NON SONO BISCOTTI. SONO UN ATTO D'AMORE CROCCANTE. ORA VAI: inizia dalla VALLE DEI FACOCERI. CINGHIA ALE ti aspetta. E non calpestare i grufoli." },
   ],
@@ -391,8 +395,8 @@ export const SCRIPTS: Record<string, DialogueLine[]> = {
   ],
   gino_post: [
     { spk: "ginosatri", text: "...dunque l'Essenza è stata sconfitta. e io, per la prima volta in anni, ho lo stomaco LEGGERO." },
-    { spk: "ginosatri", text: "ho capito l'errore, evocatore. il male non si cura col male. il male del mondo... è fatto di MORENINI LASCIATI DIVENTARE MOLLI NEL CASSETTO. è abbandono. si cura offrendo." },
-    { spk: "ginosatri", text: "tieni questa FIALA: una goccia di male, usata BENE, raddoppia la forza dei tuoi colpi. e adesso... torna da Don Moreno. digli che il filosofo si scusa." },
+    { spk: "ginosatri", text: "ho capito l'errore, evocatore. il male non si cura col male. il male del mondo... è fatto di MORENINI LASCIATI DIVENTARE MOLLI NEL CASSETTO. è abbandono. si cura offrendo. tu lo fai ogni battaglia. per questo vinci." },
+    { spk: "ginosatri", text: "tieni questa FIALA. omeopatia VERA, stavolta: una goccia di male, usata BENE, raddoppia la forza dei tuoi colpi. e adesso... torna da Don Moreno. digli che il filosofo si scusa." },
   ],
 
   don2: [
@@ -401,7 +405,7 @@ export const SCRIPTS: Record<string, DialogueLine[]> = {
     { spk: "TU", text: "...come, scusi?" },
     { spk: "donmoreno", text: "NONNO MORENO, il fondatore di Morenopoli. voleva assorbire il male del mondo per proteggerci. ci è riuscito. poi il male lo ha reso un MAIALE. letteralmente." },
     { spk: "donmoreno", text: "solo la SPADA DELL'AMORE può purificarlo. ma è conficcata nel GRANDE MORENINO, al centro della piazza, e nessuno riesce a estrarla." },
-    { spk: "donmoreno", text: "la spada sceglie. sceglie chi i Moreni riconoscono come AMICO. fai amicizia con abbastanza Moreni — OFFRENDO, non solo vincendo — e forse si muoverà." },
+    { spk: "donmoreno", text: "la spada sceglie. sceglie chi i Moreni riconoscono come AMICO. fai amicizia con abbastanza Moreni — OFFRENDO, non solo vincendo — e forse... forse si muoverà." },
   ],
 
   sword_fail: [
@@ -412,7 +416,7 @@ export const SCRIPTS: Record<string, DialogueLine[]> = {
     { spk: "NARRATORE", text: "Appoggi la mano all'elsa. Il Grande Morenino fa «crunch». La spada scivola fuori come burro fuso, cantando in falsetto." },
     { spk: "NARRATORE", text: "Una luce dorata avvolge la piazza. Il ragazzino dai lunghi capelli blu, che tutti credevano addormentato da secoli... apre gli occhi." },
     { spk: "clomp", text: "...quanto ho dormito? sento odore di spada. e di morenini. soprattutto di spada." },
-    { spk: "clomp", text: "sono CLOMP, cavaliere sacro di Morenopoli. tu mi hai svegliato, e la spada ha scelto te... quindi ora scelgo anch'io: vengo con te. SOLO IO POSSO BRANDIRLA." },
+    { spk: "clomp", text: "sono CLOMP, cavaliere sacro di Morenopoli. tu mi hai svegliato, e la spada ha scelto te... quindi ora scelgo anch'io: vengo con te. al Maiale penso io. letteralmente: SOLO IO POSSO BRANDIRLA." },
     { spk: "clomp", text: "il portale per l'ANTRO si è aperto. andiamo, evocatore. portiamo a Nonno la medicina che si merita: l'AMORE, con retrogusto di croccante." },
   ],
 
@@ -430,7 +434,7 @@ export const SCRIPTS: Record<string, DialogueLine[]> = {
     { spk: "NARRATORE", text: "Dove c'era il Maiale del Mondo ora c'è un anziano facocemoreno, pulito, profumato, commosso." },
     { spk: "nonnopurificato", text: "GRUF... quanti anni ho dormito nel male? ...don? quel nano con la corona che piange lì... è mio nipote?" },
     { spk: "donmoreno", text: "NONNOOOO! TI HO DETTO MILLE VOLTE DI NON FARTI CARICO DEL MALE DEL MONDO DA SOLO! SI FA IN FAMIGLIA, SI FA!" },
-    { spk: "nonnopurificato", text: "ho sbagliato. ma qualcuno, battaglia dopo battaglia, morenino dopo morenino... mi ha ricordato che il male si cura offrendo. grazie, evocatore mediocre." },
+    { spk: "nonnopurificato", text: "ho sbagliato. ma qualcuno, battaglia dopo battaglia, morenino dopo morenino... mi ha ricordato che il male si cura offrendo. grazie, evocatore mediocre. il più mediocre che ci sia mai riuscito." },
     { spk: "NARRATORE", text: "La Croccantezza Eterna torna a Morenopoli. I forni riaccendono. I morenini tornano croccanti. Nel cassetto di Gino, una fiala vuota sorride." },
     { spk: "maledelmondo", text: "(da lontano, quasi inudibile) ...un giorno qualcuno lascerà un morenino nel cassetto... e io tornerò... con gli interessi... e il latte..." },
   ],
@@ -439,13 +443,13 @@ export const SCRIPTS: Record<string, DialogueLine[]> = {
     { spk: "donmoreno", text: "guarda chi è tornato. SBRICIOLATO. ti ho raccattato con la paletta, eh. riposati, riparti. i tuoi Moreni sono già pronti: non sanno fare altro che volerti bene." },
   ],
 
-  pc_intro: [
-    { spk: "NARRATORE", text: "Sullo schermo verde appare un volto pixelato con gli occhiali: MICA RIZZI, archivista demoniaca part-time." },
-    { spk: "NARRATORE", text: "«Ciao! Nel mio PC ci sono 100 slot per i tuoi Moreni. Deposita, ritira, libera: ma con amore, eh.»" },
-  ],
-
   hug_hint: [
     { spk: "coizio", text: "premi SPAZIO. riempi il cuore. non fermarti: l'abbraccio non è una raffica, è una promessa." },
+  ],
+
+  pc_intro: [
+    { spk: "NARRATORE", text: "Sullo schermo del PC lampeggia un logo a forma di cuore pixellato. Una voce gentile filtra dalle casse." },
+    { spk: "NARRATORE", text: "«Ciao! Sono MICA LIZZI. Questo è il mio PC: 100 slot per i tuoi Morenini. Depositane, ritirane, e se proprio devi... liberali. Ma pensaci due volte.»" },
   ],
 };
 
@@ -465,7 +469,6 @@ export const CAST: { name: string; role: string }[] = [
   { name: "GINO SATRI", role: "Filosofo ravveduto. Ha pubblicato «Il male, istruzioni per NON l'uso»." },
   { name: "NONNO MORENO", role: "Fondatore purificato. Ha promesso di chiedere aiuto, ogni tanto." },
   { name: "MALE DEL MONDO", role: "Attualmente in un cassetto. Tenete d'occhio i morenini avanzati." },
-  { name: "MICA RIZZI", role: "Archivista del PC. I suoi 100 slot non hanno mai perso un Moreno." },
 ];
 
 export function pick<T>(arr: T[]): T {
@@ -490,22 +493,25 @@ export function enemyStats(id: string, diff: number): { hp: number; atk: number 
 }
 
 /* ------------------------------------------ GENERATORE DI NOMI
-   Lunghezza casuale 4-9; primo carattere vocale o consonante a caso;
-   alternanza stretta vocale/consonante; ~12% di doppie vocali/consonanti. */
+   Regole: lunghezza casuale, primo carattere vocale o consonante a caso,
+   alternanza consonante/vocale; raramente una doppia vocale o consonante. */
 const VOWELS = "aeiou";
-const CONSONANTS = "bcdfglmnprstvz";
+const CONS = "bcdfglmnrstvz";
 
 export function generateMorenoName(): string {
-  const len = 4 + Math.floor(Math.random() * 6);
+  const len = 4 + Math.floor(Math.random() * 6); // 4..9
   let isVowel = Math.random() < 0.5;
   let out = "";
   for (let i = 0; i < len; i++) {
-    const double = Math.random() < 0.12 && i > 0;
-    const pool = isVowel ? VOWELS : CONSONANTS;
+    const double = i > 0 && i < len - 1 && Math.random() < 0.12; // rara doppia
+    const pool = isVowel ? VOWELS : CONS;
     const ch = pool[Math.floor(Math.random() * pool.length)];
-    out += ch;
-    if (double) out += ch;
-    if (!double) isVowel = !isVowel;
+    out += double ? ch + ch : ch;
+    if (double) {
+      // la doppia "salta" l'alternanza di un passo in più
+      isVowel = !isVowel;
+    }
+    isVowel = !isVowel;
   }
   return out.charAt(0).toUpperCase() + out.slice(1);
 }

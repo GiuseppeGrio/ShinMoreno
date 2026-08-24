@@ -1,5 +1,7 @@
 /* Piccola synth WebAudio: nessun asset, solo blip procedurali. */
 
+type OscType = OscillatorType;
+
 class Sfx {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
@@ -35,7 +37,7 @@ class Sfx {
     if (this.master) this.master.gain.value = m ? 0 : 0.5;
   }
 
-  private tone(freq: number, dur: number, type: OscillatorType, vol: number, when = 0, slideTo?: number) {
+  private tone(freq: number, dur: number, type: OscType, vol: number, when = 0, slideTo?: number) {
     const ctx = this.ensure();
     if (!ctx || !this.master || this.muted) return;
     const t0 = ctx.currentTime + when;
@@ -72,11 +74,11 @@ class Sfx {
     src.stop(t0 + dur + 0.02);
   }
 
-  click() { this.tone(340, 0.06, "square", 0.12); }
-  type() { this.tone(1900, 0.018, "sine", 0.03); }
-  chomp() {
-    this.noise(0.1, 0.5, 0, 500);
-    this.tone(190, 0.13, "triangle", 0.3, 0, 70);
+  click() {
+    this.tone(340, 0.06, "square", 0.12);
+  }
+  type() {
+    this.tone(1900, 0.018, "sine", 0.03);
   }
   correct() {
     this.tone(523, 0.09, "sine", 0.2);
@@ -86,7 +88,13 @@ class Sfx {
     this.tone(170, 0.34, "sawtooth", 0.28, 0, 65);
     this.noise(0.3, 0.35, 0.02, 300, 2);
   }
-  tick() { this.tone(1250, 0.04, "square", 0.1); }
+  chomp() {
+    this.noise(0.1, 0.5, 0, 500);
+    this.tone(190, 0.13, "triangle", 0.3, 0, 70);
+  }
+  tick() {
+    this.tone(1250, 0.04, "square", 0.1);
+  }
   appear() {
     this.tone(110, 0.7, "sawtooth", 0.14, 0, 55);
     this.tone(116, 0.7, "sawtooth", 0.12, 0.03, 58);
