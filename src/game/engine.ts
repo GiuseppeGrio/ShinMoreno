@@ -1131,6 +1131,7 @@ export class MoreniEngine {
     if (this.player) this.player.position.copy(this.playerPos);
     this.camLerp = { from: this.camera.position.clone(), k: 0 };
     this.curZone = null;
+    this.portalUsed = false; // rientrando nel mondo il portale può scattare di nuovo (es. dopo una sconfitta col boss)
   }
 
   setInput(x: number, z: number) {
@@ -1172,6 +1173,47 @@ export class MoreniEngine {
 
   companionFollow(on: boolean) {
     this.clompFollow = on;
+  }
+
+  getPlayerPos(): { x: number; z: number } {
+    return { x: this.playerPos.x, z: this.playerPos.z };
+  }
+
+  setSwordVisible(v: boolean) {
+    if (this.swordMesh) this.swordMesh.visible = v;
+  }
+
+  /* ripristina istantaneamente lo stato di Clomp (usato dal salvataggio) */
+  setClompAwakeState(on: boolean) {
+    const c = this.clompRefs;
+    if (!c) return;
+    c.awake = on;
+    if (!on) return;
+    if (this.clompSleepSprite) {
+      this.worldGroup.remove(this.clompSleepSprite);
+      (this.clompSleepSprite.material as THREE.SpriteMaterial).map?.dispose();
+      (this.clompSleepSprite.material as THREE.Material).dispose();
+      this.clompSleepSprite = null;
+    }
+    if (!c.sword) {
+      const sword = new THREE.Group();
+      const blade = new THREE.Mesh(
+        new THREE.BoxGeometry(0.12, 1.4, 0.04),
+        new THREE.MeshStandardMaterial({ color: 0xcfe8ff, emissive: 0x9fd8ff, emissiveIntensity: 1.1, roughness: 0.2, metalness: 0.8 })
+      );
+      blade.position.y = 0.9;
+      sword.add(blade);
+      const guard = new THREE.Mesh(
+        new THREE.BoxGeometry(0.42, 0.08, 0.12),
+        new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3, metalness: 0.8 })
+      );
+      guard.position.y = 0.22;
+      sword.add(guard);
+      sword.position.set(0.5, 0.9, 0.2);
+      sword.rotation.z = -0.35;
+      c.group.add(sword);
+      c.sword = sword;
+    }
   }
 
   pullSwordFx(cb: () => void) {
@@ -1801,7 +1843,7 @@ export class MoreniEngine {
       const dp = Math.hypot(x - this.playerPos.x, z - this.playerPos.z);
       if (dp < 1.5) {
         w.dead = true;
-        w.respawnAt = t + 9;
+        w.respawnAt = t + 60; // cooldown di 1 minuto prima del respawn
         w.refs.group.visible = false;
         this.spawnBurst(new THREE.Vector3(x, 1, z), [0xffc94d, 0xff2e5f], 10, 2.4, 2);
         this.onEncounter?.(w.sp.id, w.diff);
