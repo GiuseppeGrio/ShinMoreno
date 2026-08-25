@@ -33,149 +33,8 @@ type Phase = "title" | "dialogue" | "starter" | "world" | "battle" | "quiz" | "h
 type PcSel = { kind: "party" | "pc"; idx: number } | null;
 
 const hexCss = (n: number) => "#" + n.toString(16).padStart(6, "0");
+const PC_CAP = 100;
 
-/* ================================================= RITRATTI SVG PROCEDURALI */
-function HeartSvg({ size = 14, on = true }: { size?: number; on?: boolean }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
-      <path
-        d="M12 21 C5 14.5 2 11 2 7.5 C2 4.5 4.5 2.5 7 2.5 C9 2.5 11 3.8 12 5.5 C13 3.8 15 2.5 17 2.5 C19.5 2.5 22 4.5 22 7.5 C22 11 19 14.5 12 21 Z"
-        fill={on ? "#ff2e5f" : "#2a1b45"}
-        stroke={on ? "#ffd1dd" : "#4a2b6e"}
-        strokeWidth="1.4"
-      />
-    </svg>
-  );
-}
-
-function CookieIcon({ css, size = 26 }: { css: string; size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
-      <circle cx="12" cy="12" r="9.5" fill={css} stroke="#3d2008" strokeWidth="2" />
-      <circle cx="12" cy="12" r="3.4" fill="#2a1503" />
-      <circle cx="6.8" cy="9" r="1.1" fill="#ffe9c9" />
-      <circle cx="16.5" cy="8" r="1.1" fill="#ff6fa5" />
-      <circle cx="17" cy="15.5" r="1.1" fill="#ffe9c9" />
-      <circle cx="8" cy="16" r="1.1" fill="#9bd84b" />
-    </svg>
-  );
-}
-
-function MorenoFace({ sp, size = 72 }: { sp: SpeciesDef; size?: number }) {
-  const body = hexCss(sp.bodyColor);
-  const belly = hexCss(sp.bellyColor);
-  const acc = hexCss(sp.accentColor);
-  const p = sp.parts;
-  const isBoss = sp.id === "maialedelmondo" || sp.id === "maledelmondo";
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden>
-      {p.horns && (
-        <>
-          <polygon points="26,28 33,6 41,24" fill={acc} />
-          <polygon points="59,24 67,6 74,28" fill={acc} />
-        </>
-      )}
-      {p.catEars && (
-        <>
-          <polygon points="24,32 31,10 41,27" fill={body} />
-          <polygon points="59,27 69,10 76,32" fill={body} />
-        </>
-      )}
-      {p.antenna && (
-        <>
-          <rect x="48" y="10" width="4" height="16" fill={acc} />
-          <circle cx="50" cy="9" r="5" fill={acc} />
-        </>
-      )}
-      {p.bun && <circle cx="50" cy="15" r="11" fill="#d7dde2" />}
-      <circle cx="50" cy="55" r="35" fill={body} />
-      <ellipse cx="50" cy="68" rx="22" ry="15" fill={belly} />
-      {p.crown && (
-        <polygon
-          points="28,24 35,8 43,20 50,3 57,20 65,8 72,24 70,30 30,30"
-          fill="#ffd700"
-          stroke="#8a6a00"
-          strokeWidth="2"
-        />
-      )}
-      {p.sunglasses ? (
-        <>
-          <rect x="24" y="42" width="52" height="13" rx="3" fill="#0d0d12" />
-          <rect x="28" y="45" width="18" height="3" fill="#3a3a4a" />
-        </>
-      ) : (
-        <>
-          <circle cx="37" cy="48" r="9" fill="#ffffff" />
-          <circle cx="63" cy="48" r="9" fill="#ffffff" />
-          <circle cx="37" cy="49" r="4" fill={isBoss ? "#ff2e5f" : "#12060c"} />
-          <circle cx="63" cy="49" r="4" fill={isBoss ? "#ff2e5f" : "#12060c"} />
-          {isBoss && (
-            <>
-              <rect x="26" y="34" width="20" height="5" fill="#2a1208" transform="rotate(18 36 36)" />
-              <rect x="54" y="34" width="20" height="5" fill="#2a1208" transform="rotate(-18 64 36)" />
-            </>
-          )}
-          {p.tears && (
-            <>
-              <ellipse cx="32" cy="62" rx="3.6" ry="6" fill="#6fd7ff" />
-              <ellipse cx="68" cy="62" rx="3.6" ry="6" fill="#6fd7ff" />
-            </>
-          )}
-        </>
-      )}
-      {p.glasses && (
-        <>
-          <circle cx="37" cy="48" r="12" fill="none" stroke="#2d2438" strokeWidth="3" />
-          <circle cx="63" cy="48" r="12" fill="none" stroke="#2d2438" strokeWidth="3" />
-          <rect x="46" y="46" width="8" height="3" fill="#2d2438" />
-        </>
-      )}
-      {p.bolts && (
-        <>
-          <rect x="6" y="46" width="11" height="6" fill="#9aa5b1" />
-          <rect x="83" y="46" width="11" height="6" fill="#9aa5b1" />
-        </>
-      )}
-      {isBoss ? (
-        <path d="M34 72 L41 79 L48 72 L55 79 L62 72" stroke="#2a1208" strokeWidth="4" fill="none" />
-      ) : (
-        <ellipse cx="50" cy="70" rx="7.5" ry="5" fill="#47101f" />
-      )}
-      {p.chain && (
-        <ellipse cx="50" cy="84" rx="27" ry="8" fill="none" stroke={acc} strokeWidth="4" strokeDasharray="6 4" />
-      )}
-      {p.mustache && (
-        <>
-          <rect x="33" y="57" width="13" height="3" fill="#2d2438" transform="rotate(-12 40 58)" />
-          <rect x="54" y="57" width="13" height="3" fill="#2d2438" transform="rotate(12 60 58)" />
-        </>
-      )}
-      {p.beret && <ellipse cx="50" cy="22" rx="24" ry="9" fill="#c0392b" />}
-      {p.hood && <path d="M22 48 Q50 4 78 48 L74 56 Q50 22 26 56 Z" fill="#12081f" />}
-      {p.heart && (
-        <path
-          d="M50 30 C47 26 42 26 40 29 C38 32 41 35 50 41 C59 35 62 32 60 29 C58 26 53 26 50 30 Z"
-          fill="#ff4f9a"
-        />
-      )}
-      {p.snout && <ellipse cx="50" cy="60" rx="10" ry="7" fill={belly} stroke="#8a6a45" strokeWidth="1.5" />}
-    </svg>
-  );
-}
-
-function TuFace({ size = 72 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden>
-      <path d="M14 92 C14 42 30 10 50 10 C70 10 86 42 86 92 Z" fill="#241539" stroke="#3a2458" strokeWidth="3" />
-      <ellipse cx="50" cy="58" rx="21" ry="26" fill="#0d0716" />
-      <circle cx="42" cy="53" r="3.4" fill="#4dffa6" />
-      <circle cx="58" cy="53" r="3.4" fill="#4dffa6" />
-      <rect x="37" y="72" width="26" height="7" rx="2" fill="#4dffa6" opacity="0.55" />
-    </svg>
-  );
-}
-
-/* ================================================= TIPI DI GIOCO */
 interface PartyMon {
   spId: string;
   hp: number;
@@ -207,19 +66,7 @@ function makeMon(spId: string, name?: string): PartyMon {
   return { spId, hp: s.baseHp, maxHp: s.baseHp, atk: s.baseAtk, name };
 }
 
-function displayName(bt: { enemyId: string; enemyName: string | null }): string {
-  return bt.enemyName ?? speciesById(bt.enemyId).name;
-}
-
-function monName(mon: PartyMon): string {
-  return mon.name ?? speciesById(mon.spId).name;
-}
-
-/* ================================================= SALVATAGGIO LOCALSTORAGE
-   Slot 0 = AUTOSAVE (mai sovrascrivibile a mano). Slot 1..N = manuali. */
-const SAVE_KEY = "shin-moreni-tensei-save-v1";
-const SLOT_COUNT = 3;
-const slotKey = (n: number) => `${SAVE_KEY}-slot-${n}`;
+const monName = (m: PartyMon) => m.name ?? speciesById(m.spId).name;
 
 interface Flags {
   cinghiaBeaten: boolean;
@@ -231,6 +78,7 @@ interface Flags {
   clompAwake: boolean;
   finaleDone: boolean;
 }
+
 const initialFlags: Flags = {
   cinghiaBeaten: false,
   micoDone: false,
@@ -241,6 +89,26 @@ const initialFlags: Flags = {
   clompAwake: false,
   finaleDone: false,
 };
+
+function questTextFor(flags: Flags, recruits: number): string {
+  if (flags.finaleDone) return "PROFEZIA COMPIUTA — GIRA LIBERO PER MORENOPOLI";
+  if (flags.clompAwake) return "ATTRAVERSA IL PORTALE: SCONFIGGI IL MAIALE DEL MONDO";
+  if (flags.swordPulled) return "TROVA CLOMP E PARLAGLI (PIAZZA DI MORENOPOLI)";
+  if (flags.don2) return `RECLUTA MORENI PER ESTRARRE LA SPADA (${recruits}/${SWORD_REQ})`;
+  if (flags.ginoDone) return "TORNA DA DON MORENO (MORENOPOLI)";
+  if (flags.coizioDone) return "PARLA CON GINO SATRI (ABISSO DI GINO)";
+  if (flags.micoDone) return "PARLA CON COIZIO (TERME DEL CONTATTO)";
+  if (flags.cinghiaBeaten) return "PARLA CON MICO NOSCA (ACCAMPAMENTO DELLA RIVOLTA)";
+  return "VAI DA CINGHIA ALE (VALLE DEI FACOCERI)";
+}
+
+const formatWhen = (ts: number) =>
+  new Date(ts).toLocaleString("it-IT", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+
+/* ---------------- salvataggi ---------------- */
+const SAVE_KEY = "shin-moreni-tensei-save-v1";
+const SLOT_KEY = (n: number) => `shin-moreni-tensei-slot-${n}`;
+const SLOT_COUNT = 3;
 
 interface SaveData {
   flags: Flags;
@@ -270,7 +138,7 @@ function writeSaveKey(key: string, data: SaveData) {
   try {
     localStorage.setItem(key, JSON.stringify(data));
   } catch {
-    /* quota piena: ignora */
+    /* storage pieno o bloccato: ignora */
   }
 }
 function deleteSaveKey(key: string) {
@@ -281,153 +149,586 @@ function deleteSaveKey(key: string) {
   }
 }
 
+const readSave = () => readSaveKey(SAVE_KEY);
 const writeSave = (d: SaveData) => writeSaveKey(SAVE_KEY, d);
-const loadSave = () => readSaveKey(SAVE_KEY);
 const clearSave = () => deleteSaveKey(SAVE_KEY);
-const readSlot = (n: number) => readSaveKey(slotKey(n));
-const writeSlot = (n: number, d: SaveData) => writeSaveKey(slotKey(n), d);
-const deleteSlot = (n: number) => deleteSaveKey(slotKey(n));
+const readSlot = (n: number) => readSaveKey(SLOT_KEY(n));
+const writeSlot = (n: number, d: SaveData) => writeSaveKey(SLOT_KEY(n), d);
+const deleteSlot = (n: number) => deleteSaveKey(SLOT_KEY(n));
 
-function formatWhen(ts: number): string {
-  if (!ts) return "";
-  const d = new Date(ts);
-  return `${d.toLocaleDateString("it-IT")} ${d.toLocaleTimeString("it-IT", { hour: "2-digit", minute: "2-digit" })}`;
-}
-
-function questTextFor(flags: Flags, recruits: number): string {
-  if (flags.finaleDone) return "PROFEZIA COMPIUTA — GIRA LIBERO PER MORENOPOLI";
-  if (flags.clompAwake) return "ATTRAVERSA IL PORTALE: SCONFIGGI IL MAIALE DEL MONDO";
-  if (flags.swordPulled) return "TROVA CLOMP E PARLAGLI (PIAZZA DI MORENOPOLI)";
-  if (flags.don2) return `RECLUTA MORENI PER ESTRARRE LA SPADA (${recruits}/${SWORD_REQ})`;
-  if (flags.ginoDone) return "TORNA DA DON MORENO (MORENOPOLI)";
-  if (flags.coizioDone) return "PARLA CON GINO SATRI (ABISSO DI GINO)";
-  if (flags.micoDone) return "PARLA CON COIZIO (TERME DEL CONTATTO)";
-  if (flags.cinghiaBeaten) return "PARLA CON MICO NOSCA (ACCAMPAMENTO DELLA RIVOLTA)";
-  return "VAI DA CINGHIA ALE (VALLE DEI FACOCERI)";
-}
-
-/* ================================================= COMPONENTI UI */
-function HpBar({ hp, max, w = 120, col = "#4dffa6" }: { hp: number; max: number; w?: number; col?: string }) {
-  const pct = max > 0 ? Math.max(0, Math.min(1, hp / max)) : 0;
+/* ================================================================
+   RITRATTI SVG PROCEDURALI
+   ================================================================ */
+function MorenoFace({ sp, size = 72 }: { sp: SpeciesDef; size?: number }) {
+  const body = hexCss(sp.bodyColor);
+  const belly = hexCss(sp.bellyColor);
+  const acc = hexCss(sp.accentColor);
+  const p = sp.parts;
+  const isBoss = sp.id === "maialedelmondo" || sp.id === "maledelmondo";
   return (
-    <div style={{ width: w, height: 10 }} className="border border-edge bg-[#120a20] overflow-hidden inline-block align-middle">
-      <div
-        style={{ width: `${pct * 100}%`, height: "100%", background: col, transition: "width 0.25s ease" }}
-      />
-    </div>
+    <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden>
+      {p.horns && (
+        <>
+          <polygon points="26,28 33,6 41,24" fill={acc} />
+          <polygon points="59,24 67,6 74,28" fill={acc} />
+        </>
+      )}
+      {p.catEars && (
+        <>
+          <polygon points="24,32 31,10 41,27" fill={body} />
+          <polygon points="59,27 69,10 76,32" fill={body} />
+        </>
+      )}
+      {p.antenna && (
+        <>
+          <rect x="48" y="10" width="4" height="16" fill={acc} />
+          <circle cx="50" cy="9" r="5" fill={acc} />
+        </>
+      )}
+      {p.bun && <circle cx="50" cy="15" r="11" fill="#d7dde2" />}
+      {p.beret && <ellipse cx="54" cy="22" rx="20" ry="7" fill="#c0392b" />}
+      <circle cx="50" cy="55" r="35" fill={body} />
+      <ellipse cx="50" cy="68" rx="22" ry="15" fill={belly} />
+      {p.crown && (
+        <polygon points="28,24 35,8 43,20 50,3 57,20 65,8 72,24 70,30 30,30" fill="#ffd700" stroke="#8a6a00" strokeWidth="2" />
+      )}
+      {p.hood && <path d="M16 50 Q50 2 84 50 L78 34 Q50 12 22 34 Z" fill="#12081f" />}
+      {p.sunglasses ? (
+        <>
+          <rect x="24" y="42" width="52" height="13" rx="3" fill="#0d0d12" />
+          <rect x="28" y="45" width="18" height="3" fill="#3a3a4a" />
+        </>
+      ) : (
+        <>
+          <circle cx="37" cy="48" r="9" fill="#ffffff" />
+          <circle cx="63" cy="48" r="9" fill="#ffffff" />
+          <circle cx="37" cy="49" r="4" fill={isBoss ? "#ff2e5f" : "#12060c"} />
+          <circle cx="63" cy="49" r="4" fill={isBoss ? "#ff2e5f" : "#12060c"} />
+          {p.tears && (
+            <>
+              <ellipse cx="30" cy="62" rx="3.6" ry="6" fill="#6fd7ff" />
+              <ellipse cx="70" cy="62" rx="3.6" ry="6" fill="#6fd7ff" />
+            </>
+          )}
+        </>
+      )}
+      {p.glasses && (
+        <>
+          <circle cx="37" cy="48" r="12" fill="none" stroke="#2d2438" strokeWidth="3" />
+          <circle cx="63" cy="48" r="12" fill="none" stroke="#2d2438" strokeWidth="3" />
+          <rect x="46" y="46" width="8" height="3" fill="#2d2438" />
+        </>
+      )}
+      {p.bolts && (
+        <>
+          <rect x="6" y="46" width="11" height="6" fill="#9aa5b1" />
+          <rect x="83" y="46" width="11" height="6" fill="#9aa5b1" />
+        </>
+      )}
+      {p.snout && (
+        <>
+          <ellipse cx="50" cy="63" rx="11" ry="8" fill={belly} stroke="#47101f" strokeWidth="1.5" />
+          <circle cx="46" cy="63" r="1.8" fill="#47101f" />
+          <circle cx="54" cy="63" r="1.8" fill="#47101f" />
+        </>
+      )}
+      {p.tusks && (
+        <>
+          <polygon points="32,72 36,82 40,72" fill="#f5e6c8" />
+          <polygon points="60,72 64,82 68,72" fill="#f5e6c8" />
+        </>
+      )}
+      {p.mustache && (
+        <>
+          <rect x="30" y="66" width="17" height="4" fill="#2d2438" transform="rotate(14 38 68)" />
+          <rect x="53" y="66" width="17" height="4" fill="#2d2438" transform="rotate(-14 62 68)" />
+        </>
+      )}
+      {!p.snout && !p.mustache && <ellipse cx="50" cy="70" rx="7.5" ry="5" fill="#47101f" />}
+      {p.heart && <path d="M50 16 c-3 -6 -12 -6 -12 1 c0 6 8 9 12 13 c4 -4 12 -7 12 -13 c0 -7 -9 -7 -12 -1" fill="#ff4f9a" />}
+      {p.chain && <ellipse cx="50" cy="86" rx="27" ry="7" fill="none" stroke={acc} strokeWidth="4" strokeDasharray="6 4" />}
+    </svg>
   );
 }
 
-function DialogueBox({
-  lines,
-  onDone,
-  onChoice,
-}: {
-  lines: DialogueLine[];
-  onDone: () => void;
-  onChoice?: (choiceIdx: number) => void;
-}) {
+function TuFace({ size = 72 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 100 100" aria-hidden>
+      <path d="M14 92 C14 42 30 10 50 10 C70 10 86 42 86 92 Z" fill="#241539" stroke="#3a2458" strokeWidth="3" />
+      <ellipse cx="50" cy="58" rx="21" ry="26" fill="#0d0716" />
+      <circle cx="42" cy="53" r="3.4" fill="#4dffa6" />
+      <circle cx="58" cy="53" r="3.4" fill="#4dffa6" />
+      <rect x="37" y="72" width="26" height="7" rx="2" fill="#4dffa6" opacity="0.55" />
+    </svg>
+  );
+}
+
+/* ================================================================
+   DIALOGO JRPG (typewriter + scelte)
+   ================================================================ */
+function DialogueBox({ lines, onChoice, onDone }: { lines: DialogueLine[]; onChoice?: (i: number) => void; onDone: () => void }) {
   const [idx, setIdx] = useState(0);
   const [chars, setChars] = useState(0);
   const line = lines[Math.min(idx, lines.length - 1)];
   const full = line.text;
+  const done = chars >= full.length;
+  const hasChoices = done && !!line.choices && idx === lines.length - 1;
 
   useEffect(() => setChars(0), [idx]);
   useEffect(() => {
     if (chars < full.length) {
-      const t = window.setTimeout(() => setChars((c) => Math.min(full.length, c + 1)), 16);
+      const t = window.setTimeout(() => {
+        setChars((c) => c + 1);
+      }, 16);
       return () => window.clearTimeout(t);
     }
   }, [chars, full]);
 
   const advance = () => {
-    if (line.choices) return; // le domande si rispondono coi pulsanti
-    sfx.click();
-    if (chars < full.length) {
+    if (hasChoices) return;
+    if (!done) {
       setChars(full.length);
       return;
     }
-    if (idx + 1 < lines.length) setIdx(idx + 1);
-    else onDone();
+    if (idx + 1 < lines.length) {
+      sfx.click();
+      setIdx(idx + 1);
+    } else {
+      onDone();
+    }
   };
-
-  useEffect(() => {
-    const h = (e: KeyboardEvent) => {
-      if (e.code === "Space" || e.code === "Enter") {
-        e.preventDefault();
-        advance();
-      }
-    };
-    window.addEventListener("keydown", h);
-    return () => window.removeEventListener("keydown", h);
-  });
 
   const spk = line.spk;
   const sp = speciesById(spk);
   const isNarrator = spk === "NARRATORE";
-  const acc = sp ? hexCss(sp.accentColor) : spk === "TU" ? "#4dffa6" : "#bfa8ff";
-  const name = sp ? sp.name : spk === "TU" ? "TU — EVOCATORE MEDIOCRE" : "PROFEZIA DI MORENOPOLI";
+  const isTu = spk === "TU";
+  const acc = !isNarrator && !isTu ? hexCss(sp.accentColor) : isTu ? "#4dffa6" : "#bfa8ff";
+  const name = !isNarrator && !isTu ? sp.name : isTu ? "TU — EVOCATORE MEDIOCRE" : "PROFEZIA DI MORENOPOLI";
 
   return (
     <div className="dlg-root" onClick={advance}>
       <div className="dlg-box relative" style={{ "--acc": acc } as React.CSSProperties}>
-        <div className="dlg-name" style={{ background: acc }}>
-          {name}
-        </div>
+        <div className="dlg-name" style={{ background: acc }}>{name}</div>
         <div className="flex gap-4 items-center">
           {!isNarrator && (
             <div className="dlg-portrait">
-              {sp ? <MorenoFace sp={sp} size={76} /> : <TuFace size={76} />}
+              {isTu ? <TuFace size={76} /> : <MorenoFace sp={sp} size={76} />}
             </div>
           )}
           <div className={`dlg-text flex-1 ${isNarrator ? "narrator" : ""}`}>
             {full.slice(0, chars)}
             <span className="blink">▌</span>
+            {hasChoices && (
+              <div className="dlg-choices">
+                {line.choices!.map((c, i) => (
+                  <button key={i} className="dlg-choice" onClick={(e) => { e.stopPropagation(); onChoice?.(i); }}>
+                    ▸ {c}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-        {line.choices ? (
-          <div className="dlg-choices" onClick={(e) => e.stopPropagation()}>
-            {line.choices.map((c, i) => (
-              <button key={i} className="dlg-choice" onClick={() => onChoice?.(i)}>
-                ▸ {c}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className="dlg-hint">
-            [SPAZIO / CLICK] {chars < full.length ? "COMPLETA" : idx + 1 < lines.length ? "CONTINUA ▼" : "AVANTI ▼"}
-          </div>
+        {!hasChoices && (
+          <div className="dlg-hint">[SPAZIO / CLICK] {!done ? "COMPLETA" : idx + 1 < lines.length ? "CONTINUA ▼" : "AVANTI ▼"}</div>
         )}
       </div>
     </div>
   );
 }
 
-class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { err: string | null }> {
-  state = { err: null as string | null };
-  static getDerivedStateFromError(e: Error) {
-    return { err: e.message };
-  }
-  render() {
-    if (this.state.err) {
-      return (
-        <div style={{ background: "#0b0614", color: "#efe6d8", minHeight: "100vh", padding: 40, fontFamily: "monospace" }}>
-          <h1 style={{ color: "#ff2e5f" }}>CRASH DEMONIACO</h1>
-          <p>Un Moreno ha mangiato un pezzo di codice.</p>
-          <pre style={{ color: "#ffc94d", whiteSpace: "pre-wrap" }}>{this.state.err}</pre>
-          <button onClick={() => location.reload()} style={{ padding: "10px 20px", background: "#4dffa6", border: "none", cursor: "pointer", fontFamily: "monospace" }}>
-            RICOMINCIA LA PROFEZIA
-          </button>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
+/* ================================================================
+   MICRO-COMPONENTI HUD
+   ================================================================ */
+function HpBar({ hp, max, w = 110 }: { hp: number; max: number; w?: number }) {
+  const pct = Math.max(0, Math.min(1, hp / max));
+  const col = pct > 0.5 ? "#4dffa6" : pct > 0.22 ? "#ffc94d" : "#ff2e5f";
+  return (
+    <div style={{ width: w, height: 10 }} className="border border-edge bg-[#120a20] overflow-hidden">
+      <div style={{ width: `${pct * 100}%`, height: "100%", background: col, transition: "width 0.25s ease" }} />
+    </div>
+  );
 }
 
-/* ================================================= GAME */
-const PC_CAP = 100;
+function TurnDiamond({ state }: { state: "full" | "empty" }) {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" className={state === "full" ? "drop-shadow-[0_0_7px_rgba(255,46,95,0.9)]" : ""}>
+      <path d="M12 2 L22 12 L12 22 L2 12 Z" fill={state === "full" ? "#ff2e5f" : "rgba(30,16,51,0.75)"} stroke={state === "full" ? "#ffd1dd" : "#4a2b6e"} strokeWidth="1.6" />
+      {state === "full" && <path d="M12 6 L16 12 L12 18 L8 12 Z" fill="rgba(255,255,255,0.35)" />}
+    </svg>
+  );
+}
 
+function CookieIcon({ css, size = 26 }: { css: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden>
+      <circle cx="12" cy="12" r="9.5" fill={css} stroke="#3d2008" strokeWidth="2" />
+      <circle cx="12" cy="12" r="3.4" fill="#2a1503" />
+      <circle cx="6.8" cy="9" r="1.1" fill="#ffe9c9" />
+      <circle cx="16.5" cy="8" r="1.1" fill="#ff6fa5" />
+      <circle cx="17" cy="15.5" r="1.1" fill="#ffe9c9" />
+      <circle cx="8" cy="16" r="1.1" fill="#9bd84b" />
+    </svg>
+  );
+}
+
+/* ================================================================
+   MORENOPONG — minigioco (tetris × pong)
+   ================================================================ */
+const MCOLS = 12;
+const MROWS = 14;
+const MCELL = 30;
+const MW = MCOLS * MCELL;
+const MH = 420 + 110;
+const FLAVOR_CSS = ["#d8b98a", "#8a4b2a", "#ff6fa5", "#9bd84b"];
+
+interface PongPiece { cells: { c: number; r: number }[]; color: number; dy: number }
+
+function Morenopong({ onExit }: { onExit: (score: number) => void }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const stateRef = useRef({
+    grid: [] as number[][],
+    piece: null as PongPiece | null,
+    spawnIn: 0.4,
+    ball: { x: MW / 2, y: 480, vx: 2.6, vy: -4.2 },
+    paddleX: MW / 2 - 40,
+    paddleW: 80,
+    paddleTarget: MW / 2 - 40,
+    score: 0,
+    lives: 3,
+    combo: 1,
+    over: false,
+    clearing: [] as { row: number; t: number }[],
+    particles: [] as { x: number; y: number; vx: number; vy: number; life: number; color: string }[],
+    shake: 0,
+    keys: { left: false, right: false },
+    time: 0,
+  });
+  const onExitRef = useRef(onExit);
+  onExitRef.current = onExit;
+
+  useEffect(() => {
+    const S = stateRef.current;
+    S.grid = Array.from({ length: MROWS }, () => Array(MCOLS).fill(-1));
+
+    const SHAPES: { c: number; r: number }[][] = [
+      [{ c: 0, r: 0 }, { c: 1, r: 0 }, { c: 2, r: 0 }, { c: 3, r: 0 }],
+      [{ c: 0, r: 0 }, { c: 1, r: 0 }, { c: 0, r: 1 }, { c: 1, r: 1 }],
+      [{ c: 0, r: 0 }, { c: 1, r: 0 }, { c: 2, r: 0 }, { c: 1, r: 1 }],
+      [{ c: 1, r: 0 }, { c: 2, r: 0 }, { c: 0, r: 1 }, { c: 1, r: 1 }],
+      [{ c: 0, r: 0 }, { c: 0, r: 1 }, { c: 0, r: 2 }, { c: 1, r: 2 }],
+      [{ c: 0, r: 0 }, { c: 1, r: 0 }, { c: 1, r: 1 }, { c: 1, r: 2 }],
+    ];
+
+    const spawnPiece = () => {
+      const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
+      const width = Math.max(...shape.map((c) => c.c)) + 1;
+      const col = Math.floor(Math.random() * (MCOLS - width + 1));
+      S.piece = { cells: shape.map((c) => ({ c: c.c + col, r: c.r })), color: Math.floor(Math.random() * 4), dy: 0 };
+    };
+
+    const stackTop = (c: number) => {
+      for (let r = 0; r < MROWS; r++) if (S.grid[r][c] !== -1) return r;
+      return MROWS;
+    };
+
+    const checkRows = () => {
+      for (let r = 0; r < MROWS; r++) {
+        if (S.grid[r].every((v) => v !== -1) && !S.clearing.some((c) => c.row === r)) {
+          S.clearing.push({ row: r, t: 0.3 });
+          S.score += 100 * S.combo;
+          S.combo = Math.min(4, S.combo + 1);
+          S.shake = 6;
+          for (let c = 0; c < MCOLS; c++) {
+            for (let i = 0; i < 3; i++) {
+              S.particles.push({ x: c * MCELL + MCELL / 2, y: r * MCELL + MCELL / 2, vx: (Math.random() - 0.5) * 240, vy: (Math.random() - 0.5) * 240, life: 0.6, color: FLAVOR_CSS[S.grid[r][c]] ?? "#ffc94d" });
+            }
+          }
+        }
+      }
+    };
+
+    const lockPiece = () => {
+      if (!S.piece) return;
+      let overflow = false;
+      for (const cell of S.piece.cells) {
+        const target = stackTop(cell.c) - 1;
+        if (target < 0) {
+          overflow = true;
+          break;
+        }
+        S.grid[target][cell.c] = S.piece.color;
+      }
+      S.piece = null;
+      S.spawnIn = 0.6;
+      if (overflow) S.over = true;
+      else checkRows();
+    };
+
+    const collapseRows = () => {
+      const done = S.clearing.filter((c) => c.t <= 0).map((c) => c.row).sort((a, b) => b - a);
+      for (const row of done) {
+        S.grid.splice(row, 1);
+        S.grid.unshift(Array(MCOLS).fill(-1));
+      }
+      if (done.length) S.clearing = S.clearing.filter((c) => c.t > 0);
+    };
+
+    const resetBall = () => {
+      S.ball = { x: S.paddleX + S.paddleW / 2, y: 470, vx: (Math.random() < 0.5 ? -1 : 1) * 2.6, vy: -4.4 };
+    };
+
+    const canvas = canvasRef.current!;
+    const ctx = canvas.getContext("2d")!;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = MW * dpr;
+    canvas.height = MH * dpr;
+    ctx.scale(dpr, dpr);
+
+    let raf = 0;
+    let last = performance.now();
+
+    const step = (dt: number) => {
+      S.time += dt;
+      if (S.keys.left) S.paddleTarget -= 420 * dt;
+      if (S.keys.right) S.paddleTarget += 420 * dt;
+      S.paddleTarget = Math.max(0, Math.min(MW - S.paddleW, S.paddleTarget));
+      S.paddleX += (S.paddleTarget - S.paddleX) * Math.min(1, dt * 18);
+
+      if (!S.piece && !S.over) {
+        S.spawnIn -= dt;
+        if (S.spawnIn <= 0) spawnPiece();
+      }
+      if (S.piece && !S.over) {
+        const fallSpeed = 46 + Math.min(90, S.score / 14);
+        S.piece.dy += fallSpeed * dt;
+        let landed = false;
+        for (const cell of S.piece.cells) {
+          const top = stackTop(cell.c);
+          const bottom = cell.r * MCELL + S.piece.dy + MCELL;
+          if (bottom >= top * MCELL) landed = true;
+        }
+        if (landed) lockPiece();
+      }
+
+      for (const c of S.clearing) c.t -= dt;
+      collapseRows();
+
+      if (!S.over) {
+        const steps = 3;
+        const bSpeed = 4.4 + Math.min(3.5, S.score / 260);
+        const mag = Math.hypot(S.ball.vx, S.ball.vy) || 1;
+        S.ball.vx = (S.ball.vx / mag) * bSpeed;
+        S.ball.vy = (S.ball.vy / mag) * bSpeed;
+        for (let i = 0; i < steps; i++) {
+          const b = S.ball;
+          b.x += (S.ball.vx * 60 * dt) / steps;
+          b.y += (S.ball.vy * 60 * dt) / steps;
+          if (b.x < 7) { b.x = 7; b.vx = Math.abs(b.vx); }
+          if (b.x > MW - 7) { b.x = MW - 7; b.vx = -Math.abs(b.vx); }
+          if (b.y < 7) { b.y = 7; b.vy = Math.abs(b.vy); }
+          if (b.vy > 0 && b.y > 482 && b.y < 500 && b.x > S.paddleX - 7 && b.x < S.paddleX + S.paddleW + 7) {
+            const hit = (b.x - (S.paddleX + S.paddleW / 2)) / (S.paddleW / 2);
+            b.vy = -Math.abs(b.vy);
+            b.vx = hit * 4.6;
+            b.y = 481;
+            S.score += 5;
+          }
+          const gc = Math.floor(b.x / MCELL);
+          const gr = Math.floor(b.y / MCELL);
+          let broke = false;
+          for (let dr = -1; dr <= 1 && !broke; dr++) {
+            for (let dc = -1; dc <= 1 && !broke; dc++) {
+              const r = gr + dr;
+              const c = gc + dc;
+              if (r < 0 || r >= MROWS || c < 0 || c >= MCOLS) continue;
+              if (S.grid[r][c] === -1) continue;
+              const bx = c * MCELL;
+              const by = r * MCELL;
+              const nx = Math.max(bx, Math.min(b.x, bx + MCELL));
+              const ny = Math.max(by, Math.min(b.y, by + MCELL));
+              const dx = b.x - nx;
+              const dy = b.y - ny;
+              if (dx * dx + dy * dy < 49) {
+                const col = FLAVOR_CSS[S.grid[r][c]];
+                S.grid[r][c] = -1;
+                S.score += 10;
+                S.shake = 3;
+                for (let p = 0; p < 6; p++) {
+                  S.particles.push({ x: bx + MCELL / 2, y: by + MCELL / 2, vx: (Math.random() - 0.5) * 200, vy: (Math.random() - 0.5) * 200, life: 0.5, color: col });
+                }
+                if (Math.abs(dx) > Math.abs(dy)) b.vx = dx > 0 ? Math.abs(b.vx) : -Math.abs(b.vx);
+                else b.vy = dy > 0 ? Math.abs(b.vy) : -Math.abs(b.vy);
+                broke = true;
+              }
+            }
+          }
+          if (b.y > MH + 12) {
+            S.lives -= 1;
+            S.combo = 1;
+            S.shake = 8;
+            if (S.lives <= 0) S.over = true;
+            else resetBall();
+          }
+        }
+      }
+
+      for (let i = S.particles.length - 1; i >= 0; i--) {
+        const p = S.particles[i];
+        p.life -= dt;
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += 300 * dt;
+        if (p.life <= 0) S.particles.splice(i, 1);
+      }
+      S.shake = Math.max(0, S.shake - 30 * dt);
+    };
+
+    const draw = () => {
+      const b = S.ball;
+      ctx.save();
+      ctx.clearRect(0, 0, MW, MH);
+      ctx.fillStyle = "#120a20";
+      ctx.fillRect(0, 0, MW, MH);
+      if (S.shake > 0) ctx.translate((Math.random() - 0.5) * S.shake, (Math.random() - 0.5) * S.shake);
+
+      ctx.strokeStyle = "rgba(58,33,96,0.5)";
+      ctx.lineWidth = 1;
+      for (let c = 0; c <= MCOLS; c++) {
+        ctx.beginPath();
+        ctx.moveTo(c * MCELL, 0);
+        ctx.lineTo(c * MCELL, MROWS * MCELL);
+        ctx.stroke();
+      }
+      for (let r = 0; r <= MROWS; r++) {
+        ctx.beginPath();
+        ctx.moveTo(0, r * MCELL);
+        ctx.lineTo(MW, r * MCELL);
+        ctx.stroke();
+      }
+
+      for (let r = 0; r < MROWS; r++) {
+        for (let c = 0; c < MCOLS; c++) {
+          const v = S.grid[r][c];
+          if (v === -1) continue;
+          const clearing = S.clearing.some((cl) => cl.row === r);
+          ctx.fillStyle = clearing && Math.floor(S.time * 12) % 2 === 0 ? "#ffffff" : FLAVOR_CSS[v];
+          ctx.fillRect(c * MCELL + 2, r * MCELL + 2, MCELL - 4, MCELL - 4);
+          ctx.fillStyle = "rgba(255,255,255,0.25)";
+          ctx.fillRect(c * MCELL + 2, r * MCELL + 2, MCELL - 4, 6);
+        }
+      }
+
+      if (S.piece) {
+        for (const cell of S.piece.cells) {
+          const y = cell.r * MCELL + S.piece.dy;
+          ctx.fillStyle = FLAVOR_CSS[S.piece.color];
+          ctx.fillRect(cell.c * MCELL + 2, y + 2, MCELL - 4, MCELL - 4);
+          ctx.fillStyle = "rgba(255,255,255,0.35)";
+          ctx.fillRect(cell.c * MCELL + 2, y + 2, MCELL - 4, 6);
+        }
+      }
+
+      ctx.fillStyle = "rgba(77,255,166,0.06)";
+      ctx.fillRect(0, 420, MW, MH - 420);
+      ctx.fillStyle = "#4dffa6";
+      ctx.fillRect(S.paddleX, 486, S.paddleW, 12);
+      ctx.fillStyle = "rgba(255,255,255,0.5)";
+      ctx.fillRect(S.paddleX, 486, S.paddleW, 4);
+
+      ctx.fillStyle = "rgba(255,201,77,0.25)";
+      ctx.beginPath();
+      ctx.arc(b.x - b.vx * 1.2, b.y - b.vy * 1.2, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#ffc94d";
+      ctx.beginPath();
+      ctx.arc(b.x, b.y, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      for (const p of S.particles) {
+        ctx.globalAlpha = Math.max(0, p.life / 0.6);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x - 3, p.y - 3, 6, 6);
+      }
+      ctx.globalAlpha = 1;
+
+      ctx.fillStyle = "#efe6d8";
+      ctx.font = "bold 20px 'VT323', monospace";
+      ctx.textAlign = "left";
+      ctx.fillText(`PUNTI ${S.score}`, 8, MH - 8);
+      ctx.textAlign = "right";
+      ctx.fillText(`VITE ${"●".repeat(Math.max(0, S.lives))}`, MW - 8, MH - 8);
+
+      if (S.over) {
+        ctx.fillStyle = "rgba(5,2,10,0.75)";
+        ctx.fillRect(0, 0, MW, MH);
+        ctx.fillStyle = "#ff2e5f";
+        ctx.font = "bold 40px 'Grenze Gotisch', serif";
+        ctx.textAlign = "center";
+        ctx.fillText("GAME OVER", MW / 2, MH / 2 - 10);
+        ctx.fillStyle = "#efe6d8";
+        ctx.font = "bold 22px 'VT323', monospace";
+        ctx.fillText(`HAI FATTO ${S.score} PUNTI`, MW / 2, MH / 2 + 26);
+      }
+      ctx.restore();
+    };
+
+    const frame = (now: number) => {
+      const dt = Math.min(0.033, (now - last) / 1000);
+      last = now;
+      if (!S.over) step(dt);
+      draw();
+      if (S.over) {
+        window.setTimeout(() => onExitRef.current(S.score), 900);
+        return;
+      }
+      raf = requestAnimationFrame(frame);
+    };
+
+    const kd = (e: KeyboardEvent) => {
+      if (e.code === "ArrowLeft" || e.code === "KeyA") S.keys.left = true;
+      if (e.code === "ArrowRight" || e.code === "KeyD") S.keys.right = true;
+    };
+    const ku = (e: KeyboardEvent) => {
+      if (e.code === "ArrowLeft" || e.code === "KeyA") S.keys.left = false;
+      if (e.code === "ArrowRight" || e.code === "KeyD") S.keys.right = false;
+    };
+    window.addEventListener("keydown", kd);
+    window.addEventListener("keyup", ku);
+
+    resetBall();
+    spawnPiece();
+    raf = requestAnimationFrame(frame);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener("keydown", kd);
+      window.removeEventListener("keyup", ku);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      style={{ width: "100%", maxWidth: 380, touchAction: "none" }}
+      onMouseMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * MW;
+        stateRef.current.paddleTarget = Math.max(0, Math.min(MW - stateRef.current.paddleW, x - stateRef.current.paddleW / 2));
+      }}
+      onTouchMove={(e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = ((e.touches[0].clientX - rect.left) / rect.width) * MW;
+        stateRef.current.paddleTarget = Math.max(0, Math.min(MW - stateRef.current.paddleW, x - stateRef.current.paddleW / 2));
+      }}
+    />
+  );
+}
+
+/* ================================================================
+   APP
+   ================================================================ */
 function MoreniGame() {
   const mountRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<MoreniEngine | null>(null);
@@ -444,43 +745,41 @@ function MoreniGame() {
   const [pc, setPc] = useState<PartyMon[]>([]);
   const [briciole, setBriciole] = useState<number>(START_BRICIOLE);
   const [morenini, setMorenini] = useState<Record<FlavorId, number>>({ ...START_MORENINI });
-  const [shopOpen, setShopOpen] = useState(false);
-  const [gameOpen, setGameOpen] = useState(false);
-  const [arcadePlaying, setArcadePlaying] = useState(false);
-  const [arcadeResult, setArcadeResult] = useState<{ score: number; morenini: number; briciole: number } | null>(null);
   const [flags, setFlags] = useState<Flags>(initialFlags);
   const [zone, setZone] = useState<ZoneDef | null>(null);
   const [nearId, setNearId] = useState<string | null>(null);
-  const [banner, setBanner] = useState<{ kicker: string; title: string; boss: boolean } | null>(null);
-  const [toast, setToast] = useState<string | null>(null);
-  const [flash, setFlash] = useState<{ kind: "red" | "gold"; key: number } | null>(null);
   const [bt, setBt] = useState<BattleState | null>(null);
   const [offerMode, setOfferMode] = useState(false);
   const [switchMode, setSwitchMode] = useState(false);
   const [dlgLines, setDlgLines] = useState<DialogueLine[]>([]);
-  const [quiz, setQuiz] = useState<{ q: number; hearts: number; done: boolean } | null>(null);
+  const [dlgChoice, setDlgChoice] = useState<((i: number) => void) | null>(null);
+  const [banner, setBanner] = useState<{ kicker: string; title: string; boss: boolean } | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const [flash, setFlash] = useState<{ kind: "red" | "gold"; key: number } | null>(null);
+  const [quizIdx, setQuizIdx] = useState(0);
+  const [hearts, setHearts] = useState(3);
   const [hug, setHug] = useState<{ progress: number; running: boolean; done: boolean }>({ progress: 0, running: false, done: false });
-  const [slotPanel, setSlotPanel] = useState<null | "save" | "load">(null);
-  const [confirmSlot, setConfirmSlot] = useState<number | null>(null);
-  const [slotTick, setSlotTick] = useState(0);
-  const [hasSave, setHasSave] = useState(false);
-
-  /* menu di gioco RPG */
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuTab, setMenuTab] = useState<"formazione" | "stato" | "zaino">("formazione");
   const [menuSel, setMenuSel] = useState(0);
   const [useItemId, setUseItemId] = useState<string | null>(null);
   const [partyReleaseArm, setPartyReleaseArm] = useState<number | null>(null);
-
-  /* PC di Mica Rizzi + inerzia */
   const [pcOpen, setPcOpen] = useState(false);
   const [pcSel, setPcSel] = useState<PcSel>(null);
   const [pcReleaseArm, setPcReleaseArm] = useState(false);
+  const [shopOpen, setShopOpen] = useState(false);
+  const [gameOpen, setGameOpen] = useState(false);
+  const [arcadePlaying, setArcadePlaying] = useState(false);
+  const [arcadeResult, setArcadeResult] = useState<{ score: number; morenini: number; briciole: number } | null>(null);
+  const [slotPanel, setSlotPanel] = useState<null | "save" | "load">(null);
+  const [confirmSlot, setConfirmSlot] = useState<number | null>(null);
+  const [slotTick, setSlotTick] = useState(0);
   const [inertiaNotice, setInertiaNotice] = useState(false);
+  const [hasSave, setHasSave] = useState(false);
 
-  /* refs sincronizzati */
   const phaseRef = useRef<Phase>("title");
   const pausedRef = useRef(false);
+  const flagsRef = useRef<Flags>(initialFlags);
   const partyRef = useRef<PartyMon[]>([]);
   const activeIdxRef = useRef(0);
   const itemsRef = useRef<string[]>([]);
@@ -489,60 +788,34 @@ function MoreniGame() {
   const pcRef = useRef<PartyMon[]>([]);
   const bricioleRef = useRef<number>(START_BRICIOLE);
   const moreniniRef = useRef<Record<FlavorId, number>>({ ...START_MORENINI });
-  const flagsRef = useRef<Flags>(initialFlags);
-  const menuOpenRef = useRef(false);
   const btRef = useRef<BattleState | null>(null);
-  const hugHeldRef = useRef(false);
-  const hugDoneRef = useRef(false);
-  const koRef = useRef(false);
-  const keysRef = useRef<Record<string, boolean>>({});
+  const menuOpenRef = useRef(false);
   const afterDlgRef = useRef<(() => void) | null>(null);
-  const onChoiceRef = useRef<((i: number) => void) | null>(null);
   const logIdRef = useRef(0);
   const bannerTRef = useRef<number | null>(null);
   const toastTRef = useRef<number | null>(null);
+  const keysRef = useRef<Record<string, boolean>>({});
+  const hugHeldRef = useRef(false);
+  const hugDoneRef = useRef(false);
+  const koRef = useRef(false);
   const gameStartedRef = useRef(false);
 
-  useEffect(() => {
-    phaseRef.current = phase;
-  }, [phase]);
-  useEffect(() => {
-    partyRef.current = party;
-  }, [party]);
-  useEffect(() => {
-    activeIdxRef.current = activeIdx;
-  }, [activeIdx]);
-  useEffect(() => {
-    itemsRef.current = items;
-  }, [items]);
-  useEffect(() => {
-    consumablesRef.current = consumables;
-  }, [consumables]);
-  useEffect(() => {
-    capturedRef.current = capturedSpecies;
-  }, [capturedSpecies]);
-  useEffect(() => {
-    pcRef.current = pc;
-  }, [pc]);
-  useEffect(() => {
-    bricioleRef.current = briciole;
-  }, [briciole]);
-  useEffect(() => {
-    moreniniRef.current = morenini;
-  }, [morenini]);
-  useEffect(() => {
-    flagsRef.current = flags;
-  }, [flags]);
-  useEffect(() => {
-    menuOpenRef.current = menuOpen;
-  }, [menuOpen]);
-  useEffect(() => {
-    btRef.current = bt;
-  }, [bt]);
+  /* ---------------- sincronizzazioni ref ---------------- */
+  useEffect(() => { phaseRef.current = phase; }, [phase]);
+  useEffect(() => { flagsRef.current = flags; }, [flags]);
+  useEffect(() => { partyRef.current = party; }, [party]);
+  useEffect(() => { activeIdxRef.current = activeIdx; }, [activeIdx]);
+  useEffect(() => { itemsRef.current = items; }, [items]);
+  useEffect(() => { consumablesRef.current = consumables; }, [consumables]);
+  useEffect(() => { capturedRef.current = capturedSpecies; }, [capturedSpecies]);
+  useEffect(() => { pcRef.current = pc; }, [pc]);
+  useEffect(() => { bricioleRef.current = briciole; }, [briciole]);
+  useEffect(() => { moreniniRef.current = morenini; }, [morenini]);
+  useEffect(() => { menuOpenRef.current = menuOpen; }, [menuOpen]);
+  useEffect(() => { btRef.current = bt; }, [bt]);
 
-  /* controllo save all'avvio */
   useEffect(() => {
-    setHasSave(loadSave() !== null);
+    setHasSave(readSave() !== null);
   }, []);
 
   /* autosave */
@@ -555,7 +828,11 @@ function MoreniGame() {
   /* ---------------- helpers ---------------- */
   const hasItem = (id: string) => itemsRef.current.includes(id);
 
-  const addScore = (n: number) => setScore((s) => s + n);
+  const showBanner = (kicker: string, title: string, boss: boolean) => {
+    setBanner({ kicker, title, boss });
+    if (bannerTRef.current) window.clearTimeout(bannerTRef.current);
+    bannerTRef.current = window.setTimeout(() => setBanner(null), 2250);
+  };
 
   const showToast = (t: string) => {
     setToast(t);
@@ -563,69 +840,37 @@ function MoreniGame() {
     toastTRef.current = window.setTimeout(() => setToast(null), 2850);
   };
 
-  const showBanner = (kicker: string, title: string, boss: boolean) => {
-    setBanner({ kicker, title, boss });
-    if (bannerTRef.current) window.clearTimeout(bannerTRef.current);
-    bannerTRef.current = window.setTimeout(() => setBanner(null), 2250);
-  };
-
   const doFlash = (kind: "red" | "gold") => setFlash({ kind, key: Date.now() });
 
-  const recruitsCount = () => new Set(partyRef.current.map((m) => m.spId)).size;
+  const addScore = (n: number) => setScore((s) => s + n);
 
-  const questText = () => questTextFor(flagsRef.current, recruitsCount());
-
-  /* ---------------- dialoghi ---------------- */
-  const say = (script: string, after?: () => void) => {
-    setDlgLines(SCRIPTS[script] ?? []);
-    afterDlgRef.current = () => {
-      setPhase("world");
+  const say = (key: string, after?: () => void) => {
+    const lines = SCRIPTS[key];
+    if (!lines) {
       after?.();
-    };
-    onChoiceRef.current = null;
-    setPhase("dialogue");
+      return;
+    }
+    sayLines(lines, after);
   };
 
   const sayLines = (lines: DialogueLine[], after?: () => void) => {
     setDlgLines(lines);
+    setDlgChoice(null);
     afterDlgRef.current = () => {
-      setPhase("world");
+      setPhase((prev) => (prev === "dialogue" ? "world" : prev));
       after?.();
     };
-    onChoiceRef.current = null;
     setPhase("dialogue");
   };
 
-  const addItem = (id: string) => {
-    setItems((it) => (it.includes(id) ? it : [...it, id]));
-  };
+  const questText = () => questTextFor(flagsRef.current, new Set(capturedRef.current).size);
 
-  const grantConsumable = (id: string, n = 1) => {
-    setConsumables((c) => ({ ...c, [id]: (c[id] ?? 0) + n }));
-  };
-
-  const markCaptured = (id: string) => {
-    setCapturedSpecies((c) => (c.includes(id) ? c : [...c, id]));
-  };
-
-  const rollDrop = (chance: number) => {
-    if (Math.random() >= chance) return;
-    const pool = ["croccantino", "croccantino", "croccantino", "crostata", "caffe"];
-    const id = pick(pool);
-    grantConsumable(id);
-    window.setTimeout(() => {
-      showToast(`BOTTINO: ${CONSUMABLES[id].name}`);
-      sfx.correct();
-    }, 600);
-  };
-
-  /* ---------------- ECONOMIA: briciole & morenini ---------------- */
+  /* ---------------- economia ---------------- */
   const addBriciole = (n: number) => setBriciole((v) => Math.max(0, v + n));
 
   const addMorenini = (flavor: FlavorId, n: number) =>
     setMorenini((m) => ({ ...m, [flavor]: Math.max(0, (m[flavor] ?? 0) + n) }));
 
-  /* Consuma un morenino; ritorna false se non ne hai. */
   const spendMorenino = (flavor: FlavorId): boolean => {
     const have = moreniniRef.current[flavor] ?? 0;
     if (have <= 0) return false;
@@ -633,11 +878,10 @@ function MoreniGame() {
     return true;
   };
 
-  /* Acquisto al Forno. */
   const buyMorenino = (flavor: FlavorId) => {
     const price = MORENINI_PRICES[flavor];
     if (bricioleRef.current < price) {
-      showToast(`TI SERVONO ${price} BRICIOLE. VAI A VINCERNE ALLA SALA GIOCHI!`);
+      showToast(`TI SERVONO ${price} BRICIOLE. VINCINE ALLA SALA GIOCHI!`);
       sfx.wrong();
       return;
     }
@@ -659,55 +903,96 @@ function MoreniGame() {
     showToast(`${CONSUMABLES[id].name} ACQUISTATO (-${price})`);
   };
 
-  const bLog = (text: string, kind: "info" | "good" | "bad" = "info") => {
-    setBt((b) => (b ? { ...b, log: [...b.log.slice(-3), { id: ++logIdRef.current, text, kind }] } : b));
+  const grantConsumable = (id: string, n = 1) => {
+    setConsumables((c) => ({ ...c, [id]: (c[id] ?? 0) + n }));
   };
 
-  const patchBt = (p: Partial<BattleState>) => {
-    setBt((b) => {
-      if (!b) return b;
-      const nb = { ...b, ...p };
-      btRef.current = nb;
-      return nb;
-    });
+  const addItem = (id: string) => {
+    if (!itemsRef.current.includes(id)) {
+      setItems((it) => [...it, id]);
+      showToast(`OGGETTO CHIAVE: ${ITEMS[id].name}`);
+    }
   };
 
-  /* ---------------- avvio ---------------- */
-  const startGame = () => {
-    sfx.unlock();
-    sfx.start();
-    clearSave();
-    gameStartedRef.current = true;
-    setScore(0);
-    setFlags(initialFlags);
-    setParty([]);
-    setItems([]);
-    setConsumables({ ...START_CONSUMABLES });
-    setCapturedSpecies([]);
-    setPc([]);
-    setBriciole(START_BRICIOLE);
-    setMorenini({ ...START_MORENINI });
-    setShopOpen(false);
-    setGameOpen(false);
-    setActiveIdx(0);
-    setBt(null);
-    setMenuOpen(false);
-    setInertiaNotice(false);
-    engineRef.current?.companionFollow(false);
-    engineRef.current?.setPortalOpen(false);
-    engineRef.current?.setSwordVisible(true);
-    engineRef.current?.setClompAwakeState(false);
-    say("prologue", () => setPhase("starter"));
+  const markCaptured = (spId: string) => {
+    setCapturedSpecies((c) => (c.includes(spId) ? c : [...c, spId]));
   };
 
-  /* Ripristina lo stato da un SaveData (autosave o slot manuale).
-     Include la CURA AD INERZIA: 1 HP/minuto lontano dallo schermo;
-     dopo 60 minuti i Moreno al tappeto rinascono con 1 HP e riprendono a curarsi. */
+  const rollDrop = (chance: number) => {
+    if (Math.random() >= chance) return;
+    const pool = ["croccantino", "croccantino", "croccantino", "crostata", "caffe"];
+    const id = pick(pool);
+    grantConsumable(id);
+    window.setTimeout(() => {
+      showToast(`BOTTINO: ${CONSUMABLES[id].name}`);
+      sfx.correct();
+    }, 600);
+  };
+
+  /* ---------------- salvataggi ---------------- */
+  const currentSnapshot = (): SaveData => ({
+    flags,
+    party,
+    items,
+    consumables,
+    capturedSpecies,
+    pc,
+    briciole,
+    morenini,
+    score,
+    activeIdx,
+    pos: engineRef.current?.getPlayerPos() ?? { x: 0, z: 9 },
+    savedAt: Date.now(),
+  });
+
+  const saveToSlot = (n: number) => {
+    const existing = readSlot(n);
+    if (existing && confirmSlot !== n) {
+      setConfirmSlot(n);
+      return;
+    }
+    writeSlot(n, currentSnapshot());
+    setConfirmSlot(null);
+    setSlotTick((t) => t + 1);
+    showToast(`SALVATO NELLO SLOT ${n} — AL SICURO DA SOVRASCRITTURE`);
+    sfx.recruit();
+  };
+
+  const loadFromSlot = (n: number) => {
+    const save = readSlot(n);
+    if (!save) return;
+    setSlotPanel(null);
+    setConfirmSlot(null);
+    applySave(save, `SLOT ${n} CARICATO`, "LA PROFEZIA RIPRENDE");
+  };
+
+  const loadFromAutosave = () => {
+    const save = readSave();
+    if (!save) return;
+    setSlotPanel(null);
+    applySave(save, "AUTOSAVE CARICATO", "LA PROFEZIA RIPRENDE");
+  };
+
+  const wipeSlot = (n: number) => {
+    if (confirmSlot !== -n) {
+      setConfirmSlot(-n);
+      return;
+    }
+    deleteSlot(n);
+    setConfirmSlot(null);
+    setSlotTick((t) => t + 1);
+    showToast(`SLOT ${n} SVUOTATO`);
+    sfx.wrong();
+  };
+
+  /* ---------------- avvio / caricamento ---------------- */
   const applySave = (save: SaveData, kicker: string, title: string) => {
     sfx.unlock();
     sfx.start();
     gameStartedRef.current = true;
 
+    /* CURA AD INERZIA: 1 HP/minuto dall'ultimo salvataggio;
+       dopo 60 minuti i Moreni al tappeto rinascono con 1 HP e riprendono a curarsi. */
     const now = Date.now();
     const mins = Math.max(0, Math.floor((now - (save.savedAt || now)) / 60000));
     let healedHp = 0;
@@ -770,262 +1055,170 @@ function MoreniGame() {
     }
   };
 
+  const startGame = () => {
+    sfx.unlock();
+    sfx.start();
+    clearSave();
+    gameStartedRef.current = true;
+    setScore(0);
+    setFlags(initialFlags);
+    setParty([]);
+    setItems([]);
+    setConsumables({ ...START_CONSUMABLES });
+    setCapturedSpecies([]);
+    setPc([]);
+    setBriciole(START_BRICIOLE);
+    setMorenini({ ...START_MORENINI });
+    setShopOpen(false);
+    setGameOpen(false);
+    setActiveIdx(0);
+    setBt(null);
+    setMenuOpen(false);
+    engineRef.current?.companionFollow(false);
+    engineRef.current?.setPortalOpen(false);
+    engineRef.current?.setSwordVisible(true);
+    engineRef.current?.enterWorld(0, 9);
+    say("prologue", () => {
+      setPhase("starter");
+    });
+  };
+
   const continueGame = () => {
-    const save = loadSave();
+    const save = readSave();
     if (!save) {
       startGame();
       return;
     }
-    applySave(save, "AUTOSAVE", "LA PROFEZIA RIPRENDE");
+    applySave(save, "AUTOSAVE", "BENTORNATO, EVOCATORE");
   };
 
-  const loadFromAutosave = () => {
-    const save = loadSave();
-    if (save) applySave(save, "AUTOSAVE", "LA PROFEZIA RIPRENDE");
+  const backToTitle = () => {
+    setPaused(false);
+    pausedRef.current = false;
+    engineRef.current?.setPaused(false);
+    engineRef.current?.attractMode(true);
+    setPhase("title");
+    setHasSave(readSave() !== null);
   };
 
-  /* ---------------- slot manuali ---------------- */
-  const currentSnapshot = (): SaveData => ({
-    flags,
-    party,
-    items,
-    consumables,
-    capturedSpecies,
-    pc,
-    briciole,
-    morenini,
-    score,
-    activeIdx,
-    pos: engineRef.current?.getPlayerPos() ?? { x: 0, z: 9 },
-    savedAt: Date.now(),
-  });
-
-  const saveToSlot = (n: number) => {
-    const existing = readSlot(n);
-    if (existing && confirmSlot !== n) {
-      setConfirmSlot(n); // serve una seconda pressione per sovrascrivere
-      return;
-    }
-    writeSlot(n, currentSnapshot());
-    setConfirmSlot(null);
-    setSlotTick((t) => t + 1);
-    showToast(`SALVATO NELLO SLOT ${n} — AL SICURO DA SOVRASCRITTURE`);
-    sfx.recruit();
-  };
-
-  const loadFromSlot = (n: number) => {
-    const save = readSlot(n);
-    if (!save) return;
-    setSlotPanel(null);
-    setConfirmSlot(null);
-    applySave(save, `SLOT ${n} CARICATO`, "LA PROFEZIA RIPRENDE");
-  };
-
-  const wipeSlot = (n: number) => {
-    if (confirmSlot !== -n) {
-      setConfirmSlot(-n);
-      return;
-    }
-    deleteSlot(n);
-    setConfirmSlot(null);
-    setSlotTick((t) => t + 1);
-    showToast(`SLOT ${n} SVUOTATO`);
-    sfx.wrong();
-  };
-
-  /* ---------------- interazioni mondo ---------------- */
-  const interact = (id: string) => {
-    const f = flagsRef.current;
-    sfx.click();
-    if (id === "forno") {
-      setShopOpen(true);
-      engineRef.current?.setPaused(true);
-      return;
-    }
-    if (id === "arcade") {
-      setGameOpen(true);
-      engineRef.current?.setPaused(true);
-      return;
-    }
-    if (id === "pc") {
-      say("pc_intro", () => {
-        setPcOpen(true);
-        setPcSel(null);
-        setPcReleaseArm(false);
-        engineRef.current?.setPaused(true);
-      });
-      return;
-    }
-    if (id === "don") {
-      if (f.ginoDone && !f.don2) {
-        say("don2", () => setFlags((fl) => ({ ...fl, don2: true })));
-      } else {
-        say("don1");
-      }
-      return;
-    }
-    if (id === "monument") {
-      if (f.swordPulled) {
-        showToast("IL GRANDE MORENINO TI FA L'OCCHIOLINO. SENZA SPADA, ORMAI.");
-        return;
-      }
-      if (recruitsCount() >= SWORD_REQ) {
-        engineRef.current?.pullSwordFx(() => {
-          say("sword_pull", () => {
-            setFlags((fl) => ({ ...fl, swordPulled: true }));
-            engineRef.current?.awakenClompFx(() => {
-              const clomp = makeMon("clomp");
-              setParty((p) => (p.length < 8 ? [...p, clomp] : p));
-              setFlags((fl) => ({ ...fl, clompAwake: true }));
-              engineRef.current?.setPortalOpen(true);
-              engineRef.current?.companionFollow(true);
-              showToast("CLOMP SI È UNITO AL PARTY — IL PORTALE DELL'ANTRO È APERTO");
-              setPhase("world");
-            });
-          });
-        });
-      } else {
-        say("sword_fail");
-      }
-      return;
-    }
-    if (id === "clomp") {
-      if (!f.swordPulled) {
-        showToast("CLOMP DORME PROFONDAMENTE. GLI «Z» FLUTTUANO COME MORENINI.");
-      } else {
-        showToast("CLOMP: «TI SEGUO OVUNQUE, EVOCATORE.»");
-      }
-      return;
-    }
-    if (id === "cinghia") {
-      if (!f.cinghiaBeaten) {
-        say("cinghia_pre", () => {
-          startScriptedBattle("cinghiaale", { cinghia: true });
-        });
-      } else {
-        say("cinghia_post");
-      }
-      return;
-    }
-    if (id === "mico") {
-      if (f.micoDone) {
-        say("mico_win");
-        return;
-      }
-      say("mico1", () => {
-        setQuiz({ q: 0, hearts: 3, done: false });
-        setPhase("quiz");
-        askQuiz(0);
-      });
-      return;
-    }
-    if (id === "coizio") {
-      if (f.coizioDone) {
-        say("coizio_win");
-        return;
-      }
-      say("coizio1", () => {
-        hugDoneRef.current = false;
-        setHug({ progress: 0, running: true, done: false });
-        setPhase("hug");
-      });
-      return;
-    }
-    if (id === "gino") {
-      if (f.ginoDone) {
-        say("gino_post");
-        return;
-      }
-      say("gino1", () => {
-        startScriptedBattle("maledelmondo", { boss: true });
-      });
-      return;
-    }
-  };
-
-  /* ---------------- quiz di Mico ---------------- */
-  const askQuiz = (q: number) => {
-    const script = TRIAL_QUIZ.scripts[q];
-    setDlgLines(SCRIPTS[script] ?? []);
-    onChoiceRef.current = (i: number) => handleQuizAnswer(q, i);
-    setPhase("dialogue");
-  };
-
-  const handleQuizAnswer = (q: number, choice: number) => {
-    const correct = TRIAL_QUIZ.answers[q] === choice;
-    setQuiz((z) => {
-      if (!z) return z;
-      const hearts = correct ? z.hearts : z.hearts - 1;
-      if (!correct && hearts <= 0) {
-        say("mico_fail", () => {
-          setQuiz({ q: 0, hearts: 3, done: false });
-          askQuiz(0);
-        });
-        return z;
-      }
-      const nq = q + 1;
-      if (nq >= TRIAL_QUIZ.scripts.length) {
-        say("mico_win", () => {
-          addItem("spilla");
-          setFlags((fl) => ({ ...fl, micoDone: true }));
-          addScore(100);
-          setQuiz(null);
-        });
-        return { ...z, done: true };
-      }
-      window.setTimeout(() => askQuiz(nq), 450);
-      return { ...z, q: nq, hearts };
-    });
-    if (correct) sfx.correct();
-    else sfx.wrong();
-  };
-
-  /* ---------------- abbraccio di Coizio ---------------- */
-  const finishHug = () => {
-    setFlags((fl) => ({ ...fl, coizioDone: true }));
-    addItem("abbraccio");
-    addScore(100);
-    sfx.victory();
-    doFlash("gold");
-    setPhase("world");
-    say("coizio_win");
-  };
-
+  /* ---------------- motore ---------------- */
   useEffect(() => {
-    const down = (e: KeyboardEvent) => {
-      if (e.code === "Space") {
-        e.preventDefault();
-        hugHeldRef.current = true;
-      }
+    const eng = new MoreniEngine(mountRef.current!);
+    engineRef.current = eng;
+    eng.onEncounter = (spId, diff) => {
+      if (phaseRef.current !== "world") return;
+      startWildBattle(spId, diff);
     };
-    const up = (e: KeyboardEvent) => {
-      if (e.code === "Space") hugHeldRef.current = false;
+    eng.onPortal = () => {
+      if (phaseRef.current !== "world") return;
+      startFinale();
     };
-    window.addEventListener("keydown", down);
-    window.addEventListener("keyup", up);
-    const iv = window.setInterval(() => {
-      if (phaseRef.current !== "hug") return;
-      setHug((h) => {
-        if (h.done) return h;
-        const next = Math.max(0, Math.min(100, h.progress + (hugHeldRef.current ? 2.4 : -1.4)));
-        if (next >= 100 && !h.done && !hugDoneRef.current) {
-          hugDoneRef.current = true;
-          hugHeldRef.current = false;
-          window.setTimeout(() => finishHug(), 350);
-          return { ...h, progress: 100, done: true };
-        }
-        return { ...h, progress: next };
-      });
-    }, 40);
+    eng.onZone = (id) => {
+      const z = ZONES.find((zz) => zz.id === id) ?? null;
+      setZone(z);
+      if (z && z.id !== "morenopoli") showBanner("NUOVA ZONA", z.name, false);
+    };
+    eng.onNear = (id) => setNearId(id);
+    eng.start();
     return () => {
-      window.removeEventListener("keydown", down);
-      window.removeEventListener("keyup", up);
-      window.clearInterval(iv);
+      eng.dispose();
+      engineRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, hug.running, hug.done]);
+  }, []);
+
+  useEffect(() => {
+    engineRef.current?.attractMode(!(phase === "world" || phase === "battle"));
+  }, [phase]);
+
+  /* ---------------- input movimento ---------------- */
+  useEffect(() => {
+    const iv = window.setInterval(() => {
+      if (phaseRef.current !== "world" || pausedRef.current || menuOpenRef.current) {
+        engineRef.current?.setInput(0, 0);
+        return;
+      }
+      const k = keysRef.current;
+      let x = 0;
+      let z = 0;
+      if (k["w"] || k["arrowup"]) z -= 1;
+      if (k["s"] || k["arrowdown"]) z += 1;
+      if (k["a"] || k["arrowleft"]) x -= 1;
+      if (k["d"] || k["arrowright"]) x += 1;
+      engineRef.current?.setInput(x, z);
+    }, 33);
+    return () => window.clearInterval(iv);
+  }, []);
+
+  /* ---------------- tastiera ---------------- */
+  useEffect(() => {
+    const kd = (e: KeyboardEvent) => {
+      keysRef.current[e.key.toLowerCase()] = true;
+      const k = e.key.toLowerCase();
+      if (k === "m") {
+        setMuted((m) => {
+          sfx.setMuted(!m);
+          return !m;
+        });
+        return;
+      }
+      if (k === "tab" || k === "i") {
+        e.preventDefault();
+        if (menuOpenRef.current) closeMenu();
+        else if ((phaseRef.current === "world" || phaseRef.current === "battle") && !pausedRef.current) openMenu();
+        return;
+      }
+      if (k === "p" || k === "escape") {
+        if (shopOpen) { closeShop(); return; }
+        if (gameOpen) { closeArcade(); return; }
+        if (menuOpenRef.current) closeMenu();
+        else if (pcOpen) closePc();
+        else if (phaseRef.current === "world" || phaseRef.current === "battle") togglePause();
+        return;
+      }
+      if (k === "e" && phaseRef.current === "world" && !pcOpen && !shopOpen && !gameOpen) {
+        const near = engineRef.current?.getNearId();
+        if (near) interact(near);
+        return;
+      }
+      if (phaseRef.current === "title" && (k === "enter" || k === " ")) {
+        if (readSave()) continueGame();
+        else startGame();
+        return;
+      }
+      if (phaseRef.current === "battle" && offerMode) {
+        const idx = ["1", "2", "3", "4"].indexOf(e.key);
+        if (idx >= 0) offerMorenino(FLAVOR_LIST[idx]);
+      }
+    };
+    const ku = (e: KeyboardEvent) => {
+      keysRef.current[e.key.toLowerCase()] = false;
+    };
+    window.addEventListener("keydown", kd);
+    window.addEventListener("keyup", ku);
+    return () => {
+      window.removeEventListener("keydown", kd);
+      window.removeEventListener("keyup", ku);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [offerMode, pcOpen, shopOpen, gameOpen, arcadePlaying]);
 
   /* ---------------- battaglie ---------------- */
+  const bLog = (text: string, kind: "info" | "good" | "bad" = "info") => {
+    setBt((b) => (b ? { ...b, log: [...b.log.slice(-3), { id: ++logIdRef.current, text, kind }] } : b));
+  };
+
+  const patchBt = (p: Partial<BattleState>) => {
+    setBt((b) => {
+      if (!b) return b;
+      const nb = { ...b, ...p };
+      btRef.current = nb;
+      return nb;
+    });
+  };
+
+  const displayName = (b: BattleState) => b.enemyName ?? speciesById(b.enemyId).name;
+
   const startWildBattle = (spId: string, diff: number) => {
     const st = enemyStats(spId, diff);
     const name = generateMorenoName();
@@ -1054,6 +1247,7 @@ function MoreniGame() {
     const active = partyRef.current[activeIdxRef.current] ?? partyRef.current[0];
     setPhase("battle");
     engineRef.current?.startBattle(speciesById(active.spId), speciesById(spId), false);
+    sfx.appear();
   };
 
   const startScriptedBattle = (spId: string, opts: { boss?: boolean; cinghia?: boolean; male?: boolean }) => {
@@ -1073,13 +1267,7 @@ function MoreniGame() {
       busy: false,
       midPlayed: false,
       diff: 0,
-      log: [
-        {
-          id: ++logIdRef.current,
-          text: opts.male ? "IL FACOCEMORENO FINALE SI ERGE. GRUF COSMICO." : `${speciesById(spId).name} NON HA INTENZIONE DI TRATTARE.`,
-          kind: "bad",
-        },
-      ],
+      log: [{ id: ++logIdRef.current, text: `${speciesById(spId).name} TI BARRA LA STRADA!`, kind: "bad" }],
     };
     btRef.current = b;
     setBt(b);
@@ -1090,8 +1278,14 @@ function MoreniGame() {
     setPhase("battle");
     engineRef.current?.startBattle(speciesById(active.spId), speciesById(spId), !!opts.boss);
     if (opts.boss) sfx.appear();
-    if (opts.male) showBanner("BOSS FINALE", "MAIALE DEL MONDO", true);
-    else if (opts.cinghia) showBanner("CAPO TRIBÙ", "CINGHIA ALE", true);
+  };
+
+  const activeAtk = () => {
+    const mon = partyRef.current[activeIdxRef.current];
+    if (!mon) return 8;
+    let atk = mon.atk;
+    if (hasItem("spilla")) atk = Math.round(atk * 1.25);
+    return atk;
   };
 
   const playerAttack = () => {
@@ -1100,95 +1294,82 @@ function MoreniGame() {
     setOfferMode(false);
     setSwitchMode(false);
     patchBt({ busy: true });
-    const mon = partyRef.current[activeIdxRef.current];
-    let dmg = Math.round(mon.atk * (0.85 + Math.random() * 0.3));
-    if (hasItem("spilla")) dmg = Math.round(dmg * 1.25);
-    let double = false;
-    if (hasItem("fiala") && Math.random() < 0.15) {
-      dmg *= 2;
-      double = true;
-    }
-    sfx.click();
     engineRef.current?.battleAttack("player", () => {
+      const cur = btRef.current;
+      if (!cur) return;
+      let dmg = activeAtk() + Math.floor(Math.random() * 5);
+      let crit = false;
+      if (hasItem("fiala") && Math.random() < 0.15) {
+        dmg *= 2;
+        crit = true;
+      }
+      const newHp = Math.max(0, cur.enemyHp - dmg);
       sfx.correct();
       doFlash("gold");
-      const newHp = Math.max(0, b.enemyHp - dmg);
-      patchBt({ enemyHp: newHp });
-      bLog(double ? `FIALA OMEOPATICA! ${monName(mon)} colpisce DOPPIO: ${dmg} danni!` : `${monName(mon)} colpisce: ${dmg} danni!`, "good");
-      afterPlayerAction(newHp);
-    });
-  };
-
-  const afterPlayerAction = (newEnemyHp: number) => {
-    const b = btRef.current;
-    if (!b) return;
-    if (b.male && !b.midPlayed && newEnemyHp <= b.enemyMaxHp / 2) {
-      patchBt({ midPlayed: true });
-      sfx.victory();
-      window.setTimeout(() => {
-        sayLines(SCRIPTS.maiale_mid, () => {
-          engineRef.current?.battlePurify(speciesById("nonnopurificato"), () => {
-            window.setTimeout(() => {
-              sayLines(SCRIPTS.finale, () => {
-                setFlags((fl) => ({ ...fl, finaleDone: true }));
-                addScore(500);
-                clearSave();
-                setHasSave(false);
-                setBt(null);
-                engineRef.current?.endBattle();
-                setPhase("victory");
-              });
-            }, 500);
+      bLog(`${crit ? "COLPO OMEOPATICO! " : ""}Infliggi ${dmg} danni a ${displayName(cur)}.`, crit ? "good" : "info");
+      patchBt({ enemyHp: newHp, busy: false });
+      if (newHp <= 0) {
+        onEnemyDefeated();
+        return;
+      }
+      // Maiale del Mondo: cutscene di purificazione a metà vita
+      if (cur.enemyId === "maialedelmondo" && !cur.midPlayed && newHp <= cur.enemyMaxHp / 2) {
+        patchBt({ midPlayed: true, busy: true });
+        window.setTimeout(() => {
+          sayLines(SCRIPTS.maiale_mid, () => {
+            engineRef.current?.battlePurify(speciesById("nonnopurificato"), () => {
+              patchBt({ enemyId: "nonnopurificato", enemyName: null, busy: false, convinced: false });
+              sfx.recruit();
+            });
           });
-        });
-      }, 500);
-      return;
-    }
-    if (newEnemyHp <= 0) {
-      onEnemyDefeated();
-      return;
-    }
-    window.setTimeout(() => enemyTurn(), 500);
+        }, 600);
+        return;
+      }
+      window.setTimeout(() => enemyTurn(), 550);
+    });
   };
 
   const enemyTurn = () => {
     const b = btRef.current;
     if (!b || phaseRef.current !== "battle") return;
-    const mon = partyRef.current[activeIdxRef.current];
-    if (!mon) return;
+    patchBt({ busy: true });
     engineRef.current?.battleAttack("enemy", () => {
+      const cur = btRef.current;
+      if (!cur) return;
+      const mon = partyRef.current[activeIdxRef.current];
+      if (!mon) return;
+      const dmg = Math.max(1, cur.enemyAtk + Math.floor(Math.random() * 4) - 2);
+      const newHp = Math.max(0, mon.hp - dmg);
+      const healed = partyRef.current.map((m, i) => (i === activeIdxRef.current ? { ...m, hp: newHp } : m));
+      partyRef.current = healed;
+      setParty(healed);
       sfx.wrong();
       doFlash("red");
-      const dmg = Math.round(b.enemyAtk * (0.8 + Math.random() * 0.4));
-      const newHp = Math.max(0, mon.hp - dmg);
-      const newParty = partyRef.current.map((m, i) => (i === activeIdxRef.current ? { ...m, hp: newHp } : m));
-      partyRef.current = newParty;
-      setParty(newParty);
-      bLog(`${displayName(b)} ti colpisce: ${dmg} danni a ${monName(mon)}!`, "bad");
+      engineRef.current?.shake(0.35);
+      bLog(`${displayName(cur)} ti colpisce: ${dmg} danni a ${monName(mon)}!`, "bad");
       if (newHp <= 0) {
         koRef.current = true;
         engineRef.current?.battleFaint("player", () => {
-          const next = newParty.findIndex((m) => m.hp > 0);
-          if (next < 0) {
+          const alive = partyRef.current.findIndex((m) => m.hp > 0);
+          if (alive >= 0) {
+            setActiveIdx(alive);
+            activeIdxRef.current = alive;
+            engineRef.current?.setActiveSpecies(speciesById(partyRef.current[alive].spId));
+            bLog(`VAI, ${monName(partyRef.current[alive])}!`, "info");
+            window.setTimeout(() => patchBt({ busy: false }), 500);
+          } else {
             wipe();
-            return;
           }
-          setActiveIdx(next);
-          activeIdxRef.current = next;
-          engineRef.current?.setActiveSpecies(speciesById(newParty[next].spId));
-          bLog(`VAI, ${monName(newParty[next])}!`, "info");
-          patchBt({ busy: false });
         });
-      } else {
-        patchBt({ busy: false });
+        return;
       }
+      window.setTimeout(() => patchBt({ busy: false }), 400);
     });
   };
 
   const offerMorenino = (flavor: FlavorId) => {
     const b = btRef.current;
     if (!b || b.busy || phaseRef.current !== "battle") return;
-    // I morenini NON sono infiniti: ne consumi uno dall'inventario.
     if ((moreniniRef.current[flavor] ?? 0) <= 0) {
       bLog(`NON HAI PIÙ MORENINI AL ${FLAVORS[flavor].name}! COMPRALI AL FORNO O VINCILI ALLA SALA GIOCHI.`, "bad");
       sfx.wrong();
@@ -1235,17 +1416,19 @@ function MoreniGame() {
     const success = Math.random() * 100 < chance;
     bLog(`OFFERTA FINALE! MORENINO AL ${FLAVORS[enemy.favorite].name}... (${chance}%)`, "info");
     engineRef.current?.battleCaptureTry(success, () => {
+      const cur = btRef.current;
+      if (!cur) return;
       if (success) {
         sfx.recruit();
         doFlash("gold");
         addScore(150);
-        if (b.cinghia) {
+        if (cur.cinghia) {
           finishCinghia();
           return;
         }
-        const capId = b.enemyId;
-        const capName = displayName(b);
-        const newMon = makeMon(capId, b.enemyName ?? undefined);
+        const capId = cur.enemyId;
+        const capName = displayName(cur);
+        const newMon = makeMon(capId, cur.enemyName ?? undefined);
         markCaptured(capId);
         if (partyRef.current.length < 8) {
           const newParty = [...partyRef.current, newMon];
@@ -1253,7 +1436,6 @@ function MoreniGame() {
           setParty(newParty);
           showToast(`${capName} SI È UNITO AL PARTY!`);
         } else if (pcRef.current.length < PC_CAP) {
-          // Squadra piena: il Moreno reclutato va DRITTO al PC di Mica Rizzi.
           const newPc = [...pcRef.current, newMon];
           pcRef.current = newPc;
           setPc(newPc);
@@ -1271,7 +1453,7 @@ function MoreniGame() {
         }, 700);
       } else {
         sfx.wrong();
-        bLog(`${displayName(b)} HA ANCORA LE BRICIOLE STORTE. RIPROVA O COMBATTI!`, "bad");
+        bLog(`${displayName(cur)} HA ANCORA LE BRICIOLE STORTE. RIPROVA O COMBATTI!`, "bad");
         window.setTimeout(() => enemyTurn(), 500);
       }
     });
@@ -1311,7 +1493,7 @@ function MoreniGame() {
         maybeInertiaNotice();
       }, 450);
     } else {
-      bLog("FUGA FALLITA! IL MORENO TI BARRA LA STRADA.", "bad");
+      bLog("FUGA FALLITA! IL MORENO TI RIDE DIETRO.", "bad");
       window.setTimeout(() => enemyTurn(), 400);
     }
   };
@@ -1323,11 +1505,8 @@ function MoreniGame() {
       finishCinghia();
       return;
     }
-    if (b.male) {
-      // non dovrebbe accadere: il Maiale si purifica a metà HP
-      return;
-    }
-    if (b.boss && b.enemyId === "maledelmondo") {
+    if (b.male && b.enemyId === "maialedelmondo") return;
+    if (b.male && b.enemyId === "maledelmondo") {
       sayLines(SCRIPTS.gino_post, () => {
         addItem("fiala");
         grantConsumable("famiglia");
@@ -1341,11 +1520,16 @@ function MoreniGame() {
       });
       return;
     }
+    // fine Maiale purificato → finale
+    if (b.enemyId === "nonnopurificato") {
+      finishFinale();
+      return;
+    }
     sfx.victory();
     addScore(b.boss ? 200 : 100);
-    const reward = battleBriciole(b.diff, b.boss);
-    addBriciole(reward);
-    bLog(`${displayName(b)} È AL TAPPETO! +${b.boss ? 200 : 100} CARISMA · +${reward} BRICIOLE`, "good");
+    const bric = battleBriciole(b.diff, b.boss);
+    addBriciole(bric);
+    bLog(`${displayName(b)} È AL TAPPETO! +${b.boss ? 200 : 100} CARISMA, +${bric} BRICIOLE`, "good");
     rollDrop(b.boss ? 1 : 0.6);
     engineRef.current?.battleFaint("enemy", () => {
       window.setTimeout(() => {
@@ -1377,10 +1561,218 @@ function MoreniGame() {
     say("don_revive", () => maybeInertiaNotice(300));
   };
 
-  /* ---------------- pausa & menu ---------------- */
+  /* ---------------- quest: spada / clomp / finale ---------------- */
+  const startFinale = () => {
+    sayLines(SCRIPTS.antro_intro, () => {
+      startScriptedBattle("maialedelmondo", { boss: true, male: true });
+    });
+  };
+
+  const finishFinale = () => {
+    addScore(1000);
+    setFlags((fl) => ({ ...fl, finaleDone: true }));
+    sfx.victory();
+    engineRef.current?.endBattle();
+    setBt(null);
+    sayLines(SCRIPTS.finale, () => {
+      deleteSaveKey(SAVE_KEY);
+      setPhase("victory");
+    });
+  };
+
+  /* ---------------- interazioni ---------------- */
+  const interact = (id: string) => {
+    const f = flagsRef.current;
+    sfx.click();
+    if (id === "forno") {
+      setShopOpen(true);
+      engineRef.current?.setPaused(true);
+      return;
+    }
+    if (id === "arcade") {
+      setGameOpen(true);
+      engineRef.current?.setPaused(true);
+      return;
+    }
+    if (id === "pc") {
+      say("pc_intro", () => {
+        setPcOpen(true);
+        setPcSel(null);
+        setPcReleaseArm(false);
+        engineRef.current?.setPaused(true);
+      });
+      return;
+    }
+    if (id === "don") {
+      if (f.ginoDone && !f.don2) {
+        say("don2", () => setFlags((fl) => ({ ...fl, don2: true })));
+      } else {
+        say("don1");
+      }
+      return;
+    }
+    if (id === "monument") {
+      if (f.swordPulled) {
+        bLogFallback("Il piedistallo è vuoto. La spada è con Clomp.");
+        return;
+      }
+      const count = new Set(capturedRef.current).size;
+      if (count >= SWORD_REQ) {
+        setFlags((fl) => ({ ...fl, swordPulled: true }));
+        engineRef.current?.pullSwordFx(() => {
+          sfx.recruit();
+          doFlash("gold");
+          engineRef.current?.awakenClompFx(() => {
+            engineRef.current?.setPortalOpen(true);
+            sayLines(SCRIPTS.sword_pull);
+          });
+        });
+      } else {
+        sayLines(SCRIPTS.sword_fail);
+      }
+      return;
+    }
+    if (id === "clomp") {
+      if (f.swordPulled && !f.clompAwake) {
+        setFlags((fl) => ({ ...fl, clompAwake: true }));
+        engineRef.current?.companionFollow(true);
+        sfx.recruit();
+        bLogFallback("Clomp: «La spada mi ha svegliato del tutto. Vengo con te: al Maiale penso io.»");
+      } else if (!f.clompAwake) {
+        bLogFallback("Clomp dorme. «Z z z... la spada... z z z...»");
+      } else {
+        bLogFallback("Clomp: «Il portale freme. Andiamo, evocatore.»");
+      }
+      return;
+    }
+    if (id === "cinghia") {
+      if (!f.cinghiaBeaten) {
+        say("cinghia_pre", () => {
+          startScriptedBattle("cinghiaale", { boss: true, cinghia: true });
+        });
+      } else {
+        bLogFallback("Cinghia Ale: «GRUF. La tribù grufola serena, grazie a te.»");
+      }
+      return;
+    }
+    if (id === "mico") {
+      if (!f.micoDone) {
+        say("mico1", () => {
+          setQuizIdx(0);
+          setHearts(3);
+          setPhase("quiz");
+        });
+      } else {
+        bLogFallback("Mico Nosca: «La rivoluzione procede. Un abbraccio ideologico alla volta.»");
+      }
+      return;
+    }
+    if (id === "coizio") {
+      if (!f.coizioDone) {
+        say("coizio1", () => {
+          hugDoneRef.current = false;
+          setHug({ progress: 0, running: true, done: false });
+          setPhase("hug");
+        });
+      } else {
+        bLogFallback("Coizio: «oh. sei tornato. ti abbraccio con gli occhi.»");
+      }
+      return;
+    }
+    if (id === "gino") {
+      if (!f.ginoDone) {
+        say("gino1", () => {
+          startScriptedBattle("maledelmondo", { boss: true, male: true });
+        });
+      } else {
+        bLogFallback("Gino Satri: «...ora bevo solo camomilla. il male è in cantina, tappato.»");
+      }
+      return;
+    }
+  };
+
+  const bLogFallback = (text: string) => {
+    showToast(text);
+  };
+
+  /* ---------------- quiz di Mico ---------------- */
+  const answerQuiz = (choice: number) => {
+    sfx.click();
+    if (choice === TRIAL_QUIZ.answers[quizIdx]) {
+      sfx.correct();
+      if (quizIdx + 1 >= TRIAL_QUIZ.scripts.length) {
+        setPhase("world");
+        sayLines(SCRIPTS.mico_win, () => {
+          addItem("spilla");
+          addScore(200);
+          setFlags((fl) => ({ ...fl, micoDone: true }));
+        });
+      } else {
+        setQuizIdx(quizIdx + 1);
+      }
+    } else {
+      sfx.wrong();
+      doFlash("red");
+      setHearts((h) => h - 1);
+      if (hearts - 1 <= 0) {
+        setPhase("world");
+        sayLines(SCRIPTS.mico_fail);
+      } else {
+        showToast(`RISPOSTA SBAGLIATA! CUORI RIMASTI: ${hearts - 1}`);
+      }
+    }
+  };
+
+  /* ---------------- abbraccio di Coizio ---------------- */
+  useEffect(() => {
+    if (phase !== "hug") return;
+    const down = (e: KeyboardEvent) => {
+      if (e.code === "Space") {
+        e.preventDefault();
+        hugHeldRef.current = true;
+      }
+    };
+    const up = (e: KeyboardEvent) => {
+      if (e.code === "Space") hugHeldRef.current = false;
+    };
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    const iv = window.setInterval(() => {
+      setHug((h) => {
+        if (!h.running || h.done) return h;
+        const next = Math.max(0, Math.min(100, h.progress + (hugHeldRef.current ? 2.4 : -1.4)));
+        if (next >= 100 && !h.done && !hugDoneRef.current) {
+          hugDoneRef.current = true;
+          hugHeldRef.current = false;
+          window.setTimeout(() => finishHug(), 350);
+          return { ...h, progress: 100, done: true };
+        }
+        return { ...h, progress: next };
+      });
+    }, 80);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+      window.clearInterval(iv);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
+
+  const finishHug = () => {
+    sfx.recruit();
+    doFlash("gold");
+    setPhase("world");
+    sayLines(SCRIPTS.coizio_win, () => {
+      addItem("abbraccio");
+      addScore(200);
+      setFlags((fl) => ({ ...fl, coizioDone: true }));
+    });
+  };
+
+  /* ---------------- pausa ---------------- */
   const togglePause = () => {
     if (menuOpenRef.current) return;
-    if (gameOpen || shopOpen || pcOpen) return; // pannelli aperti: la pausa non deve sovrapporsi
+    if (gameOpen || shopOpen || pcOpen) return;
     sfx.pause();
     setPaused((p) => {
       const np = !p;
@@ -1390,6 +1782,7 @@ function MoreniGame() {
     });
   };
 
+  /* ---------------- menu di gioco RPG ---------------- */
   const openMenu = (tab: "formazione" | "stato" | "zaino" = "formazione") => {
     if (phaseRef.current !== "world" && phaseRef.current !== "battle") return;
     if (btRef.current?.busy) return;
@@ -1430,7 +1823,6 @@ function MoreniGame() {
     const def = CONSUMABLES[itemId];
     const owned = consumablesRef.current[itemId] ?? 0;
     if (!def || owned <= 0) return;
-
     if (def.all) {
       const healed = partyRef.current.map((m) => ({ ...m, hp: Math.min(m.maxHp, m.hp + def.heal) }));
       partyRef.current = healed;
@@ -1445,7 +1837,7 @@ function MoreniGame() {
           return;
         }
       } else if (mon.hp <= 0) {
-        showToast("È AL TAPPETO: SERVE IL CAFFÈ DEMONIACO, NON UN CROCCANTINO.");
+        showToast("È AL TAPPETO: SERVE IL CAFFÈ DEMONIACO.");
         sfx.wrong();
         return;
       } else if (mon.hp >= mon.maxHp) {
@@ -1453,17 +1845,43 @@ function MoreniGame() {
         sfx.wrong();
         return;
       }
-      const newHp = def.revive ? Math.round(mon.maxHp * 0.5) : def.fullHeal ? mon.maxHp : Math.min(mon.maxHp, mon.hp + def.heal);
+      const newHp = def.revive
+        ? Math.round(mon.maxHp * 0.5)
+        : def.fullHeal
+        ? mon.maxHp
+        : Math.min(mon.maxHp, mon.hp + def.heal);
       const healed = partyRef.current.map((m, i) => (i === targetIdx ? { ...m, hp: newHp } : m));
       partyRef.current = healed;
       setParty(healed);
     }
-
     setConsumables((c) => ({ ...c, [itemId]: Math.max(0, (c[itemId] ?? 0) - 1) }));
     sfx.correct();
     doFlash("gold");
     showToast(def.all ? `${def.name}: TUTTO IL PARTY RINGRAZIA` : `${def.name} → ${monName(partyRef.current[targetIdx])}`);
     setUseItemId(null);
+  };
+
+  const releaseFromParty = (i: number) => {
+    const party = partyRef.current;
+    if (party.length <= 1) {
+      showToast("NON PUOI LIBERARE L'UNICO MORENO. LA PROFEZIA NE VUOLE ALMENO UNO.");
+      sfx.wrong();
+      return;
+    }
+    if (partyReleaseArm !== i) {
+      setPartyReleaseArm(i);
+      return;
+    }
+    const mon = party[i];
+    const newParty = party.filter((_, k) => k !== i);
+    partyRef.current = newParty;
+    setParty(newParty);
+    setPartyReleaseArm(null);
+    if (i < activeIdxRef.current) activeIdxRef.current -= 1;
+    else if (i === activeIdxRef.current) activeIdxRef.current = 0;
+    fixActiveIdx(newParty);
+    sfx.wrong();
+    showToast(`${monName(mon)} CORRE LIBERO VERSO IL TRAMONTO.`);
   };
 
   /* ---------------- PC di Mica Rizzi ---------------- */
@@ -1473,41 +1891,6 @@ function MoreniGame() {
     setPcSel(null);
     setPcReleaseArm(false);
     engineRef.current?.setPaused(pausedRef.current);
-  };
-
-  const closeShop = () => {
-    sfx.click();
-    setShopOpen(false);
-    engineRef.current?.setPaused(pausedRef.current);
-  };
-
-  const closeArcade = () => {
-    sfx.click();
-    setGameOpen(false);
-    setArcadePlaying(false);
-    engineRef.current?.setPaused(pausedRef.current);
-  };
-
-  const startArcade = () => {
-    if (bricioleRef.current < MINIGAME.entry) {
-      showToast(`L'INGRESSO COSTA ${MINIGAME.entry} BRICIOLE. VINCI QUALCHE BATTAGLIA, PRIMA!`);
-      sfx.wrong();
-      return;
-    }
-    addBriciole(-MINIGAME.entry);
-    sfx.start();
-    setArcadePlaying(true);
-  };
-
-  /* Ricompense della sala giochi: punti → morenini + briciole. */
-  const collectArcade = (score: number) => {
-    const earnedMorenini = Math.floor(score / MINIGAME.pointsPerMorenino);
-    const earnedBriciole = Math.floor(score * MINIGAME.briciolePerPunto);
-    for (let i = 0; i < earnedMorenini; i++) addMorenini(pick(FLAVOR_LIST), 1);
-    if (earnedBriciole > 0) addBriciole(earnedBriciole);
-    setArcadeResult({ score, morenini: earnedMorenini, briciole: earnedBriciole });
-    setArcadePlaying(false);
-    sfx.victory();
   };
 
   const fixActiveIdx = (newParty: PartyMon[]) => {
@@ -1530,7 +1913,7 @@ function MoreniGame() {
       return;
     }
     if (party.length <= 1) {
-      showToast("NON PUOI DEPOSITARE L'UNICO MORENO. LA PROFEZIA NE VUOLE ALMENO UNO.");
+      showToast("NON PUOI DEPOSITARE L'UNICO MORENO.");
       sfx.wrong();
       return;
     }
@@ -1567,30 +1950,9 @@ function MoreniGame() {
     setPcSel(null);
   };
 
-  const releaseFromParty = (i: number) => {
-    const party = partyRef.current;
-    if (party.length <= 1) {
-      showToast("NON PUOI LIBERARE L'UNICO MORENO. LA PROFEZIA NE VUOLE ALMENO UNO.");
-      sfx.wrong();
-      return;
-    }
-    if (partyReleaseArm !== i) {
-      setPartyReleaseArm(i);
-      return;
-    }
-    const mon = party[i];
-    const newParty = party.filter((_, k) => k !== i);
-    partyRef.current = newParty;
-    setParty(newParty);
-    setPartyReleaseArm(null);
-    fixActiveIdx(newParty);
-    sfx.wrong();
-    showToast(`${monName(mon)} CORRE LIBERO VERSO IL TRAMONTO. ZAMPA ALZATA, GRUGNO NOSTALGICO.`);
-  };
-
   const releaseFromPc = (pcIdx: number) => {
     if (partyRef.current.length === 0) {
-      showToast("IL PC PROTEGGE GLI ULTIMI MORENI DELLA PROFEZIA.");
+      showToast("IL PC PROTEGGE GLI ULTIMI MORENI.");
       sfx.wrong();
       return;
     }
@@ -1608,132 +1970,59 @@ function MoreniGame() {
     showToast(`${mon ? monName(mon) : "IL MORENO"} CORRE LIBERO VERSO IL TRAMONTO.`);
   };
 
-  /* ---------------- notifica d'inerzia dopo un KO ---------------- */
+  /* ---------------- Forno & Sala Giochi ---------------- */
+  const closeShop = () => {
+    sfx.click();
+    setShopOpen(false);
+    engineRef.current?.setPaused(pausedRef.current);
+  };
+
+  const closeArcade = () => {
+    sfx.click();
+    setGameOpen(false);
+    setArcadePlaying(false);
+    setArcadeResult(null);
+    engineRef.current?.setPaused(pausedRef.current);
+  };
+
+  const startArcade = () => {
+    if (bricioleRef.current < MINIGAME.entry) {
+      showToast(`TI SERVONO ${MINIGAME.entry} BRICIOLE PER ENTRARE.`);
+      sfx.wrong();
+      return;
+    }
+    addBriciole(-MINIGAME.entry);
+    sfx.appear();
+    setArcadeResult(null);
+    setArcadePlaying(true);
+  };
+
+  const collectArcade = (score: number) => {
+    const won = Math.floor(score / MINIGAME.pointsPerMorenino);
+    const bric = Math.floor(score * MINIGAME.briciolePerPunto);
+    setArcadePlaying(false);
+    for (let i = 0; i < won; i++) {
+      addMorenini(pick(FLAVOR_LIST), 1);
+    }
+    addBriciole(bric);
+    sfx.victory();
+    setArcadeResult({ score, morenini: won, briciole: bric });
+  };
+
+  /* ---------------- notifica d'inerzia ---------------- */
   const maybeInertiaNotice = (delay = 600) => {
     if (!koRef.current) return;
     koRef.current = false;
     window.setTimeout(() => setInertiaNotice(true), delay);
   };
 
-  const backToTitle = () => {
-    sfx.click();
-    setPaused(false);
-    pausedRef.current = false;
-    engineRef.current?.setPaused(false);
-    engineRef.current?.attractMode(true);
-    setBt(null);
-    setHasSave(loadSave() !== null);
-    setPhase("title");
-  };
-
-  /* ---------------- tastiera ---------------- */
-  useEffect(() => {
-    const kd = (e: KeyboardEvent) => {
-      keysRef.current[e.key.toLowerCase()] = true;
-      const k = e.key.toLowerCase();
-      if (k === "m") {
-        setMuted((m) => {
-          sfx.setMuted(!m);
-          return !m;
-        });
-        return;
-      }
-      if (k === "tab" || k === "i") {
-        e.preventDefault();
-        if (menuOpenRef.current) closeMenu();
-        else if ((phaseRef.current === "world" || phaseRef.current === "battle") && !pausedRef.current) openMenu();
-        return;
-      }
-      if (k === "p" || k === "escape") {
-        if (shopOpen) closeShop();
-        else if (menuOpenRef.current) closeMenu();
-        else if (pcOpen) closePc();
-        else if (phaseRef.current === "world" || phaseRef.current === "battle") togglePause();
-        return;
-      }
-      if (k === "e" && phaseRef.current === "world" && !pcOpen && !shopOpen && !gameOpen) {
-        const near = engineRef.current?.getNearId();
-        if (near) interact(near);
-        return;
-      }
-      if (phaseRef.current === "title" && (k === "enter" || k === " ")) {
-        if (loadSave()) continueGame();
-        else startGame();
-        return;
-      }
-      // offerta rapida 1-4 in battaglia
-      if (phaseRef.current === "battle" && offerMode) {
-        const idx = ["1", "2", "3", "4"].indexOf(e.key);
-        if (idx >= 0) offerMorenino(FLAVOR_LIST[idx]);
-      }
-    };
-    const ku = (e: KeyboardEvent) => {
-      keysRef.current[e.key.toLowerCase()] = false;
-    };
-    window.addEventListener("keydown", kd);
-    window.addEventListener("keyup", ku);
-    return () => {
-      window.removeEventListener("keydown", kd);
-      window.removeEventListener("keyup", ku);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [offerMode, pcOpen, shopOpen, gameOpen, arcadePlaying]);
-
-  /* input movimento continuo */
-  useEffect(() => {
-    const iv = window.setInterval(() => {
-      if (phaseRef.current !== "world" || pausedRef.current || menuOpenRef.current || pcOpen) {
-        engineRef.current?.setInput(0, 0);
-        return;
-      }
-      const k = keysRef.current;
-      const x = (k["d"] || k["arrowright"] ? 1 : 0) - (k["a"] || k["arrowleft"] ? 1 : 0);
-      const z = (k["s"] || k["arrowdown"] ? 1 : 0) - (k["w"] || k["arrowup"] ? 1 : 0);
-      engineRef.current?.setInput(x, z);
-    }, 33);
-    return () => window.clearInterval(iv);
-  }, [pcOpen]);
-
-  /* ---------------- montaggio engine ---------------- */
-  useEffect(() => {
-    const eng = new MoreniEngine(mountRef.current!);
-    engineRef.current = eng;
-    eng.onZone = (id) => {
-      const z = ZONES.find((zz) => zz.id === id) ?? null;
-      if (z && phaseRef.current === "world") {
-        setZone(z);
-        if (z.id !== "morenopoli") showBanner("SEI ENTRATO IN", z.name, false);
-      }
-    };
-    eng.onEncounter = (spId, diff) => {
-      if (partyRef.current.length === 0) return;
-      if (phaseRef.current !== "world") return;
-      const zoneDef = ZONES.find((zz) => zz.wilds?.some((w) => w.id === spId));
-      const id = zoneDef ? rollWild(zoneDef) : spId;
-      startWildBattle(id, diff);
-    };
-    eng.onPortal = () => {
-      if (phaseRef.current !== "world") return;
-      if (flagsRef.current.finaleDone) return;
-      say("antro_intro", () => {
-        startScriptedBattle("maialedelmondo", { boss: true, male: true });
-      });
-    };
-    eng.onNear = (id) => {
-      setNearId(id);
-    };
-    eng.start();
-    return () => {
-      eng.dispose();
-      engineRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  /* ---------------- render ---------------- */
-  const inBattle = phase === "battle";
+  /* ================================================================
+     RENDER
+     ================================================================ */
   const enemySp = bt ? speciesById(bt.enemyId) : null;
   const activeMon = party[activeIdx];
+  const activeSp = activeMon ? speciesById(activeMon.spId) : null;
+  const quest = questTextFor(flags, new Set(capturedSpecies).size);
 
   return (
     <div className="relative h-dvh w-full overflow-hidden bg-void font-term text-bone">
@@ -1741,27 +2030,44 @@ function MoreniGame() {
 
       <div className="vignette pointer-events-none absolute inset-0 z-[5]" />
       <div className="scanlines crt-flicker pointer-events-none absolute inset-0 z-[40] opacity-70" />
-      {bt?.boss && inBattle && <div className="boss-vignette" />}
+      {bt?.boss && phase === "battle" && <div className="boss-vignette" />}
 
       {flash && (
         <div key={flash.key} className={`pointer-events-none absolute inset-0 z-[35] ${flash.kind === "red" ? "flash-red" : "flash-gold"}`} />
       )}
 
+      {toast && <div className="perk-toast">{toast}</div>}
+
+      {banner && (
+        <div className="banner-root">
+          <div className="banner-inner">
+            <div className={`banner-kicker ${banner.boss ? "boss" : ""}`}>{banner.kicker}</div>
+            <div className="banner-title">{banner.title}</div>
+            <div className="banner-rule" />
+          </div>
+        </div>
+      )}
+
       {/* ================================ TITOLO ================================ */}
       {phase === "title" && (
-        <div className="absolute inset-0 z-[20] flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(11,6,20,0.55),rgba(11,6,20,0.93))] px-4">
+        <div className="absolute inset-0 z-[20] flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(11,6,20,0.55),rgba(11,6,20,0.93))] overflow-y-auto py-6">
           <div className="text-toxic tracking-[0.5em] text-sm md:text-base mb-2 title-float">✠ COMP-OS v6.66 PRESENTA ✠</div>
-          <h1 className="font-display text-[11vw] md:text-[6.5rem] leading-[0.85] font-extrabold text-center text-bone text-outline pulse-glow">
-            SHIN MORENI <span className="text-blood">TENSEI</span>
+          <h1 className="font-display text-[12vw] md:text-[6.5rem] leading-[0.85] font-extrabold text-center text-bone text-outline pulse-glow">
+            SHIN MORENI
+            <br />
+            <span className="text-blood">TENSEI</span>
           </h1>
-          <p className="mt-3 text-gold tracking-[0.25em] text-lg md:text-2xl font-display text-center">L'EPICA DEL MAIALE DEL MONDO</p>
-          <p className="mt-1 text-dim text-base md:text-lg max-w-xl text-center">
-            Un RPG demenziale: esplora Morenopoli, combatti a turni, offri morenini per convincere e catturare i Moreni.
+          <p className="mt-3 text-gold tracking-[0.25em] text-lg md:text-2xl font-display">L'EPICA DEL MAIALE DEL MONDO</p>
+          <p className="mt-1 text-dim text-base md:text-lg max-w-xl text-center px-4">
+            Un RPG demenziale: esplora Morenopoli, combatti a turni, compra morenini al Forno, vincili al Morenopong. E salva il Nonno.
           </p>
 
-          <div className="mt-6 flex flex-col md:flex-row gap-3 items-center">
+          <div className="mt-6 flex flex-col gap-3 w-[min(420px,90vw)]">
             {hasSave && (
-              <button onClick={continueGame} className="btn-hard px-10 py-4 bg-toxic border-2 border-[#d8fff0] text-[#04150c] font-display text-2xl md:text-3xl tracking-widest">
+              <button
+                onClick={continueGame}
+                className="btn-hard px-10 py-4 bg-toxic border-2 border-[#d8fff0] text-[#04150c] font-display text-2xl md:text-3xl tracking-widest"
+              >
                 ▶ CONTINUA LA PROFEZIA
               </button>
             )}
@@ -1775,63 +2081,70 @@ function MoreniGame() {
             >
               📜 CARICA DA SLOT
             </button>
-            <button onClick={startGame} className="btn-hard px-10 py-4 bg-blood border-2 border-[#ffd1dd] text-[#fff0f4] font-display text-2xl md:text-3xl tracking-widest">
+            <button
+              onClick={startGame}
+              className="btn-hard px-10 py-4 bg-blood border-2 border-[#ffd1dd] text-[#fff0f4] font-display text-2xl md:text-3xl tracking-widest"
+            >
               {hasSave ? "✠ NUOVA PROFEZIA" : "▶ INIZIA LA PROFEZIA [INVIO]"}
             </button>
           </div>
 
-          <div className="mt-7 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm md:text-base max-w-3xl w-full">
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm md:text-base max-w-3xl px-4 w-full">
             <div className="border-2 border-edge bg-panel/80 p-3">
               <div className="text-toxic font-display text-lg mb-1">COME SI GIOCA</div>
               <ul className="text-dim space-y-0.5">
-                <li>→ WASD/Frecce per muoverti, E per interagire</li>
-                <li>→ Tocca i Moreni selvatici per combattere</li>
-                <li>→ OFFRI il gusto giusto per convincere, poi CATTURA</li>
-                <li>→ I Moreno si curano con l'INERZIA: stai lontano 1 min = 1 HP</li>
+                <li>→ WASD per esplorare · E per interagire</li>
+                <li>→ In battaglia: ATTACCA, OFFRI il morenino giusto, poi CATTURA</li>
+                <li>→ I morenini SI COMPRANO al Forno o si vincono al Morenopong</li>
+                <li>→ Lontano dallo schermo i Moreni guariscono: 1 HP/minuto</li>
               </ul>
             </div>
             <div className="border-2 border-edge bg-panel/80 p-3">
               <div className="text-toxic font-display text-lg mb-1">COMANDI</div>
               <ul className="text-dim space-y-0.5">
-                <li><span className="text-bone">WASD</span> MUOVI · <span className="text-bone">E</span> INTERAGISCI</li>
-                <li><span className="text-bone">1-4</span> OFFRI GUSTO · <span className="text-bone">TAB/I</span> MENU</li>
-                <li><span className="text-bone">P/ESC</span> PAUSA · <span className="text-bone">M</span> AUDIO</li>
-                <li><span className="text-bone">SPAZIO</span> NEI DIALOGHI E NELL'ABBRACCIO</li>
+                <li><span className="text-bone">WASD/FRECCE</span> muoviti · <span className="text-bone">E</span> interagisci</li>
+                <li><span className="text-bone">1-4</span> offri gusto · <span className="text-bone">TAB</span> menu Moreni</li>
+                <li><span className="text-bone">P/ESC</span> pausa · <span className="text-bone">M</span> audio</li>
               </ul>
             </div>
           </div>
-          <div className="mt-5 text-dim text-xs tracking-widest">AUDIO CONSIGLIATO — I MORENI URLANO IN 8-BIT</div>
+          <div className="mt-4 text-dim text-xs tracking-widest">AUDIO CONSIGLIATO — I MORENI URLANO IN 8-BIT</div>
         </div>
       )}
 
-      {/* ================================ STARTER ================================ */}
+      {/* ================================ SCELTA STARTER ================================ */}
       {phase === "starter" && (
-        <div className="absolute inset-0 z-[20] flex flex-col items-center justify-center bg-[rgba(5,2,10,0.9)] px-4">
-          <div className="font-display text-4xl md:text-5xl text-gold text-center">SCEGLI IL TUO PRIMO MORENO</div>
-          <div className="text-dim mt-2 mb-6 text-center">Don Moreno ti presta uno dei suoi. Trattalo bene.</div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl w-full">
-            {["morenello", "morenilla", "morenozzo"].map((id) => {
+        <div className="absolute inset-0 z-[25] flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(11,6,20,0.6),rgba(11,6,20,0.9))] px-4">
+          <div className="font-display text-4xl md:text-5xl text-gold text-outline mb-1 text-center">DON MORENO TI OFFRE UN COMPAGNO</div>
+          <div className="text-dim mb-6 text-center">«Scegline uno. Gli altri due faranno finta di non essere offesi.»</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full max-w-3xl">
+            {["morenozzo", "morenello", "morenilla"].map((id) => {
               const s = speciesById(id);
               return (
                 <button
                   key={id}
                   onClick={() => {
                     sfx.recruit();
+                    doFlash("gold");
                     const mon = makeMon(id, generateMorenoName());
-                    setParty([mon]);
+                    const p = [mon];
+                    partyRef.current = p;
+                    setParty(p);
+                    markCaptured(id);
                     setActiveIdx(0);
                     activeIdxRef.current = 0;
-                    engineRef.current?.enterWorld(0, 9);
                     setPhase("world");
-                    showToast(`${mon.name ?? s.name} È CON TE!`);
+                    showBanner("INIZIO", `BENVENUTO, ${mon.name}`, false);
+                    showToast(`${mon.name} (${s.name}) È IL TUO PRIMO MORENO!`);
                   }}
-                  className="btn-hard roster-card p-4 cursor-pointer"
+                  className="roster-card btn-hard py-5"
                   style={{ "--pc": hexCss(s.accentColor) } as React.CSSProperties}
                 >
                   <MorenoFace sp={s} size={90} />
                   <div className="font-display text-2xl mt-2" style={{ color: hexCss(s.accentColor) }}>{s.name}</div>
                   <div className="text-dim text-sm">{s.title}</div>
-                  <div className="text-xs mt-1">GUSTO: <span style={{ color: FLAVORS[s.favorite].css }}>{FLAVORS[s.favorite].name}</span></div>
+                  <div className="text-bone text-sm mt-1">HP {s.baseHp} · ATK {s.baseAtk}</div>
+                  <div className="text-gold text-xs mt-1">GUSTO: {FLAVORS[s.favorite].name}</div>
                 </button>
               );
             })}
@@ -1841,215 +2154,151 @@ function MoreniGame() {
 
       {/* ================================ DIALOGO ================================ */}
       {phase === "dialogue" && (
-        <DialogueBox lines={dlgLines} onDone={() => afterDlgRef.current?.()} onChoice={(i) => onChoiceRef.current?.(i)} />
+        <DialogueBox lines={dlgLines} onChoice={dlgChoice ?? undefined} onDone={() => afterDlgRef.current?.()} />
       )}
 
-      {/* ================================ BANNER ================================ */}
-      {banner && (
-        <div className="banner-root">
-          <div className="banner-inner">
-            <div className={`banner-kicker ${banner.boss ? "boss" : ""}`}>{banner.kicker}</div>
-            <div className="banner-title">{banner.title}</div>
-            <div className="banner-rule" />
+      {/* ================================ HUD MONDO ================================ */}
+      {(phase === "world" || phase === "battle") && (
+        <>
+          <div className="absolute top-3 left-3 z-[15] pointer-events-none max-w-[420px]">
+            <div className="border-2 border-edge bg-panel/85 px-3 py-2">
+              <div className="text-toxic text-xs tracking-[0.3em]">COMP-OS v6.66 {zone ? `// ${zone.name}` : ""}</div>
+              <div className="text-gold text-lg leading-tight">🎯 {quest}</div>
+              <div className="flex gap-4 mt-1 text-sm">
+                <span className="text-bone">CARISMA <span className="text-gold tabular-nums">{score}</span></span>
+                <span className="text-bone">🍪 <span className="text-gold tabular-nums">{briciole}</span></span>
+                <span className="text-bone">AMICI <span className="text-toxic tabular-nums">{new Set(capturedSpecies).size}</span></span>
+              </div>
+              {zone && <div className="text-dim text-xs mt-0.5 italic">{zone.tagline}</div>}
+            </div>
+            {phase === "world" && (
+              <>
+                <button
+                  onClick={() => openMenu()}
+                  className="btn-hard mt-2 border-2 border-toxic bg-panel/90 px-3 py-1.5 text-toxic font-display text-lg tracking-widest pointer-events-auto"
+                >
+                  ☰ MENU MORENI [TAB]
+                </button>
+                <div className="border-2 border-edge bg-panel/85 px-3 py-1.5 mt-2 text-dim text-xs">
+                  WASD MUOVI · E INTERAGISCI · P PAUSA
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* mini party */}
+          <div className="absolute top-3 right-3 z-[15] flex flex-col items-end gap-2 pointer-events-none">
+            <div className="border-2 border-edge bg-panel/85 px-2 py-2">
+              <div className="grid grid-cols-4 gap-1.5">
+                {party.map((m, i) => {
+                  const s = speciesById(m.spId);
+                  return (
+                    <div key={i} className={`party-slot ${i === activeIdx ? "filled" : ""}`} style={{ "--pc": hexCss(s.accentColor) } as React.CSSProperties} title={monName(m)}>
+                      <MorenoFace sp={s} size={34} />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* prompt E */}
+      {phase === "world" && nearId && !paused && !menuOpen && !pcOpen && !shopOpen && !gameOpen && (
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[15] pointer-events-none">
+          <div className="border-2 border-gold bg-panel/90 px-5 py-2 text-gold font-display text-xl tracking-widest pop-in">
+            [E]{" "}
+            {nearId === "pc"
+              ? "USA IL PC DI MICA RIZZI"
+              : nearId === "monument"
+              ? "ESAMINA IL GRANDE MORENINO"
+              : nearId === "forno"
+              ? "ENTRA NEL FORNO — COMPRA MORENINI"
+              : nearId === "arcade"
+              ? "SALA GIOCHI — MORENOPONG"
+              : `PARLA CON ${nearId.toUpperCase()}`}
           </div>
         </div>
       )}
 
-      {/* ================================ TOAST ================================ */}
-      {toast && <div className="perk-toast">{toast}</div>}
-
-      {/* ================================ HUD MONDO ================================ */}
-      {phase === "world" && (
-        <>
-          <div className="absolute top-3 left-3 z-[15] pointer-events-none">
-            <div className="border-2 border-edge bg-panel/85 px-3 py-2">
-              <div className="text-toxic text-xs tracking-[0.3em]">COMP-OS v6.66</div>
-              <div className="font-display text-xl leading-tight text-bone">{zone ? zone.name : "MORENOPOLI"}</div>
-              <div className="text-dim text-xs">{zone ? zone.tagline : "Il cuore del mondo dei Moreni."}</div>
-              <div className="mt-1 text-gold text-lg leading-none">
-                CARISMA: <span className="tabular-nums">{score}</span>
-              </div>
-              <div className="mt-1 text-sm">🎯 <span className="text-bone">{questText()}</span></div>
-            </div>
-            <button
-              onClick={() => openMenu()}
-              className="btn-hard mt-2 border-2 border-toxic bg-panel/90 px-3 py-1.5 text-toxic font-display text-lg tracking-widest pointer-events-auto"
-            >
-              ☰ MENU MORENI [TAB]
-            </button>
-            <div className="border-2 border-edge bg-panel/85 px-3 py-1.5 mt-2 text-dim text-xs pointer-events-auto">
-              WASD MUOVI · E INTERAGISCI · P PAUSA
-            </div>
-          </div>
-
-          <div className="absolute top-3 right-3 z-[15] flex flex-col items-end gap-2">
-            <div className="border-2 border-edge bg-panel/85 px-3 py-2">
-              <div className="text-dim text-[10px] tracking-[0.3em] text-right mb-1">
-                PARTY ({party.length}/8) · AMICI {recruitsCount()}/{SWORD_REQ}
-              </div>
-              <div className="flex flex-col gap-1">
-                {party.map((m, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <span className="w-4 h-4 grid place-items-center text-[10px] border border-edge" style={{ color: hexCss(speciesById(m.spId).accentColor) }}>
-                      {i + 1}
-                    </span>
-                    <MorenoFace sp={speciesById(m.spId)} size={26} />
-                    <HpBar hp={m.hp} max={m.maxHp} w={90} />
-                    <span className="tabular-nums text-xs text-dim w-14">
-                      {m.hp}/{m.maxHp}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              {items.length > 0 && (
-                <div className="mt-1.5 border-t border-edge pt-1">
-                  {items.map((it) => (
-                    <div key={it} className="text-toxic text-xs" title={ITEMS[it].desc}>
-                      ◆ {ITEMS[it].name}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {nearId && (
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[15] pointer-events-none">
-              <div className="border-2 border-gold bg-panel/90 px-5 py-2 text-gold font-display text-xl tracking-widest pop-in">
-                [E]{" "}
-                {nearId === "pc"
-                  ? "USA IL PC DI MICA RIZZI"
-                  : nearId === "monument"
-                  ? "ESAMINA IL GRANDE MORENINO"
-                  : nearId === "forno"
-                  ? "ENTRA NEL FORNO — COMPRA MORENINI"
-                  : nearId === "arcade"
-                  ? "SALA GIOCHI — MORENOPONG"
-                  : `PARLA CON ${nearId.toUpperCase()}`}
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
       {/* ================================ BATTAGLIA ================================ */}
-      {inBattle && bt && enemySp && (
+      {phase === "battle" && bt && enemySp && (
         <>
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[15] pointer-events-none w-[min(460px,90vw)]">
+          {/* pannello nemico */}
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[15] w-[min(430px,92vw)] pointer-events-none">
             <div className={`border-2 bg-panel/90 px-3 py-2 ${bt.boss ? "border-blood" : "border-edge"}`}>
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <MorenoFace sp={enemySp} size={34} />
-                  <div>
-                    {bt.enemyName ? (
-                      <>
-                        <div className="font-display text-xl leading-none text-gold">{bt.enemyName}</div>
-                        <div className="text-dim text-xs">{enemySp.name} · {enemySp.title}</div>
-                      </>
-                    ) : (
-                      <>
-                        <div className={`font-display text-xl leading-none ${bt.boss ? "text-blood" : "text-bone"}`}>{enemySp.name}</div>
-                        <div className="text-dim text-xs">{enemySp.title}</div>
-                      </>
-                    )}
-                  </div>
-                </div>
+              <div className="flex items-center gap-2">
+                <MorenoFace sp={enemySp} size={34} />
                 <div className="flex-1">
-                  <HpBar hp={bt.enemyHp} max={bt.enemyMaxHp} w={170} col="#ff2e5f" />
-                  <div className="text-right text-xs text-dim tabular-nums mt-0.5">
-                    {bt.enemyHp}/{bt.enemyMaxHp}
-                  </div>
+                  {bt.enemyName ? (
+                    <>
+                      <div className="font-display text-xl leading-none text-gold">{bt.enemyName}</div>
+                      <div className="text-dim text-xs">{enemySp.name} · {enemySp.title}</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className={`font-display text-xl leading-none ${bt.boss ? "text-blood" : "text-bone"}`}>{enemySp.name}</div>
+                      <div className="text-dim text-xs">{enemySp.title}</div>
+                    </>
+                  )}
                 </div>
+                {bt.boss && <span className="text-blood font-display text-sm tracking-widest">BOSS</span>}
               </div>
-              {bt.convinced && (
-                <div className="mt-1 text-gold text-sm flex items-center gap-1">
-                  <HeartSvg size={14} /> AMMORBIDITO — PRONTO PER L'OFFERTA FINALE
-                </div>
-              )}
+              <HpBar hp={bt.enemyHp} max={bt.enemyMaxHp} w={9999} />
+              <div className="text-dim text-xs mt-0.5">
+                HP <span className="text-bone tabular-nums">{bt.enemyHp}/{bt.enemyMaxHp}</span>
+                {bt.convinced && <span className="text-toxic ml-3">✓ AMMORBIDITO — PUOI CATTURARLO</span>}
+              </div>
             </div>
-          </div>
-
-          <div className="absolute bottom-3 left-3 z-[15] pointer-events-none w-[min(430px,60vw)]">
-            <div className="border-2 border-edge bg-panel/85 px-3 py-2">
-              <div className="text-toxic text-xs tracking-[0.3em] mb-1">REGISTRO DI BATTAGLIA</div>
+            {/* log */}
+            <div className="border-2 border-edge bg-panel/85 px-3 py-1.5 mt-2">
               {bt.log.map((l) => (
-                <div key={l.id} className={`text-sm md:text-base leading-tight truncate ${l.kind === "good" ? "text-toxic" : l.kind === "bad" ? "text-blood" : "text-dim"}`}>
+                <div key={l.id} className={`text-sm leading-tight truncate ${l.kind === "good" ? "text-toxic" : l.kind === "bad" ? "text-blood" : "text-dim"}`}>
                   &gt; {l.text}
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="absolute bottom-3 right-3 z-[15] flex flex-col gap-2 w-[min(480px,92vw)]">
-            {/* party */}
-            <div className="border-2 border-edge bg-panel/90 px-3 py-2">
-              <div className="text-toxic text-xs tracking-[0.3em] mb-1">I TUOI MORENI</div>
-              <div className="flex flex-col gap-1">
-                {party.map((m, i) => {
-                  const s = speciesById(m.spId);
-                  const active = i === activeIdx;
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => switchMode && setActiveMember(i)}
-                      disabled={bt.busy || !switchMode || active || m.hp <= 0}
-                      className={`flex items-center gap-2 px-1 py-0.5 text-left transition-colors ${
-                        active ? "bg-[#2a1b45]" : switchMode && m.hp > 0 && !bt.busy ? "hover:bg-[#2a1b45] cursor-pointer" : "opacity-90"
-                      } ${m.hp <= 0 ? "opacity-40" : ""}`}
-                    >
-                      <span className={`w-3 h-3 border ${active ? "bg-toxic border-toxic" : "border-edge"}`} />
-                      <MorenoFace sp={s} size={26} />
-                      <span className="text-sm w-28 truncate" style={{ color: hexCss(s.accentColor) }}>
-                        {m.name ?? s.name}
-                      </span>
-                      <HpBar hp={m.hp} max={m.maxHp} w={80} />
-                      <span className="tabular-nums text-xs text-dim w-14">
-                        {m.hp}/{m.maxHp}
-                      </span>
-                    </button>
-                  );
-                })}
+          {/* pannello giocatore + comandi */}
+          <div className="absolute bottom-3 right-3 z-[15] w-[min(480px,92vw)]">
+            {activeMon && activeSp && (
+              <div className="border-2 border-toxic bg-panel/90 px-3 py-2 mb-2 flex items-center gap-2">
+                <MorenoFace sp={activeSp} size={34} />
+                <div className="flex-1">
+                  <div className="font-display text-lg leading-none text-bone">{monName(activeMon)} <span className="text-dim text-xs">({activeSp.name})</span></div>
+                  <HpBar hp={activeMon.hp} max={activeMon.maxHp} w={220} />
+                </div>
+                <div className="text-dim text-xs">
+                  HP <span className="text-bone tabular-nums">{activeMon.hp}/{activeMon.maxHp}</span>
+                  <br />ATK <span className="text-bone tabular-nums">{activeMon.atk}</span>
+                </div>
               </div>
-            </div>
-
-            {/* comandi */}
+            )}
             <div className="border-2 border-edge bg-panel/90 px-3 py-2">
-              <div className="min-h-[52px] mb-1.5">
-                {offerMode && (
-                  <div className="text-gold text-sm mb-1.5">OFFRI UN MORENINO AL {enemySp.name} (GUSTO?) [1-4]</div>
-                )}
+              <div className="min-h-[40px] mb-1.5">
+                {offerMode && <div className="text-gold text-sm mb-1.5">OFFRI UN MORENINO A {displayName(bt)} (GUSTO?) [1-4]</div>}
                 {switchMode && <div className="text-toxic text-sm mb-1.5">SCEGLI IL MORENO DA SCHIERARE</div>}
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <button onClick={playerAttack} disabled={bt.busy} className="btn-hard flex items-center justify-center gap-2 px-2 py-2.5 border-2 border-blood bg-[#4a1020] text-[#ffd1dd] font-display text-xl tracking-wide">
-                  ⚔ ATTACCA
-                </button>
-                <button
-                  onClick={() => {
-                    sfx.click();
-                    setOfferMode((o) => !o);
-                    setSwitchMode(false);
-                  }}
-                  disabled={bt.busy}
-                  className={`btn-hard flex items-center justify-center gap-2 px-2 py-2.5 border-2 font-display text-xl tracking-wide ${offerMode ? "border-gold bg-[#4a3a10] text-gold" : "border-gold bg-[#3d2f10] text-gold"}`}
-                >
-                  <CookieIcon css={FLAVORS[enemySp.favorite].css} size={20} /> OFFRI
-                </button>
-                <button
-                  onClick={() => {
-                    sfx.click();
-                    setSwitchMode((sw) => !sw);
-                    setOfferMode(false);
-                  }}
-                  disabled={bt.busy || party.length <= 1}
-                  className={`btn-hard px-2 py-2.5 border-2 font-display text-xl tracking-wide ${switchMode ? "border-toxic bg-[#0f3d2a] text-toxic" : "border-toxic bg-[#0f2a1f] text-toxic"}`}
-                >
-                  ⇄ MORENO
-                </button>
-                <button onClick={tryFlee} disabled={bt.busy} className="btn-hard px-2 py-2.5 border-2 border-edge bg-panel2 text-dim font-display text-xl tracking-wide hover:text-bone">
-                  🏃 FUGGI
-                </button>
-              </div>
+
+              {!offerMode && !switchMode && (
+                <div className="grid grid-cols-2 gap-2">
+                  <button onClick={playerAttack} disabled={bt.busy} className="btn-hard px-2 py-3 border-2 border-blood bg-[#3d0f1c] text-[#ffd1dd] font-display text-xl tracking-widest">
+                    ⚔ ATTACCA
+                  </button>
+                  <button onClick={() => { setOfferMode(true); sfx.click(); }} disabled={bt.busy} className="btn-hard px-2 py-3 border-2 border-gold bg-[#3a2a10] text-gold font-display text-xl tracking-widest">
+                    🍪 OFFRI MORENINO
+                  </button>
+                  <button onClick={() => { setSwitchMode(true); sfx.click(); }} disabled={bt.busy} className="btn-hard px-2 py-3 border-2 border-toxic bg-[#0f3d2a] text-toxic font-display text-xl tracking-widest">
+                    ☰ MORENO
+                  </button>
+                  <button onClick={tryFlee} disabled={bt.busy} className="btn-hard px-2 py-3 border-2 border-edge bg-panel2 text-dim font-display text-xl tracking-widest">
+                    🏃 FUGGI
+                  </button>
+                </div>
+              )}
+
               {offerMode && (
                 <div className="grid grid-cols-4 gap-2 mt-2">
                   {FLAVOR_LIST.map((f, i) => {
@@ -2070,13 +2319,35 @@ function MoreniGame() {
                   })}
                 </div>
               )}
-              {bt.convinced && !offerMode && (
+
+              {switchMode && (
+                <div className="grid grid-cols-4 gap-2 mt-2">
+                  {party.map((m, i) => {
+                    const s = speciesById(m.spId);
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => { setSwitchMode(false); setActiveMember(i); }}
+                        disabled={m.hp <= 0 || i === activeIdx}
+                        className="btn-hard flex flex-col items-center gap-1 px-1 py-2 border-2 border-edge bg-panel2"
+                        style={{ opacity: m.hp <= 0 || i === activeIdx ? 0.4 : 1 }}
+                      >
+                        <MorenoFace sp={s} size={30} />
+                        <span className="text-[10px] text-dim truncate w-full text-center">{m.name ?? s.name}</span>
+                        <span className="text-[10px] text-bone tabular-nums">{m.hp}/{m.maxHp}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
+              {bt.convinced && !offerMode && !switchMode && (
                 <button
                   onClick={tryCapture}
                   disabled={bt.busy}
                   className="btn-hard mt-2 w-full px-2 py-3 border-2 border-gold bg-gold text-[#241503] font-display text-2xl tracking-widest pulse-glow"
                 >
-                  ★ CATTURA CON L'OFFERTA FINALE ★
+                  🤝 CATTURA {displayName(bt)}!
                 </button>
               )}
             </div>
@@ -2084,125 +2355,61 @@ function MoreniGame() {
         </>
       )}
 
-      {/* ================================ QUIZ ================================ */}
-      {phase === "quiz" && quiz && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[25] flex gap-2">
-          {[0, 1, 2].map((i) => (
-            <HeartSvg key={i} size={26} on={i < quiz.hearts} />
-          ))}
+      {/* ================================ QUIZ DI MICO ================================ */}
+      {phase === "quiz" && (
+        <div className="absolute inset-0 z-[30] flex items-center justify-center bg-[rgba(5,2,10,0.85)] p-4">
+          <div className="w-full max-w-2xl border-2 border-[#ffe066] bg-panel p-5 pop-in">
+            <div className="flex items-center justify-between mb-3">
+              <div className="font-display text-3xl text-[#ffe066]">IL PROCESSO DI MICO NOSCA</div>
+              <div className="text-blood text-2xl">{"♥".repeat(Math.max(0, hearts))}{"♡".repeat(Math.max(0, 3 - hearts))}</div>
+            </div>
+            <div className="text-dim text-sm mb-2">DOMANDA {quizIdx + 1}/3 — LA RIVOLTA TI OSSERVA</div>
+            <DialogueBox
+              lines={SCRIPTS[TRIAL_QUIZ.scripts[quizIdx]]}
+              onChoice={(i) => answerQuiz(i)}
+              onDone={() => setPhase("world")}
+            />
+          </div>
         </div>
       )}
 
-      {/* ================================ ABBRACCIO ================================ */}
+      {/* ================================ ABBRACCIO DI COIZIO ================================ */}
       {phase === "hug" && (
-        <div className="absolute inset-0 z-[22] flex flex-col items-center justify-center bg-[rgba(5,2,10,0.75)]">
-          <div className="hug-heart">
-            <HeartSvg size={120} on={hug.progress > 10} />
-          </div>
-          <div className="font-display text-3xl text-[#ff7fb2] mt-4">RIEMPI IL CUORE</div>
-          <div className="text-dim mt-1">TIENI PREMUTO [SPAZIO] — NON MOLLARE L'ABBRACCIO</div>
-          <div className="mt-4 w-[min(420px,80vw)] h-6 border-2 border-[#ff4f9a] bg-[#1e1033] overflow-hidden">
+        <div className="absolute inset-0 z-[30] flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(255,79,154,0.15),rgba(5,2,10,0.92))] p-4">
+          <div className="hug-heart text-[90px] leading-none">🫂</div>
+          <div className="font-display text-4xl text-[#ff7fb2] mt-3">L'ABBRACCIO ETERNO</div>
+          <div className="text-dim mb-4">TIENI PREMUTO <span className="text-bone">SPAZIO</span> PER RIEMPIRE IL CUORE</div>
+          <div className="w-[min(420px,85vw)] h-6 border-2 border-[#ff4f9a] bg-[#120a20] overflow-hidden">
             <div className="hug-meter-fill h-full" style={{ width: `${hug.progress}%` }} />
           </div>
-          <div className="text-gold tabular-nums mt-2 text-xl">{Math.round(hug.progress)}%</div>
+          <div className="text-bone text-xl mt-2 tabular-nums">{Math.floor(hug.progress)}%</div>
+          {hug.done && <div className="text-toxic font-display text-2xl mt-3 pop-in">IL CUORE È PIENO. COIZIO PIANGE DI GIOIA.</div>}
         </div>
       )}
 
       {/* ================================ PAUSA ================================ */}
-      {paused && !menuOpen && (phase === "world" || phase === "battle") && (
+      {paused && (phase === "world" || phase === "battle") && (
         <div className="absolute inset-0 z-[45] grid place-items-center bg-[rgba(5,2,10,0.82)]">
-          <div className="border-2 border-toxic bg-panel px-10 py-8 text-center shadow-[0_0_40px_rgba(77,255,166,0.25)]">
+          <div className="border-2 border-toxic bg-panel px-10 py-8 text-center shadow-[0_0_40px_rgba(77,255,166,0.25)] w-[min(480px,92vw)]">
             <div className="font-display text-5xl text-toxic mb-1">PAUSA</div>
             <div className="text-dim mb-5">I MORENI ASPETTANO. MALVOLENTI.</div>
             <button onClick={togglePause} className="btn-hard block w-full px-8 py-3 bg-toxic border-2 border-[#d8fff0] text-[#04150c] font-display text-2xl tracking-widest mb-3">
               RIPRENDI [P]
             </button>
             <button
-              onClick={() => {
-                sfx.click();
-                setPaused(false);
-                pausedRef.current = false;
-                openMenu();
-              }}
+              onClick={() => { sfx.click(); setPaused(false); pausedRef.current = false; openMenu(); }}
               className="btn-hard block w-full px-8 py-2.5 bg-[#7a5fd0] border-2 border-[#cfc3ff] text-[#f4f0ff] font-display text-xl tracking-widest mb-3"
             >
-              ☰ MENU GIOCO
+              ☰ MENU GIOCO — FORMAZIONE / STATO / ZAINO
             </button>
             <button
-              onClick={() => {
-                sfx.click();
-                setSlotPanel("save");
-                setConfirmSlot(null);
-              }}
+              onClick={() => { sfx.click(); setSlotPanel("save"); setConfirmSlot(null); }}
               className="btn-hard block w-full px-8 py-2.5 bg-gold border-2 border-[#fff0d1] text-[#241503] font-display text-xl tracking-widest mb-3"
             >
               💾 ARCHIVIO — SALVA / CARICA
             </button>
             <button onClick={backToTitle} className="btn-hard block w-full px-8 py-2 bg-panel2 border-2 border-edge text-dim font-display text-xl tracking-widest">
               TITOLI DI TESTA
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ================================ GAME OVER ================================ */}
-      {phase === "gameover" && (
-        <div className="absolute inset-0 z-[30] flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(40,4,16,0.8),rgba(8,2,6,0.95))] px-4">
-          <div className="font-display text-[10vw] md:text-[5.5rem] leading-none text-blood text-outline pulse-glow text-center">
-            SEI STATO<br />SBRICIOLATO
-          </div>
-          <div className="mt-4 stamp-in border-4 border-blood px-6 py-2 font-display text-2xl md:text-3xl text-blood tracking-widest bg-[rgba(20,2,8,0.8)]">
-            TUTTI I MORENI AL TAPPETO
-          </div>
-          <div className="mt-5 max-w-xl text-center px-6 text-lg md:text-xl text-dim">
-            «I tuoi Moreni sono stanchi. Don Moreno li raccoglie col paletta. Riposati, e torna.»
-          </div>
-          <div className="mt-2 text-gold text-xl">
-            CARISMA: <span className="tabular-nums">{score}</span>
-          </div>
-          <button onClick={revive} className="btn-hard mt-7 px-8 py-3 bg-blood border-2 border-[#ffd1dd] text-[#fff0f4] font-display text-2xl tracking-widest">
-            RIALZATI DA DON MORENO
-          </button>
-        </div>
-      )}
-
-      {/* ================================ VITTORIA ================================ */}
-      {phase === "victory" && (
-        <div className="absolute inset-0 z-[30] overflow-y-auto bg-[radial-gradient(ellipse_at_center,rgba(20,12,4,0.78),rgba(8,5,2,0.95))]">
-          <div className="min-h-full flex flex-col items-center justify-center py-8 px-4">
-            <div className="text-gold tracking-[0.5em] text-sm mb-2">LA PROFEZIA È COMPIUTA</div>
-            <div className="font-display text-[9vw] md:text-[5rem] leading-[0.9] text-center text-gold text-outline title-float">
-              CROCCANTEZZA<br />RESTITUITA
-            </div>
-            <p className="mt-3 text-dim max-w-xl text-center text-base md:text-lg">
-              Il Maiale del Mondo è di nuovo Nonno Moreno. Il Male del Mondo è in un cassetto. Clomp brandisce la Spada dell'Amore.
-            </p>
-            <div className="mt-2 text-toxic text-2xl">
-              CARISMA: <span className="tabular-nums">{score}</span>
-            </div>
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-1 text-sm w-full max-w-3xl">
-              {CAST.map((c) => (
-                <div key={c.name} className="flex justify-between gap-3 border-b border-edge/50 py-0.5">
-                  <span className="text-gold whitespace-nowrap">{c.name}</span>
-                  <span className="text-dim text-right">{c.role}</span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4 grid grid-cols-4 md:grid-cols-8 gap-2 w-full max-w-4xl">
-              {party.map((m, i) => {
-                const s = speciesById(m.spId);
-                return (
-                  <div key={i} className="roster-card" style={{ "--pc": hexCss(s.accentColor) } as React.CSSProperties}>
-                    <MorenoFace sp={s} size={44} />
-                    <div className="font-display text-[10px] mt-1 leading-tight" style={{ color: hexCss(s.accentColor) }}>
-                      {m.name ?? s.name}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-            <button onClick={backToTitle} className="btn-hard mt-7 px-10 py-3 bg-gold border-2 border-[#fff0d1] text-[#241503] font-display text-2xl tracking-widest">
-              TITOLI DI CODA → GIOCA ANCORA
             </button>
           </div>
         </div>
@@ -2217,29 +2424,19 @@ function MoreniGame() {
               {(["formazione", "stato", "zaino"] as const).map((t) => (
                 <button
                   key={t}
-                  onClick={() => {
-                    sfx.click();
-                    setMenuTab(t);
-                    setUseItemId(null);
-                  }}
+                  onClick={() => { sfx.click(); setMenuTab(t); setUseItemId(null); }}
                   className={`btn-hard px-4 py-1.5 border-2 font-display text-lg tracking-widest uppercase ${
-                    menuTab === t ? "border-toxic bg-toxic text-[#04150c]" : "border-edge bg-panel2 text-dim hover:text-bone"
+                    menuTab === t ? "bg-toxic border-[#d8fff0] text-[#04150c]" : "bg-panel2 border-edge text-dim"
                   }`}
                 >
                   {t}
                 </button>
               ))}
               <div className="flex-1" />
-              <div className="text-gold text-lg whitespace-nowrap mr-2">
-                CARISMA <span className="tabular-nums">{score}</span>
-              </div>
-              <button onClick={closeMenu} className="btn-hard px-3 py-1.5 bg-panel2 border-2 border-edge text-dim font-display text-xl">
-                ✕
-              </button>
+              <button onClick={closeMenu} className="btn-hard px-3 py-1.5 bg-panel2 border-2 border-edge text-dim font-display text-xl">✕</button>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4">
-              {/* ---- FORMAZIONE ---- */}
               {menuTab === "formazione" && (
                 <div>
                   <div className="text-dim mb-3 tracking-wide text-sm">
@@ -2255,9 +2452,7 @@ function MoreniGame() {
                           onClick={() => m.hp > 0 && setActiveMember(i)}
                           role="button"
                           tabIndex={0}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" && m.hp > 0) setActiveMember(i);
-                          }}
+                          onKeyDown={(e) => { if (e.key === "Enter" && m.hp > 0) setActiveMember(i); }}
                           className={`btn-hard roster-card text-left p-3 cursor-pointer ${active ? "ring-2 ring-toxic" : ""} ${m.hp <= 0 ? "opacity-60" : ""}`}
                           style={{ "--pc": hexCss(s.accentColor) } as React.CSSProperties}
                         >
@@ -2266,21 +2461,14 @@ function MoreniGame() {
                             {active && <span className="text-[10px] font-display tracking-widest bg-toxic text-[#04150c] px-1.5 py-0.5">ATTIVO</span>}
                           </div>
                           <div className="font-display text-lg mt-1 leading-tight text-gold">{m.name ?? s.name}</div>
-                          {m.name && (
-                            <div className="font-display text-xs leading-tight" style={{ color: hexCss(s.accentColor) }}>
-                              {s.name}
-                            </div>
-                          )}
+                          {m.name && <div className="font-display text-xs leading-tight" style={{ color: hexCss(s.accentColor) }}>{s.name}</div>}
                           <HpBar hp={m.hp} max={m.maxHp} w={120} />
                           <div className="text-dim text-xs mt-1">
                             HP <span className="text-bone tabular-nums">{m.hp}/{m.maxHp}</span> · ATK <span className="text-bone tabular-nums">{m.atk}</span>
                           </div>
                           {m.hp <= 0 && <div className="text-blood text-xs mt-1 font-display">AL TAPPETO</div>}
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              releaseFromParty(i);
-                            }}
+                            onClick={(e) => { e.stopPropagation(); releaseFromParty(i); }}
                             className={`btn-hard mt-2 w-full py-1 border-2 font-display text-sm tracking-widest ${
                               partyReleaseArm === i ? "bg-blood border-[#ffd1dd] text-[#fff0f4]" : "bg-panel2 border-edge text-dim hover:text-bone"
                             }`}
@@ -2295,7 +2483,6 @@ function MoreniGame() {
                 </div>
               )}
 
-              {/* ---- STATO ---- */}
               {menuTab === "stato" && (
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="flex md:flex-col gap-2 flex-wrap">
@@ -2304,120 +2491,114 @@ function MoreniGame() {
                       return (
                         <button
                           key={i}
-                          onClick={() => {
-                            sfx.click();
-                            setMenuSel(i);
-                          }}
-                          className={`btn-hard flex items-center gap-2 px-3 py-2 border-2 ${i === menuSel ? "bg-panel2 border-toxic" : "bg-[#120a20] border-edge"}`}
+                          onClick={() => { sfx.click(); setMenuSel(i); }}
+                          className={`btn-hard flex items-center gap-2 px-2 py-1.5 border-2 ${menuSel === i ? "border-gold bg-[#2a1b45]" : "border-edge bg-[#160b26]"}`}
                         >
                           <MorenoFace sp={s} size={34} />
-                          <span className="font-display" style={{ color: hexCss(s.accentColor) }}>{m.name ?? s.name}</span>
+                          <span className="text-sm text-bone">{m.name ?? s.name}</span>
                         </button>
                       );
                     })}
                   </div>
                   {(() => {
-                    const m = party[menuSel];
+                    const m = party[Math.min(menuSel, party.length - 1)];
                     if (!m) return <div className="text-dim">NESSUN MORENO SELEZIONATO.</div>;
                     const s = speciesById(m.spId);
-                    const fav = FLAVORS[s.favorite];
+                    const lines = s.recruitLines.length ? s.recruitLines : s.hurtLines.length ? s.hurtLines : s.angryLines;
                     return (
-                      <div className="flex-1 border-2 border-edge bg-panel2 p-4" style={{ borderColor: hexCss(s.accentColor) }}>
+                      <div className="flex-1 border-2 border-edge bg-panel2/70 p-4" style={{ "--pc": hexCss(s.accentColor) } as React.CSSProperties}>
                         <div className="flex items-center gap-4">
-                          <div className="border-2 p-2" style={{ borderColor: hexCss(s.accentColor), background: "#160b26" }}>
-                            <MorenoFace sp={s} size={110} />
-                          </div>
+                          <MorenoFace sp={s} size={88} />
                           <div>
-                            <div className="font-display text-3xl leading-none text-gold">{m.name ?? s.name}</div>
-                            <div className="font-display text-lg" style={{ color: hexCss(s.accentColor) }}>{s.name}</div>
-                            <div className="text-dim text-sm mt-1">{s.title}</div>
-                            <div className="mt-2 text-sm">
-                              GUSTO PREFERITO: <span style={{ color: fav.css }}>{fav.name}</span>
-                            </div>
+                            <div className="font-display text-3xl text-gold leading-none">{m.name ?? s.name}</div>
+                            <div className="font-display text-sm" style={{ color: hexCss(s.accentColor) }}>{s.name} · {s.title}</div>
+                            <div className="text-dim text-sm mt-1">GUSTO PREFERITO: <span style={{ color: FLAVORS[s.favorite].css }}>{FLAVORS[s.favorite].name}</span></div>
                           </div>
                         </div>
-                        <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-base">
-                          <div className="text-dim">HP</div>
-                          <div className="flex items-center gap-2">
-                            <HpBar hp={m.hp} max={m.maxHp} w={140} />
-                            <span className="tabular-nums text-bone">{m.hp}/{m.maxHp}</span>
-                          </div>
-                          <div className="text-dim">ATTACCO</div>
-                          <div className="text-bone tabular-nums">{m.atk}</div>
-                          <div className="text-dim">FRASE TIPICA</div>
-                          <div className="text-bone text-sm italic">
-                            «{(() => {
-                              const lines = s.recruitLines.length ? s.recruitLines : s.hurtLines.length ? s.hurtLines : s.angryLines;
-                              return lines.length ? pick(lines) : "…";
-                            })()}»
-                          </div>
+                        <div className="mt-3 grid grid-cols-2 gap-2 text-base">
+                          <div className="border border-edge bg-[#160b26] px-3 py-1.5">HP <span className="text-bone tabular-nums">{m.hp}/{m.maxHp}</span></div>
+                          <div className="border border-edge bg-[#160b26] px-3 py-1.5">ATK <span className="text-bone tabular-nums">{m.atk}</span></div>
                         </div>
+                        <div className="mt-2"><HpBar hp={m.hp} max={m.maxHp} w={320} /></div>
+                        <div className="text-dim text-sm mt-3 italic">«{lines.length ? pick(lines) : "…"}»</div>
                       </div>
                     );
                   })()}
                 </div>
               )}
 
-              {/* ---- ZAINO ---- */}
               {menuTab === "zaino" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-4">
                   <div>
-                    <div className="text-gold font-display text-xl mb-2">OGGETTI CHIAVE</div>
-                    {items.length === 0 && <div className="text-dim">NIENTE DI SPECIALE. ANCORA.</div>}
-                    {items.map((it) => (
-                      <div key={it} className="border-2 border-edge bg-panel2 px-3 py-2 mb-2">
-                        <div className="text-toxic font-display text-lg">◆ {ITEMS[it].name}</div>
-                        <div className="text-dim text-sm">{ITEMS[it].desc}</div>
-                      </div>
-                    ))}
+                    <div className="text-toxic text-xs tracking-[0.25em] mb-2">OGGETTI CHIAVE</div>
+                    {items.length === 0 && <div className="text-dim text-sm">NIENTE. SOLO LE TUE MANI E LA PROFEZIA.</div>}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                      {items.map((id) => (
+                        <div key={id} className="border-2 border-gold bg-panel2/70 p-3">
+                          <div className="text-gold font-display text-lg leading-tight">{ITEMS[id].name}</div>
+                          <div className="text-dim text-xs mt-1">{ITEMS[id].desc}</div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                   <div>
-                    <div className="text-gold font-display text-xl mb-2">MORENINI CURATIVI {useItemId && <span className="text-toxic text-sm">(SCEGLI IL MORENO)</span>}</div>
-                    {CONSUMABLE_LIST.map((c) => {
-                      const count = consumables[c.id] ?? 0;
-                      const active = useItemId === c.id;
-                      return (
-                        <div key={c.id} className={`border-2 px-3 py-2 mb-2 ${active ? "border-gold bg-[#3d2f10]" : "border-edge bg-panel2"}`}>
-                          <div className="flex items-center justify-between">
-                            <div className="font-display text-lg" style={{ color: c.hue }}>
-                              <CookieIcon css={c.hue} size={18} /> {c.name}
+                    <div className="text-toxic text-xs tracking-[0.25em] mb-2">DOLCI CURATIVI — CLICCA E POI SCEGLI IL MORENO</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {CONSUMABLE_LIST.map((def) => {
+                        const n = consumables[def.id] ?? 0;
+                        return (
+                          <div key={def.id} className={`border-2 p-3 ${useItemId === def.id ? "border-gold bg-[#2a1b45]" : "border-edge bg-panel2/70"}`}>
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 grid place-items-center border border-edge text-xl" style={{ background: def.hue + "33", color: def.hue }}>♥</div>
+                              <div className="flex-1">
+                                <div className="text-bone leading-tight">{def.name} <span className="text-dim text-xs">×{n}</span></div>
+                                <div className="text-dim text-xs">{def.desc}</div>
+                              </div>
+                              <button
+                                onClick={() => { sfx.click(); setUseItemId(useItemId === def.id ? null : def.id); }}
+                                disabled={n <= 0}
+                                className="btn-hard px-3 py-1.5 bg-toxic border-2 border-[#d8fff0] text-[#04150c] font-display text-sm tracking-widest"
+                              >
+                                USA
+                              </button>
                             </div>
-                            <span className="tabular-nums text-bone">×{count}</span>
+                            {useItemId === def.id && (
+                              <div className="mt-2 grid grid-cols-4 gap-1.5">
+                                {party.map((m, i) => {
+                                  const s = speciesById(m.spId);
+                                  const valid = def.revive ? m.hp <= 0 : !def.all && m.hp > 0 && m.hp < m.maxHp;
+                                  return (
+                                    <button
+                                      key={i}
+                                      onClick={() => useConsumableOn(def.id, i)}
+                                      disabled={!def.all && !valid}
+                                      className="btn-hard flex flex-col items-center gap-0.5 px-1 py-1.5 border-2 border-edge bg-[#160b26]"
+                                      style={{ opacity: !def.all && !valid ? 0.35 : 1 }}
+                                    >
+                                      <MorenoFace sp={s} size={28} />
+                                      <span className="text-[9px] text-dim tabular-nums">{m.hp}/{m.maxHp}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
-                          <div className="text-dim text-sm">{c.desc}</div>
-                          {!active ? (
-                            <button
-                              onClick={() => {
-                                if (count <= 0) {
-                                  sfx.wrong();
-                                  showToast("NON NE HAI PIÙ. VINCI BATTAGLIE PER TROVARNE.");
-                                  return;
-                                }
-                                sfx.click();
-                                setUseItemId(c.id);
-                              }}
-                              disabled={count <= 0}
-                              className="btn-hard mt-1 px-3 py-1 border-2 border-gold bg-panel2 text-gold font-display text-sm tracking-widest"
-                            >
-                              USA
-                            </button>
-                          ) : (
-                            <div className="flex flex-wrap gap-1.5 mt-1.5">
-                              {party.map((m, i) => (
-                                <button
-                                  key={i}
-                                  onClick={() => useConsumableOn(c.id, i)}
-                                  className="btn-hard px-2 py-1 border-2 border-edge bg-[#160b26] text-dim hover:text-bone text-xs flex items-center gap-1"
-                                >
-                                  <MorenoFace sp={speciesById(m.spId)} size={20} />
-                                  {m.name ?? speciesById(m.spId).name} {m.hp}/{m.maxHp}
-                                </button>
-                              ))}
-                            </div>
-                          )}
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-toxic text-xs tracking-[0.25em] mb-2">SCORTE DI MORENINI DA OFFERTA</div>
+                    <div className="grid grid-cols-4 gap-2">
+                      {FLAVOR_LIST.map((f) => (
+                        <div key={f} className="border-2 border-edge bg-panel2/70 p-2 text-center">
+                          <CookieIcon css={FLAVORS[f].css} size={26} />
+                          <div className="text-xs mt-1" style={{ color: FLAVORS[f].css }}>{FLAVORS[f].name}</div>
+                          <div className="text-bone tabular-nums">×{morenini[f] ?? 0}</div>
                         </div>
-                      );
-                    })}
+                      ))}
+                    </div>
+                    <div className="text-dim text-xs mt-1.5">ALTRE SCORTE AL FORNO DI MORENOPOLI (SI PAGANO IN BRICIOLE 🍪 {briciole}).</div>
                   </div>
                 </div>
               )}
@@ -2436,16 +2617,11 @@ function MoreniGame() {
                 <div className="text-dim text-xs mt-0.5">«I tuoi Morenini qui sono al sicuro. Anche dal mio riordino compulsivo.» — Mica Lizzi</div>
               </div>
               <div className="flex-1" />
-              <div className="text-gold text-sm whitespace-nowrap">
-                SLOT PC <span className="tabular-nums">{pc.length}/{PC_CAP}</span>
-              </div>
-              <button onClick={closePc} className="btn-hard px-3 py-1.5 bg-panel2 border-2 border-edge text-dim font-display text-xl">
-                ✕
-              </button>
+              <div className="text-gold text-sm whitespace-nowrap">SLOT PC <span className="tabular-nums">{pc.length}/{PC_CAP}</span></div>
+              <button onClick={closePc} className="btn-hard px-3 py-1.5 bg-panel2 border-2 border-edge text-dim font-display text-xl">✕</button>
             </div>
-
             <div className="flex-1 flex flex-col md:flex-row gap-3 p-3 overflow-hidden">
-              <div className="w-full md:w-60 flex flex-col border-2 border-edge bg-panel2/60">
+              <div className="w-full md:w-56 flex flex-col border-2 border-edge bg-panel2/60">
                 <div className="text-toxic text-xs tracking-[0.25em] px-2 py-1.5 border-b border-edge">SQUADRA ({party.length}/8)</div>
                 <div className="flex-1 overflow-y-auto p-2 space-y-1.5">
                   {party.map((m, i) => {
@@ -2454,11 +2630,7 @@ function MoreniGame() {
                     return (
                       <button
                         key={i}
-                        onClick={() => {
-                          sfx.click();
-                          setPcSel({ kind: "party", idx: i });
-                          setPcReleaseArm(false);
-                        }}
+                        onClick={() => { sfx.click(); setPcSel({ kind: "party", idx: i }); setPcReleaseArm(false); }}
                         className={`btn-hard w-full flex items-center gap-2 px-2 py-1.5 border-2 text-left ${sel ? "border-gold bg-[#2a1b45]" : "border-edge bg-[#160b26] hover:border-dim"}`}
                       >
                         <MorenoFace sp={s} size={30} />
@@ -2473,7 +2645,6 @@ function MoreniGame() {
                   {party.length === 0 && <div className="text-dim text-xs px-2">SQUADRA VUOTA.</div>}
                 </div>
               </div>
-
               <div className="flex-1 flex flex-col border-2 border-edge bg-panel2/60">
                 <div className="text-toxic text-xs tracking-[0.25em] px-2 py-1.5 border-b border-edge">MEMORIA DI MICA RIZZI ({pc.length}/{PC_CAP})</div>
                 <div className="flex-1 overflow-y-auto p-2">
@@ -2483,20 +2654,14 @@ function MoreniGame() {
                       const sel = pcSel?.kind === "pc" && pcSel.idx === i;
                       if (!mon) {
                         return (
-                          <div key={i} className="aspect-square border border-dashed border-edge/60 grid place-items-center text-edge text-xs">
-                            ·
-                          </div>
+                          <div key={i} className="aspect-square border border-dashed border-edge/60 grid place-items-center text-edge text-xs">·</div>
                         );
                       }
                       const s = speciesById(mon.spId);
                       return (
                         <button
                           key={i}
-                          onClick={() => {
-                            sfx.click();
-                            setPcSel({ kind: "pc", idx: i });
-                            setPcReleaseArm(false);
-                          }}
+                          onClick={() => { sfx.click(); setPcSel({ kind: "pc", idx: i }); setPcReleaseArm(false); }}
                           title={monName(mon)}
                           className={`btn-hard aspect-square border-2 p-0.5 flex flex-col items-center justify-center ${sel ? "border-gold bg-[#2a1b45]" : "border-edge bg-[#160b26] hover:border-dim"}`}
                         >
@@ -2511,7 +2676,6 @@ function MoreniGame() {
                 </div>
               </div>
             </div>
-
             <div className="border-t-2 border-edge px-4 py-2.5 flex items-center gap-2 min-h-[58px]">
               {!pcSel && <div className="text-dim text-sm">SELEZIONA UN MORENINO DALLA SQUADRA (PER DEPOSITARE) O DAL PC (PER RITIRARE/LIBERARE).</div>}
               {pcSel?.kind === "party" && party[pcSel.idx] && (
@@ -2541,7 +2705,7 @@ function MoreniGame() {
         </div>
       )}
 
-      {/* ================================ FORNO (negozio morenini) ================================ */}
+      {/* ================================ FORNO ================================ */}
       {shopOpen && (
         <div className="absolute inset-0 z-[46] flex items-center justify-center bg-[rgba(5,2,10,0.88)] p-3">
           <div className="w-full max-w-3xl max-h-[92vh] flex flex-col border-2 border-gold bg-panel shadow-[0_0_60px_rgba(255,201,77,0.22)]">
@@ -2551,29 +2715,18 @@ function MoreniGame() {
                 <div className="text-dim text-xs mt-0.5">«Morenini freschi, sfornati col male del mondo spento.»</div>
               </div>
               <div className="flex-1" />
-              <div className="text-bone text-sm whitespace-nowrap">
-                🍪 BRICIOLE <span className="text-gold tabular-nums text-lg">{briciole}</span>
-              </div>
-              <button onClick={closeShop} className="btn-hard px-3 py-1.5 bg-panel2 border-2 border-edge text-dim font-display text-xl">
-                ✕
-              </button>
+              <div className="text-bone text-sm whitespace-nowrap">🍪 BRICIOLE <span className="text-gold tabular-nums text-lg">{briciole}</span></div>
+              <button onClick={closeShop} className="btn-hard px-3 py-1.5 bg-panel2 border-2 border-edge text-dim font-display text-xl">✕</button>
             </div>
-
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               <div>
                 <div className="text-toxic text-xs tracking-[0.25em] mb-2">MORENINI DA OFFERTA — NON SONO INFINITI, SI COMPRANO!</div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
                   {FLAVOR_LIST.map((f) => (
                     <div key={f} className="border-2 border-edge bg-panel2/70 p-2.5 text-center">
-                      <div className="flex justify-center mb-1">
-                        <CookieIcon css={FLAVORS[f].css} size={34} />
-                      </div>
-                      <div className="font-display text-sm leading-tight" style={{ color: FLAVORS[f].css }}>
-                        {FLAVORS[f].name}
-                      </div>
-                      <div className="text-dim text-xs mt-0.5">
-                        NE HAI <span className="text-bone tabular-nums">×{morenini[f] ?? 0}</span>
-                      </div>
+                      <div className="flex justify-center mb-1"><CookieIcon css={FLAVORS[f].css} size={34} /></div>
+                      <div className="font-display text-sm leading-tight" style={{ color: FLAVORS[f].css }}>{FLAVORS[f].name}</div>
+                      <div className="text-dim text-xs mt-0.5">NE HAI <span className="text-bone tabular-nums">×{morenini[f] ?? 0}</span></div>
                       <button
                         onClick={() => buyMorenino(f)}
                         disabled={briciole < MORENINI_PRICES[f]}
@@ -2585,25 +2738,17 @@ function MoreniGame() {
                   ))}
                 </div>
               </div>
-
               <div>
                 <div className="text-toxic text-xs tracking-[0.25em] mb-2">DOLCI CURATIVI</div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {(
-                    [
-                      { id: "croccantino", price: 25 },
-                      { id: "crostata", price: 45 },
-                      { id: "caffe", price: 60 },
-                      { id: "famiglia", price: 80 },
-                    ] as { id: string; price: number }[]
-                  ).map(({ id, price }) => (
+                  {([
+                    { id: "croccantino", price: 25 },
+                    { id: "crostata", price: 45 },
+                    { id: "caffe", price: 60 },
+                    { id: "famiglia", price: 80 },
+                  ] as { id: string; price: number }[]).map(({ id, price }) => (
                     <div key={id} className="flex items-center gap-2.5 border-2 border-edge bg-panel2/70 p-2">
-                      <div
-                        className="w-9 h-9 grid place-items-center border border-edge text-lg"
-                        style={{ background: CONSUMABLES[id].hue + "33", color: CONSUMABLES[id].hue }}
-                      >
-                        ♥
-                      </div>
+                      <div className="w-9 h-9 grid place-items-center border border-edge text-lg" style={{ background: CONSUMABLES[id].hue + "33", color: CONSUMABLES[id].hue }}>♥</div>
                       <div className="flex-1 min-w-0">
                         <div className="text-bone text-sm leading-tight">{CONSUMABLES[id].name}</div>
                         <div className="text-dim text-[11px] leading-tight">{CONSUMABLES[id].desc}</div>
@@ -2622,16 +2767,13 @@ function MoreniGame() {
                   ))}
                 </div>
               </div>
-
-              <div className="text-dim text-xs">
-                LE BRICIOLE SI VINCONO IN BATTAGLIA E ALLA SALA GIOCHI (MORENOPONG). SPENDILE CON GIUDIZIO: LA NONNA TI GUARDA.
-              </div>
+              <div className="text-dim text-xs">LE BRICIOLE SI VINCONO IN BATTAGLIA E ALLA SALA GIOCHI (MORENOPONG).</div>
             </div>
           </div>
         </div>
       )}
 
-      {/* ================================ SALA GIOCHI — MORENOPONG ================================ */}
+      {/* ================================ SALA GIOCHI ================================ */}
       {gameOpen && (
         <div className="absolute inset-0 z-[46] flex items-center justify-center bg-[rgba(5,2,10,0.9)] p-3">
           <div className="w-full max-w-xl max-h-[94vh] flex flex-col border-2 border-blood bg-panel shadow-[0_0_60px_rgba(255,46,95,0.25)]">
@@ -2641,14 +2783,9 @@ function MoreniGame() {
                 <div className="text-dim text-xs mt-0.5">TETRIS × PONG FUSI NEL PECCATO. SI PAGA PER ENTRARE, SI VINCONO MORENINI.</div>
               </div>
               <div className="flex-1" />
-              <div className="text-bone text-sm whitespace-nowrap">
-                🍪 <span className="text-gold tabular-nums text-lg">{briciole}</span>
-              </div>
-              <button onClick={closeArcade} className="btn-hard px-3 py-1.5 bg-panel2 border-2 border-edge text-dim font-display text-xl">
-                ✕
-              </button>
+              <div className="text-bone text-sm whitespace-nowrap">🍪 <span className="text-gold tabular-nums text-lg">{briciole}</span></div>
+              <button onClick={closeArcade} className="btn-hard px-3 py-1.5 bg-panel2 border-2 border-edge text-dim font-display text-xl">✕</button>
             </div>
-
             <div className="flex-1 overflow-y-auto p-4">
               {!arcadePlaying && !arcadeResult && (
                 <div className="text-center py-4">
@@ -2667,42 +2804,30 @@ function MoreniGame() {
                   >
                     GIOCA · {MINIGAME.entry} 🍪
                   </button>
-                  {briciole < MINIGAME.entry && (
-                    <div className="text-blood text-sm mt-2">NON HAI ABBASTANZA BRICIOLE. VINCI QUALCHE BATTAGLIA!</div>
-                  )}
+                  {briciole < MINIGAME.entry && <div className="text-blood text-sm mt-2">NON HAI ABBASTANZA BRICIOLE. VINCI QUALCHE BATTAGLIA!</div>}
                 </div>
               )}
-
               {arcadePlaying && (
                 <div className="flex flex-col items-center gap-3">
-                  <Morenopong onExit={(score) => collectArcade(score)} />
+                  <Morenopong onExit={(s) => collectArcade(s)} />
                 </div>
               )}
-
               {arcadeResult && (
                 <div className="text-center py-6 pop-in">
                   <div className="font-display text-4xl text-gold mb-3">PUNTEGGIO: {arcadeResult.score}</div>
                   <div className="text-bone text-lg mb-1">
                     HAI VINTO <span className="text-gold">{arcadeResult.morenini} MORENINI</span> (gusti casuali)
                   </div>
-                  <div className="text-dim text-base mb-5">
-                    + <span className="text-gold tabular-nums">{arcadeResult.briciole}</span> briciole di consolazione
-                  </div>
+                  <div className="text-dim text-base mb-5">+ <span className="text-gold tabular-nums">{arcadeResult.briciole}</span> briciole di consolazione</div>
                   <div className="flex gap-3 justify-center">
                     <button
-                      onClick={() => {
-                        setArcadeResult(null);
-                        startArcade();
-                      }}
+                      onClick={() => { setArcadeResult(null); startArcade(); }}
                       disabled={briciole < MINIGAME.entry}
                       className="btn-hard px-6 py-2.5 bg-blood border-2 border-[#ffd1dd] text-[#fff0f4] font-display text-xl tracking-widest"
                     >
                       GIOCA ANCORA · {MINIGAME.entry} 🍪
                     </button>
-                    <button
-                      onClick={closeArcade}
-                      className="btn-hard px-6 py-2.5 bg-panel2 border-2 border-edge text-dim font-display text-xl tracking-widest"
-                    >
+                    <button onClick={closeArcade} className="btn-hard px-6 py-2.5 bg-panel2 border-2 border-edge text-dim font-display text-xl tracking-widest">
                       ESCI
                     </button>
                   </div>
@@ -2728,10 +2853,7 @@ function MoreniGame() {
               <span className="text-gold">60 minuti</span> rinascono (con 1 HP) e riprendono a curarsi.
             </div>
             <button
-              onClick={() => {
-                sfx.click();
-                setInertiaNotice(false);
-              }}
+              onClick={() => { sfx.click(); setInertiaNotice(false); }}
               className="btn-hard mt-4 px-8 py-2.5 bg-toxic border-2 border-[#d8fff0] text-[#04150c] font-display text-xl tracking-widest"
             >
               HO CAPITO
@@ -2752,21 +2874,16 @@ function MoreniGame() {
                 </div>
               </div>
               <button
-                onClick={() => {
-                  sfx.click();
-                  setSlotPanel(null);
-                  setConfirmSlot(null);
-                }}
+                onClick={() => { sfx.click(); setSlotPanel(null); setConfirmSlot(null); }}
                 className="btn-hard px-4 py-2 bg-panel2 border-2 border-edge text-dim font-display text-xl"
               >
                 ✕
               </button>
             </div>
-
             <div className="p-4 space-y-3 max-h-[60vh] overflow-y-auto" key={slotTick}>
               {(() => {
-                const auto = loadSave();
-                const cnt = auto ? new Set(auto.party.map((m) => m.spId)).size : 0;
+                const auto = readSaveKey(SAVE_KEY);
+                const cnt = auto ? new Set(auto.capturedSpecies ?? []).size : 0;
                 return (
                   <div className="flex items-center gap-4 border-2 border-edge bg-panel2 px-4 py-3">
                     <div className="font-display text-3xl text-toxic w-14 text-center leading-none">
@@ -2786,17 +2903,16 @@ function MoreniGame() {
                       )}
                     </div>
                     {auto && (
-                      <button onClick={loadFromAutosave} className="btn-hard px-4 py-2 bg-toxic border-2 border-[#d8fff0] text-[#04150c] font-display text-lg tracking-widest">
+                      <button onClick={() => loadFromAutosave()} className="btn-hard px-4 py-2 bg-toxic border-2 border-[#d8fff0] text-[#04150c] font-display text-lg tracking-widest">
                         CARICA
                       </button>
                     )}
                   </div>
                 );
               })()}
-
               {Array.from({ length: SLOT_COUNT }, (_, i) => i + 1).map((n) => {
                 const save = readSlot(n);
-                const cnt = save ? new Set(save.party.map((m) => m.spId)).size : 0;
+                const cnt = save ? new Set(save.capturedSpecies ?? []).size : 0;
                 const occupied = !!save;
                 return (
                   <div key={n} className={`flex items-center gap-4 border-2 px-4 py-3 transition-colors ${occupied ? "border-[#7a5fd0] bg-panel2" : "border-edge bg-[#120a20]"}`}>
@@ -2851,11 +2967,69 @@ function MoreniGame() {
                 );
               })}
             </div>
-
             <div className="border-t-2 border-edge px-5 py-2.5 text-dim text-sm tracking-wide">
               {slotPanel === "save"
                 ? "L'AUTOSAVE (slot A) si aggiorna da solo. Gli slot manuali restano dove li metti."
                 : "Scegli uno slot per riprendere la tua PROFEZIA."}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ================================ GAME OVER ================================ */}
+      {phase === "gameover" && (
+        <div className="absolute inset-0 z-[30] flex flex-col items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(40,4,16,0.8),rgba(8,2,6,0.95))] px-4">
+          <div className="font-display text-[11vw] md:text-[6rem] leading-none text-blood text-outline pulse-glow text-center">
+            SEI STATO
+            <br />
+            SBRICIOLATO
+          </div>
+          <div className="mt-4 stamp-in border-4 border-blood px-6 py-2 font-display text-2xl md:text-3xl text-blood tracking-widest bg-[rgba(20,2,8,0.8)]">
+            TUTTI I MORENI AL TAPPETO
+          </div>
+          <div className="mt-5 max-w-xl text-center text-lg md:text-xl text-dim">
+            «Don Moreno ti raccoglie con la paletta. I tuoi Moreni guariscono... col tempo. Letteralmente.»
+          </div>
+          <div className="mt-2 text-gold text-xl">
+            CARISMA: <span className="tabular-nums">{score}</span> · AMICI: {new Set(capturedSpecies).size}
+          </div>
+          <div className="mt-7 flex flex-col md:flex-row gap-3">
+            <button onClick={revive} className="btn-hard px-8 py-3 bg-blood border-2 border-[#ffd1dd] text-[#fff0f4] font-display text-2xl tracking-widest">
+              RIALZATI (CURA COMPLETA)
+            </button>
+            <button onClick={backToTitle} className="btn-hard px-8 py-3 bg-panel2 border-2 border-edge text-dim font-display text-2xl tracking-widest">
+              TITOLI DI TESTA
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ================================ VITTORIA ================================ */}
+      {phase === "victory" && (
+        <div className="absolute inset-0 z-[30] overflow-y-auto bg-[radial-gradient(ellipse_at_center,rgba(20,12,4,0.78),rgba(8,5,2,0.95))]">
+          <div className="min-h-full flex flex-col items-center justify-center py-8 px-4">
+            <div className="text-gold tracking-[0.5em] text-sm mb-2">LA PROFEZIA È COMPIUTA</div>
+            <div className="font-display text-[10vw] md:text-[5.5rem] leading-[0.9] text-center text-gold text-outline title-float">
+              CROCCANTEZZA
+              <br />
+              RESTITUITA
+            </div>
+            <p className="mt-3 text-dim max-w-xl text-center text-base md:text-lg">
+              Il Maiale del Mondo è di nuovo Nonno Moreno. Morenopoli cruncha in pace. E tu? Tu hai un PC pieno di amici.
+            </p>
+            <div className="mt-2 text-toxic text-2xl">CARISMA: <span className="tabular-nums">{score}</span></div>
+            <div className="mt-6 grid grid-cols-2 md:grid-cols-3 gap-2.5 w-full max-w-3xl">
+              {CAST.map((c) => (
+                <div key={c.name} className="roster-card" style={{ "--pc": "#ffc94d" } as React.CSSProperties}>
+                  <div className="font-display text-lg text-gold">{c.name}</div>
+                  <div className="text-dim text-xs mt-0.5">{c.role}</div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-6 flex flex-col md:flex-row gap-3">
+              <button onClick={backToTitle} className="btn-hard px-8 py-3 bg-gold border-2 border-[#fff0d1] text-[#241503] font-display text-2xl tracking-widest">
+                TITOLI DI CODA
+              </button>
             </div>
           </div>
         </div>
@@ -2879,422 +3053,28 @@ function MoreniGame() {
   );
 }
 
-/* ================================================================
-   MORENOPONG — il minigioco della Sala Giochi (tetris × pong)
-   Pezzi tetromino cadono e si impilano; una pallina rimbalza e
-   sbriciola i blocchi; le righe complete si cancellano per i punti.
-   ================================================================ */
-const MCOLS = 12;
-const MROWS = 14;
-const MCELL = 30;
-const MW = MCOLS * MCELL; // 360
-const MH = 420 + 110; // griglia + zona racchetta = 530
-const FLAVOR_CSS = ["#d8b98a", "#8a4b2a", "#ff6fa5", "#9bd84b"];
-
-interface PongPiece {
-  cells: { c: number; r: number }[];
-  color: number;
-  dy: number; // pixel di caduta
-}
-interface PongBall {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-}
-
-function Morenopong({ onExit }: { onExit: (score: number) => void }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const stateRef = useRef({
-    grid: [] as number[][], // -1 vuoto, altrimenti indice colore
-    piece: null as PongPiece | null,
-    spawnIn: 0.4,
-    ball: { x: MW / 2, y: 480, vx: 2.6, vy: -4.2 } as PongBall,
-    paddleX: MW / 2 - 40,
-    paddleW: 80,
-    paddleTarget: MW / 2 - 40,
-    score: 0,
-    lives: 3,
-    combo: 1,
-    over: false,
-    clearing: [] as { row: number; t: number }[],
-    particles: [] as { x: number; y: number; vx: number; vy: number; life: number; color: string }[],
-    shake: 0,
-    keys: { left: false, right: false },
-    time: 0,
-  });
-  const onExitRef = useRef(onExit);
-  onExitRef.current = onExit;
-
-  useEffect(() => {
-    const S = stateRef.current;
-    // griglia vuota
-    S.grid = Array.from({ length: MROWS }, () => Array(MCOLS).fill(-1));
-
-    const SHAPES: { c: number; r: number }[][] = [
-      [{ c: 0, r: 0 }, { c: 1, r: 0 }, { c: 2, r: 0 }, { c: 3, r: 0 }], // I
-      [{ c: 0, r: 0 }, { c: 1, r: 0 }, { c: 0, r: 1 }, { c: 1, r: 1 }], // O
-      [{ c: 0, r: 0 }, { c: 1, r: 0 }, { c: 2, r: 0 }, { c: 1, r: 1 }], // T
-      [{ c: 1, r: 0 }, { c: 2, r: 0 }, { c: 0, r: 1 }, { c: 1, r: 1 }], // S
-      [{ c: 0, r: 0 }, { c: 0, r: 1 }, { c: 0, r: 2 }, { c: 1, r: 2 }], // L
-      [{ c: 0, r: 0 }, { c: 1, r: 0 }, { c: 1, r: 1 }, { c: 1, r: 2 }], // J
-    ];
-
-    const spawnPiece = () => {
-      const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
-      const width = Math.max(...shape.map((c) => c.c)) + 1;
-      const col = Math.floor(Math.random() * (MCOLS - width + 1));
-      S.piece = {
-        cells: shape.map((c) => ({ c: c.c + col, r: c.r })),
-        color: Math.floor(Math.random() * 4),
-        dy: 0,
-      };
-    };
-
-    const stackTop = (c: number) => {
-      for (let r = 0; r < MROWS; r++) if (S.grid[r][c] !== -1) return r;
-      return MROWS;
-    };
-
-    const lockPiece = () => {
-      if (!S.piece) return;
-      let overflow = false;
-      for (const cell of S.piece.cells) {
-        const target = stackTop(cell.c) - 1;
-        if (target < 0) {
-          overflow = true;
-          break;
-        }
-        S.grid[target][cell.c] = S.piece.color;
-      }
-      S.piece = null;
-      S.spawnIn = 0.6;
-      if (overflow) {
-        S.over = true;
-      } else {
-        checkRows();
-      }
-    };
-
-    const checkRows = () => {
-      for (let r = 0; r < MROWS; r++) {
-        if (S.grid[r].every((v) => v !== -1) && !S.clearing.some((c) => c.row === r)) {
-          S.clearing.push({ row: r, t: 0.3 });
-          S.score += 100 * S.combo;
-          S.combo = Math.min(4, S.combo + 1);
-          S.shake = 6;
-          for (let c = 0; c < MCOLS; c++) {
-            for (let i = 0; i < 3; i++) {
-              S.particles.push({
-                x: c * MCELL + MCELL / 2,
-                y: r * MCELL + MCELL / 2,
-                vx: (Math.random() - 0.5) * 240,
-                vy: (Math.random() - 0.5) * 240,
-                life: 0.6,
-                color: FLAVOR_CSS[S.grid[r][c]] ?? "#ffc94d",
-              });
-            }
-          }
-        }
-      }
-    };
-
-    const collapseRows = () => {
-      const done = S.clearing.filter((c) => c.t <= 0).map((c) => c.row).sort((a, b) => b - a);
-      for (const row of done) {
-        S.grid.splice(row, 1);
-        S.grid.unshift(Array(MCOLS).fill(-1));
-      }
-      if (done.length) S.clearing = S.clearing.filter((c) => c.t > 0);
-    };
-
-    const resetBall = () => {
-      S.ball = { x: S.paddleX + S.paddleW / 2, y: 470, vx: (Math.random() < 0.5 ? -1 : 1) * 2.6, vy: -4.4 };
-    };
-
-    const canvas = canvasRef.current!;
-    const ctx = canvas.getContext("2d")!;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = MW * dpr;
-    canvas.height = MH * dpr;
-    ctx.scale(dpr, dpr);
-
-    let raf = 0;
-    let last = performance.now();
-
-    const step = (dt: number) => {
-      S.time += dt;
-      // racchetta
-      if (S.keys.left) S.paddleTarget -= 420 * dt;
-      if (S.keys.right) S.paddleTarget += 420 * dt;
-      S.paddleTarget = Math.max(0, Math.min(MW - S.paddleW, S.paddleTarget));
-      S.paddleX += (S.paddleTarget - S.paddleX) * Math.min(1, dt * 18);
-
-      // pezzo che cade
-      if (!S.piece && !S.over) {
-        S.spawnIn -= dt;
-        if (S.spawnIn <= 0) spawnPiece();
-      }
-      if (S.piece && !S.over) {
-        const fallSpeed = 46 + Math.min(90, S.score / 14);
-        S.piece.dy += fallSpeed * dt;
-        // atterraggio: ogni cella cade nella colonna fino alla cima dello stack
-        let landed = false;
-        for (const cell of S.piece.cells) {
-          const top = stackTop(cell.c);
-          const bottom = cell.r * MCELL + S.piece.dy + MCELL;
-          if (bottom >= top * MCELL) landed = true;
-        }
-        if (landed) lockPiece();
-      }
-
-      // righe in cancellazione
-      for (const c of S.clearing) c.t -= dt;
-      collapseRows();
-
-      // pallina (substep per evitare tunneling)
-      if (!S.over) {
-        const steps = 3;
-        const bSpeed = 4.4 + Math.min(3.5, S.score / 260);
-        const mag = Math.hypot(S.ball.vx, S.ball.vy) || 1;
-        S.ball.vx = (S.ball.vx / mag) * bSpeed;
-        S.ball.vy = (S.ball.vy / mag) * bSpeed;
-        for (let i = 0; i < steps; i++) {
-          const b = S.ball;
-          b.x += (S.ball.vx * 60 * dt) / steps;
-          b.y += (S.ball.vy * 60 * dt) / steps;
-          // muri
-          if (b.x < 7) {
-            b.x = 7;
-            b.vx = Math.abs(b.vx);
-          }
-          if (b.x > MW - 7) {
-            b.x = MW - 7;
-            b.vx = -Math.abs(b.vx);
-          }
-          if (b.y < 7) {
-            b.y = 7;
-            b.vy = Math.abs(b.vy);
-          }
-          // racchetta
-          if (b.vy > 0 && b.y > 482 && b.y < 500 && b.x > S.paddleX - 7 && b.x < S.paddleX + S.paddleW + 7) {
-            const hit = (b.x - (S.paddleX + S.paddleW / 2)) / (S.paddleW / 2);
-            b.vy = -Math.abs(b.vy);
-            b.vx = hit * 4.6;
-            b.y = 481;
-            S.score += 5;
-          }
-          // blocchi della griglia
-          const gc = Math.floor(b.x / MCELL);
-          const gr = Math.floor(b.y / MCELL);
-          for (let dr = -1; dr <= 1; dr++) {
-            for (let dc = -1; dc <= 1; dc++) {
-              const r = gr + dr;
-              const c = gc + dc;
-              if (r < 0 || r >= MROWS || c < 0 || c >= MCOLS) continue;
-              if (S.grid[r][c] === -1) continue;
-              const bx = c * MCELL;
-              const by = r * MCELL;
-              const nx = Math.max(bx, Math.min(b.x, bx + MCELL));
-              const ny = Math.max(by, Math.min(b.y, by + MCELL));
-              const dx = b.x - nx;
-              const dy = b.y - ny;
-              if (dx * dx + dy * dy < 49) {
-                // sbriciola il blocco
-                const col = FLAVOR_CSS[S.grid[r][c]];
-                S.grid[r][c] = -1;
-                S.score += 10;
-                S.shake = 3;
-                for (let p = 0; p < 6; p++) {
-                  S.particles.push({
-                    x: bx + MCELL / 2,
-                    y: by + MCELL / 2,
-                    vx: (Math.random() - 0.5) * 200,
-                    vy: (Math.random() - 0.5) * 200,
-                    life: 0.5,
-                    color: col,
-                  });
-                }
-                if (Math.abs(dx) > Math.abs(dy)) b.vx = dx > 0 ? Math.abs(b.vx) : -Math.abs(b.vx);
-                else b.vy = dy > 0 ? Math.abs(b.vy) : -Math.abs(b.vy);
-                dr = 2; // esci
-                break;
-              }
-            }
-          }
-          // pallina persa
-          if (b.y > MH + 12) {
-            S.lives -= 1;
-            S.combo = 1;
-            S.shake = 8;
-            if (S.lives <= 0) S.over = true;
-            else resetBall();
-          }
-        }
-      }
-
-      // particelle
-      for (let i = S.particles.length - 1; i >= 0; i--) {
-        const p = S.particles[i];
-        p.life -= dt;
-        p.x += p.vx * dt;
-        p.y += p.vy * dt;
-        p.vy += 300 * dt;
-        if (p.life <= 0) S.particles.splice(i, 1);
-      }
-      S.shake = Math.max(0, S.shake - 30 * dt);
-    };
-
-    const draw = () => {
-      const b = S.ball;
-      ctx.save();
-      ctx.clearRect(0, 0, MW, MH);
-      ctx.fillStyle = "#120a20";
-      ctx.fillRect(0, 0, MW, MH);
-      if (S.shake > 0) ctx.translate((Math.random() - 0.5) * S.shake, (Math.random() - 0.5) * S.shake);
-
-      // griglia
-      ctx.strokeStyle = "rgba(58,33,96,0.5)";
-      ctx.lineWidth = 1;
-      for (let c = 0; c <= MCOLS; c++) {
-        ctx.beginPath();
-        ctx.moveTo(c * MCELL, 0);
-        ctx.lineTo(c * MCELL, MROWS * MCELL);
-        ctx.stroke();
-      }
-      for (let r = 0; r <= MROWS; r++) {
-        ctx.beginPath();
-        ctx.moveTo(0, r * MCELL);
-        ctx.lineTo(MW, r * MCELL);
-        ctx.stroke();
-      }
-
-      // blocchi impilati
-      for (let r = 0; r < MROWS; r++) {
-        for (let c = 0; c < MCOLS; c++) {
-          const v = S.grid[r][c];
-          if (v === -1) continue;
-          const clearing = S.clearing.some((cl) => cl.row === r);
-          ctx.fillStyle = clearing && Math.floor(S.time * 12) % 2 === 0 ? "#ffffff" : FLAVOR_CSS[v];
-          ctx.fillRect(c * MCELL + 2, r * MCELL + 2, MCELL - 4, MCELL - 4);
-          ctx.fillStyle = "rgba(255,255,255,0.25)";
-          ctx.fillRect(c * MCELL + 2, r * MCELL + 2, MCELL - 4, 6);
-        }
-      }
-
-      // pezzo in caduta
-      if (S.piece) {
-        ctx.fillStyle = FLAVOR_CSS[S.piece.color];
-        for (const cell of S.piece.cells) {
-          const y = cell.r * MCELL + S.piece.dy;
-          ctx.fillRect(cell.c * MCELL + 2, y + 2, MCELL - 4, MCELL - 4);
-          ctx.fillStyle = "rgba(255,255,255,0.35)";
-          ctx.fillRect(cell.c * MCELL + 2, y + 2, MCELL - 4, 6);
-          ctx.fillStyle = FLAVOR_CSS[S.piece.color];
-        }
-      }
-
-      // zona racchetta
-      ctx.fillStyle = "rgba(77,255,166,0.06)";
-      ctx.fillRect(0, 420, MW, MH - 420);
-
-      // racchetta
-      ctx.fillStyle = "#4dffa6";
-      ctx.fillRect(S.paddleX, 486, S.paddleW, 12);
-      ctx.fillStyle = "rgba(255,255,255,0.5)";
-      ctx.fillRect(S.paddleX, 486, S.paddleW, 4);
-
-      // pallina con scia
-      ctx.fillStyle = "rgba(255,201,77,0.25)";
-      ctx.beginPath();
-      ctx.arc(b.x - b.vx * 1.2, b.y - b.vy * 1.2, 8, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#ffc94d";
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, 7, 0, Math.PI * 2);
-      ctx.fill();
-
-      // particelle
-      for (const p of S.particles) {
-        ctx.globalAlpha = Math.max(0, p.life / 0.6);
-        ctx.fillStyle = p.color;
-        ctx.fillRect(p.x - 3, p.y - 3, 6, 6);
-      }
-      ctx.globalAlpha = 1;
-
-      // HUD
-      ctx.fillStyle = "#efe6d8";
-      ctx.font = "bold 20px 'VT323', monospace";
-      ctx.textAlign = "left";
-      ctx.fillText(`PUNTI ${S.score}`, 8, MH - 8);
-      ctx.textAlign = "right";
-      ctx.fillText(`VITE ${"●".repeat(Math.max(0, S.lives))}`, MW - 8, MH - 8);
-
-      if (S.over) {
-        ctx.fillStyle = "rgba(5,2,10,0.75)";
-        ctx.fillRect(0, 0, MW, MH);
-        ctx.fillStyle = "#ff2e5f";
-        ctx.font = "bold 40px 'Grenze Gotisch', serif";
-        ctx.textAlign = "center";
-        ctx.fillText("GAME OVER", MW / 2, MH / 2 - 10);
-        ctx.fillStyle = "#efe6d8";
-        ctx.font = "bold 22px 'VT323', monospace";
-        ctx.fillText(`HAI FATTO ${S.score} PUNTI`, MW / 2, MH / 2 + 26);
-      }
-      ctx.restore();
-    };
-
-    const frame = (now: number) => {
-      const dt = Math.min(0.033, (now - last) / 1000);
-      last = now;
-      if (!S.over) step(dt);
-      draw();
-      if (S.over) {
-        // piccolo delay per far leggere il game over, poi incassa
-        window.setTimeout(() => onExitRef.current(S.score), 900);
-        return;
-      }
-      raf = requestAnimationFrame(frame);
-    };
-
-    const kd = (e: KeyboardEvent) => {
-      if (e.code === "ArrowLeft" || e.code === "KeyA") S.keys.left = true;
-      if (e.code === "ArrowRight" || e.code === "KeyD") S.keys.right = true;
-    };
-    const ku = (e: KeyboardEvent) => {
-      if (e.code === "ArrowLeft" || e.code === "KeyA") S.keys.left = false;
-      if (e.code === "ArrowRight" || e.code === "KeyD") S.keys.right = false;
-    };
-    window.addEventListener("keydown", kd);
-    window.addEventListener("keyup", ku);
-
-    resetBall();
-    spawnPiece();
-    raf = requestAnimationFrame(frame);
-
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("keydown", kd);
-      window.removeEventListener("keyup", ku);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      style={{ width: "100%", maxWidth: 380, touchAction: "none" }}
-      onMouseMove={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width) * MW;
-        stateRef.current.paddleTarget = Math.max(0, Math.min(MW - stateRef.current.paddleW, x - stateRef.current.paddleW / 2));
-      }}
-      onTouchMove={(e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
-        const x = ((e.touches[0].clientX - rect.left) / rect.width) * MW;
-        stateRef.current.paddleTarget = Math.max(0, Math.min(MW - stateRef.current.paddleW, x - stateRef.current.paddleW / 2));
-      }}
-    />
-  );
+/* ---------------- ErrorBoundary: niente schermi neri ---------------- */
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { err: string | null }> {
+  state = { err: null as string | null };
+  static getDerivedStateFromError(e: Error) {
+    return { err: e.message };
+  }
+  render() {
+    if (this.state.err) {
+      return (
+        <div className="h-dvh w-full grid place-items-center bg-void text-bone font-mono p-6">
+          <div className="border-2 border-[#ff2e5f] bg-[#160b26] p-6 max-w-lg">
+            <div className="text-[#ff2e5f] text-2xl mb-2">CRASH DEMONIACO</div>
+            <div className="text-sm opacity-80 break-words">{this.state.err}</div>
+            <button onClick={() => location.reload()} className="mt-4 px-4 py-2 border border-[#4dffa6] text-[#4dffa6]">
+              RICARICA LA PROFEZIA
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 export default function App() {

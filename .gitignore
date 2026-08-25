@@ -1,5 +1,18 @@
+# dipendenze
 node_modules/
-.next/
+
+# output di build (verrà rigenerato)
 dist/
-build/
+
+# log & cache
 *.log
+npm-debug.log*
+.DS_Store
+.vite/
+
+# editor
+.idea/
+.vscode/
+*.swp
+.next/
+build/
