@@ -69,7 +69,6 @@ function makeMon(spId: string, name?: string): PartyMon {
 const monName = (m: PartyMon) => m.name ?? speciesById(m.spId).name;
 
 interface Flags {
-  intro: boolean;
   cinghiaBeaten: boolean;
   micoDone: boolean;
   coizioDone: boolean;
@@ -77,11 +76,10 @@ interface Flags {
   don2: boolean;
   swordPulled: boolean;
   clompAwake: boolean;
-  victory: boolean;
+  finaleDone: boolean;
 }
 
 const initialFlags: Flags = {
-  intro: false,
   cinghiaBeaten: false,
   micoDone: false,
   coizioDone: false,
@@ -89,23 +87,19 @@ const initialFlags: Flags = {
   don2: false,
   swordPulled: false,
   clompAwake: false,
-  victory: false,
+  finaleDone: false,
 };
 
-function questTextFor(f: Flags, partyCount: number): string {
-  if (f.victory) return "LA PROFEZIA È COMPIUTA. CROCCANTEZZA ETERNA.";
-  if (!f.intro) return "PARLA CON DON MORENO NELLA PIAZZA";
-  if (!f.cinghiaBeaten) return "VAI NELLA VALLE DEI FACOCERI: PARLA CON CINGHIA ALE";
-  if (!f.micoDone) return "ACCAMPAMENTO DELLA RIVOLTA: SUPERA IL PROCESSO DI MICO NOSCA";
-  if (!f.coizioDone) return "TERME DEL CONTATTO: RICEVI L'ABBRACCIO DI COIZIO";
-  if (!f.ginoDone) return "ABISSO DI GINO: FERMA IL MALE DEL MONDO";
-  if (!f.don2) return "TORNA DA DON MORENO. HA UNA VERITÀ DA DIRTI";
-  if (!f.swordPulled)
-    return partyCount >= SWORD_REQ
-      ? "ESAMINA IL GRANDE MORENINO: LA SPADA TI CHIAMA"
-      : `RECLUTA ${SWORD_REQ} SPECIE DIVERSE (${partyCount}/${SWORD_REQ}) PER LA SPADA`;
-  if (!f.clompAwake) return "ASSISTI AL RISVEGLIO DI CLOMP";
-  return "ATTRAVERSA IL PORTALE NELL'ANTRO DEL MAIALE";
+function questTextFor(flags: Flags, recruits: number): string {
+  if (flags.finaleDone) return "PROFEZIA COMPIUTA — GIRA LIBERO PER MORENOPOLI";
+  if (flags.clompAwake) return "ATTRAVERSA IL PORTALE: SCONFIGGI IL MAIALE DEL MONDO";
+  if (flags.swordPulled) return "TROVA CLOMP E PARLAGLI (PIAZZA DI MORENOPOLI)";
+  if (flags.don2) return `RECLUTA MORENI PER ESTRARRE LA SPADA (${recruits}/${SWORD_REQ})`;
+  if (flags.ginoDone) return "TORNA DA DON MORENO (MORENOPOLI)";
+  if (flags.coizioDone) return "PARLA CON GINO SATRI (ABISSO DI GINO)";
+  if (flags.micoDone) return "PARLA CON COIZIO (TERME DEL CONTATTO)";
+  if (flags.cinghiaBeaten) return "PARLA CON MICO NOSCA (ACCAMPAMENTO DELLA RIVOLTA)";
+  return "VAI DA CINGHIA ALE (VALLE DEI FACOCERI)";
 }
 
 const formatWhen = (ts: number) =>
@@ -285,7 +279,6 @@ function DialogueBox({ lines, onChoice, onDone }: { lines: DialogueLine[]; onCho
     if (chars < full.length) {
       const t = window.setTimeout(() => {
         setChars((c) => c + 1);
-        sfx.type();
       }, 16);
       return () => window.clearTimeout(t);
     }
@@ -1577,7 +1570,7 @@ function MoreniGame() {
 
   const finishFinale = () => {
     addScore(1000);
-    setFlags((fl) => ({ ...fl, victory: true }));
+    setFlags((fl) => ({ ...fl, finaleDone: true }));
     sfx.victory();
     engineRef.current?.endBattle();
     setBt(null);
@@ -1630,8 +1623,6 @@ function MoreniGame() {
           sfx.recruit();
           doFlash("gold");
           engineRef.current?.awakenClompFx(() => {
-            setFlags((fl) => ({ ...fl, clompAwake: true }));
-            engineRef.current?.companionFollow(true);
             engineRef.current?.setPortalOpen(true);
             sayLines(SCRIPTS.sword_pull);
           });
@@ -1642,7 +1633,12 @@ function MoreniGame() {
       return;
     }
     if (id === "clomp") {
-      if (!f.clompAwake) {
+      if (f.swordPulled && !f.clompAwake) {
+        setFlags((fl) => ({ ...fl, clompAwake: true }));
+        engineRef.current?.companionFollow(true);
+        sfx.recruit();
+        bLogFallback("Clomp: «La spada mi ha svegliato del tutto. Vengo con te: al Maiale penso io.»");
+      } else if (!f.clompAwake) {
         bLogFallback("Clomp dorme. «Z z z... la spada... z z z...»");
       } else {
         bLogFallback("Clomp: «Il portale freme. Andiamo, evocatore.»");
@@ -2135,7 +2131,6 @@ function MoreniGame() {
                     partyRef.current = p;
                     setParty(p);
                     markCaptured(id);
-                    setFlags((fl) => ({ ...fl, intro: true }));
                     setActiveIdx(0);
                     activeIdxRef.current = 0;
                     setPhase("world");

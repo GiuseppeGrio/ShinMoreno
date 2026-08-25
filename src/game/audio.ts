@@ -77,9 +77,6 @@ class Sfx {
   click() {
     this.tone(340, 0.06, "square", 0.12);
   }
-  type() {
-    this.tone(1900, 0.018, "sine", 0.03);
-  }
   correct() {
     this.tone(523, 0.09, "sine", 0.2);
     this.tone(659, 0.12, "sine", 0.2, 0.07);
